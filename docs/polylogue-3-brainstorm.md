@@ -4,6 +4,9 @@ Working notes toward a coherent architecture. This document captures ideas and d
 
 **Polylogue 2** is in `../Polylogue-2/`
 
+### Related Documents
+- [Agent Architecture](agent-architecture.md) — How agents are defined (context, knowledge profiles, dispositions) and why
+
 ---
 
 ## What Polylogue 2 Does Well
