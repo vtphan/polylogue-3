@@ -6,6 +6,7 @@ Working notes toward a coherent architecture. This document captures ideas and d
 
 ### Related Documents
 - [Agent Architecture](agent-architecture.md) — How agents are defined (context, knowledge profiles, dispositions) and why
+- [Discourse Layer](discourse-layer.md) — How presentations and discussions are structured, roles, turn-taking
 
 ---
 
