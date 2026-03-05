@@ -5,8 +5,17 @@ Working notes toward a coherent architecture. This document captures ideas and d
 **Polylogue 2** is in `../Polylogue-2/`
 
 ### Related Documents
-- [Agent Architecture](agent-architecture.md) — How agents are defined (context, knowledge profiles, dispositions) and why
-- [Discourse Layer](discourse-layer.md) — How presentations and discussions are structured, roles, turn-taking
+
+**Docs** (rationales, perspectives, contrasts with Polylogue 2):
+- [Agent Architecture](agent-architecture.md) — How agents are defined and why
+- [Discourse Layer](discourse-layer.md) — How presentations and discussions are structured
+
+**Specs** (concise, precise, for building):
+- [Nomenclature](../specs/nomenclature.md) — Consistent vocabulary
+- [Design Principles](../specs/design-principles.md) — Core architectural principles
+- [Scenario Schema](../specs/scenario-schema.md) — Scenario document format
+- [Profile Schema](../specs/profile-schema.md) — Agent profile format
+- [Workflow](../specs/workflow.md) — Pipeline stages, inputs, outputs
 
 ---
 
@@ -139,15 +148,15 @@ This taxonomy needs refinement. The categories should be grounded in what middle
 ## Topic-First Design
 
 Polylogue 2: design agents → pick topic → generate discourse.
-Polylogue 3: pick topic → identify target flaws → design agents to produce those flaws.
+Polylogue 3: pick topic → identify expected flaws → design agents whose profiles would naturally produce those flaws.
 
-A **scenario** defines:
+A **scenario** (see [Nomenclature](nomenclature.md)) defines:
 - The PBL topic
-- The discourse mode (presentation, discussion, or both)
-- Target flaws that are pedagogically relevant for this topic
-- Constraints on agent composition (how many agents, what knowledge/disposition combinations would naturally produce the target flaws)
+- The activity type (presentation, discussion, or both)
+- Expected flaws that are pedagogically relevant for this topic
+- Constraints on agent composition (how many agents, what knowledge/disposition combinations would naturally produce the expected flaws)
 
-Agent knowledge profiles are then designed *backward* from the target flaws: if you want students to identify "proposal without feasibility analysis," you create an agent whose blind spot is implementation logistics.
+Agent knowledge profiles are then designed *backward* from the expected flaws: if you want students to identify "proposal without feasibility analysis," you create an agent whose blind spot is implementation logistics.
 
 This is more intentional than Polylogue 2 without being scripted — you're creating conditions for flaws to emerge, not dictating when they appear.
 
@@ -190,9 +199,9 @@ Students work in collaborative groups with assigned roles (e.g., "prototype desi
 The topic-first design approach becomes concrete here. A Polylogue 3 scenario could be:
 
 > **Topic**: Environmental threats to local ecosystems (aligned to 6th STEM driving question)
-> **Mode**: Group presentation
+> **Activity**: Presentation
 > **Team**: 4 agents with roles (researcher, solution designer, community liaison, presenter)
-> **Target flaws**: Overstating a single study (epistemic), proposing solutions without feasibility analysis (completeness), evidence that doesn't connect to the proposed solution (coherence)
+> **Expected flaws**: Overstating a single study (epistemic), proposing solutions without feasibility analysis (completeness), evidence that doesn't connect to the proposed solution (coherence)
 > **Knowledge design**: Researcher knows the science but has a blind spot on community context. Solution designer has shallow understanding of the science but knows implementation. Community liaison has misconceptions about what local organizations can do. Presenter knows a bit of everything but nothing deeply.
 
 This produces a presentation with realistic, identifiable flaws that are directly relevant to what 6th graders will encounter in their own project work.

@@ -1,6 +1,6 @@
 # Polylogue 3: Discourse Layer
 
-How group presentations and group discussions are structured, and how roles work within them.
+How group presentations and group discussions are structured, and how roles work within them. See [Nomenclature](nomenclature.md) for consistent vocabulary.
 
 ---
 
@@ -77,7 +77,7 @@ These roles mirror real PBL team structures at UMS (prototype design engineer, o
 
 Presentations have a **planned turn order**, not a dynamic one. The role assignment determines who speaks when. Within each section, the responsible agent delivers their part. Other agents may contribute briefly (a handoff, a supporting point), but the primary speaker is predetermined.
 
-This means there is no "selector" mechanism in presentation mode. The structure is:
+This means there is no "selector" mechanism for presentations. The structure is:
 
 ```
 Introduction (Framer) → Approach (Designer) → Findings (Researcher)
@@ -191,7 +191,7 @@ Specific turn counts or word limits are implementation details, not architecture
 
 Both modes draw on the same agent definitions (context + knowledge profile + disposition). The key difference is which components drive flaw generation:
 
-| Component | Presentation mode | Discussion mode |
+| Component | Presentation | Discussion |
 |-----------|-------------------|-----------------|
 | Context | Shapes the topic and standards | Same |
 | Knowledge profile | **Primary flaw driver** — gaps, misconceptions, blind spots are embedded in the prepared content | **Active flaw driver** — same as presentation, plus knowledge gaps are exposed by questioning |
@@ -216,14 +216,24 @@ Both modes draw on the same agent definitions (context + knowledge profile + dis
 
 ---
 
+## Q&A Is a Pedagogical Activity, Not a Discourse Mode
+
+Q&A after a presentation is not a third activity type in the architecture. It is a **student-driven activity** that uses the AI-generated presentation as input.
+
+The approach: AI generates presentations (and discussions) in advance as prepared artifacts. Students view the presentation, identify flaws, and then engage in Q&A — but the Q&A is conducted by students, not by AI agents. Students can play both roles: formulating questions that probe the flaws they've identified, and role-playing how a flawed presenter would respond.
+
+This is pedagogically richer than having AI handle Q&A. When students formulate probing questions, they're exercising critical thinking actively — not just identifying flaws but articulating *why* something is a flaw and *what information would expose it*. When they role-play answers, they internalize the relationship between knowledge gaps and defensive or evasive responses.
+
+Real-time AI Q&A (where students ask and AI agents respond live) is a possible future extension but involves technical complexity beyond the current scope. The student-driven approach is a better starting point — it's simpler architecturally and stronger pedagogically.
+
+---
+
 ## Open Questions
 
-1. **Q&A as a bridge mode.** After a presentation, a Q&A session mixes presentation content with discussion dynamics. Is this a third mode, a variant of discussion mode, or a transition between modes? Architecturally, it could be a discussion where the agents' "context" includes having just presented — so their knowledge gaps and reactive tendencies are primed.
+1. **How structured should discussion stages be?** Three stages (opening up, working through, converging) might be too loose for reliable LLM generation. Might need more guidance about what triggers transitions, without going back to Polylogue 2's full transition graph.
 
-2. **How structured should discussion stages be?** Three stages (opening up, working through, converging) might be too loose for reliable LLM generation. Might need more guidance about what triggers transitions, without going back to Polylogue 2's full transition graph.
+2. **Role assignment mechanism.** Who decides which agent gets which role — the teacher/curator, the LLM during scenario generation, or some combination? This connects to the LLM-generation-with-human-curation principle.
 
-3. **Role assignment mechanism.** Who decides which agent gets which role — the teacher/curator, the LLM during scenario generation, or some combination? This connects to the LLM-generation-with-human-curation principle.
+3. **Facilitated vs. unfacilitated discussion.** Should one agent sometimes act as a discussion facilitator (mirroring a teacher's role in structuring group work)? This adds realism but also adds a special-purpose agent type.
 
-4. **Facilitated vs. unfacilitated discussion.** Should one agent sometimes act as a discussion facilitator (mirroring a teacher's role in structuring group work)? This adds realism but also adds a special-purpose agent type.
-
-5. **Multiple discussions on the same topic.** In PBL, groups revise and re-discuss after feedback. Could Polylogue 3 model a sequence: presentation → feedback → revised discussion → revised presentation? This mirrors the UMS Develop/Critique cycle but adds significant complexity.
+4. **Multiple discussions on the same topic.** In PBL, groups revise and re-discuss after feedback. Could Polylogue 3 model a sequence: presentation → feedback → revised discussion → revised presentation? This mirrors the UMS Develop/Critique cycle but adds significant complexity.
