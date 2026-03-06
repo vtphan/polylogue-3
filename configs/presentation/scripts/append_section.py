@@ -6,6 +6,9 @@ Reads the section content and metadata (from stdin or a JSON file),
 validates it, and appends it to the presentation transcript YAML.
 Also updates the registry config.
 
+Enum values are read from configs/presentation/schemas/presentation.schema.yaml
+— the single source of truth.
+
 Usage:
     python append_section.py <scenario_id> [--input <file>]
 
@@ -32,9 +35,9 @@ import yaml
 from datetime import datetime, timezone
 from pathlib import Path
 
-
-VALID_SECTIONS = ["introduction", "approach", "findings", "solution", "conclusion"]
-VALID_CATEGORIES = ["strong", "shallow", "misconception", "blind_spot"]
+# Add system scripts to path for shared utilities
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "system" / "scripts"))
+from schema_utils import get_presentation_sections, get_knowledge_categories
 
 
 def load_yaml(path: Path) -> dict:
@@ -50,11 +53,13 @@ def write_yaml(path: Path, data: dict):
 
 def validate_section(section_data: dict) -> list:
     """Validate section data. Returns list of error strings."""
+    valid_sections = get_presentation_sections()
+    valid_categories = get_knowledge_categories()
     errors = []
 
-    if section_data.get("section") not in VALID_SECTIONS:
+    if section_data.get("section") not in valid_sections:
         errors.append(f"Invalid section: {section_data.get('section')}. "
-                      f"Must be one of: {VALID_SECTIONS}")
+                      f"Must be one of: {valid_sections}")
 
     if not section_data.get("speaker"):
         errors.append("Missing speaker")
@@ -67,7 +72,7 @@ def validate_section(section_data: dict) -> list:
         errors.append("Missing metadata.knowledge_areas_engaged")
     else:
         for item in metadata["knowledge_areas_engaged"]:
-            if item.get("category") not in VALID_CATEGORIES:
+            if item.get("category") not in valid_categories:
                 errors.append(f"Invalid knowledge category: {item.get('category')}")
 
     if not metadata.get("rationale"):

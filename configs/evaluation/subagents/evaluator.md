@@ -17,6 +17,17 @@ Given a transcript (presentation or discussion), you identify specific critical 
 
 ---
 
+## Reference
+
+Before evaluating, read the following from `configs/`:
+
+- `configs/reference/flaw_type_glossary.md` — flaw types, subtypes, interaction-driven patterns, and their definitions. This is the source of truth for what constitutes each flaw type.
+- `configs/reference/presentation_section_glossary.md` — section definitions (if evaluating a presentation)
+- `configs/reference/discussion_stage_glossary.md` — stage definitions (if evaluating a discussion)
+- `configs/evaluation/schemas/evaluation.schema.yaml` — schema your output must conform to
+
+---
+
 ## Input
 
 ```yaml
@@ -29,16 +40,13 @@ transcript:                            # Full presentation or discussion transcr
   turns: [...]                         # If discussion
 
 activity: presentation | discussion
-
-# Reference glossaries
-flaw_type_glossary: string
-section_glossary: string               # If presentation
-stage_glossary: string                 # If discussion
 ```
 
 ---
 
 ## Output
+
+Conforming to `configs/evaluation/schemas/evaluation.schema.yaml`:
 
 ```yaml
 scenario_id: string
@@ -83,27 +91,7 @@ summary:
 
 #### Phase 1: Section-Level Evaluation
 
-For each section, examine the content for:
-
-**Reasoning flaws:**
-- Logical fallacies (false cause, slippery slope, false dilemma)
-- Missing premises — conclusions that don't follow from stated evidence
-- Overgeneralization from limited examples
-- False equivalence between unlike things
-
-**Epistemic flaws:**
-- Stating assumptions as facts
-- Overstating what evidence shows
-- Conflating correlation with causation
-- Selective use of evidence (cherry-picking)
-- Unacknowledged uncertainty
-
-**Completeness flaws:**
-- Missing stakeholders or perspectives
-- No feasibility analysis for proposed solutions
-- Unaddressed tradeoffs
-- No counterexamples considered
-- Ignored real-world constraints
+For each section, examine the content for reasoning, epistemic, and completeness flaws. Consult the flaw type glossary for subtypes and examples within each category.
 
 Use the `metadata.knowledge_areas_engaged` to understand what knowledge the agent drew on (strong, shallow, misconception, blind_spot). This helps trace flaws to their source but is not the flaw itself — evaluate the **output**, not the metadata.
 
@@ -111,14 +99,7 @@ Set `location.type: section` and `source: knowledge_driven` for section-level fl
 
 #### Phase 2: Cross-Section Evaluation
 
-Evaluate the presentation as a whole for:
-
-**Coherence flaws:**
-- Introduction frames a problem that the solution doesn't address
-- Findings don't support the approach described
-- Different speakers contradict each other's claims
-- Conclusion claims things not supported by the findings
-- Methods described in approach don't match what was actually done in findings
+Evaluate the presentation as a whole for coherence flaws — contradictions between sections, disconnects between problem framing and proposed solutions, conclusions not supported by findings. Consult the flaw type glossary for coherence subtypes.
 
 Set `location.type: cross_section` with multiple section references. Source is `knowledge_driven`.
 
@@ -132,17 +113,7 @@ Set `location.type: turn` and classify source.
 
 #### Phase 2: Cross-Turn Evaluation
 
-Examine the discussion arc for interaction-driven flaws:
-
-**Abandonment:** An agent makes a valid point but drops it after social pressure. Look for: valid claim → challenge → the original agent concedes or changes topic without the challenge being logically compelling. Spans 3-4 turns.
-
-**Superficial consensus:** The group agrees without genuinely resolving disagreement. Look for: opposing positions → vague agreement language → no substantive integration of different views.
-
-**Escalation:** Disagreement becomes competitive rather than productive. Look for: claim → counter → escalation of language → positions harden → productive inquiry breaks down.
-
-**Conformity:** An agent agrees with the group without independent reasoning. Look for: agent echoes others' points without adding substance; metadata shows reactive_tendency_activated.
-
-**Deflection:** An agent changes the subject when challenged. Look for: direct question or challenge → response on an unrelated topic.
+Examine the discussion arc for interaction-driven flaw patterns. The flaw type glossary defines five patterns: abandonment, superficial consensus, escalation, conformity, and deflection. Each has specific detection signals and spans multiple turns.
 
 Set `location.type: cross_turn` with multiple turn_id references. Source is `interaction_driven`.
 
@@ -161,10 +132,8 @@ Set `location.type: cross_turn` with multiple turn_id references. Source is `int
 ## Constraints
 
 - Every flaw must cite specific evidence from the transcript (a quote or clear reference)
-- `flaw_type`: one of `reasoning`, `epistemic`, `completeness`, `coherence`
+- Flaw type, source, severity, and location type enums: per the evaluation schema and flaw type glossary
 - `source`: `knowledge_driven` for all presentation flaws; either value for discussion flaws
-- `severity`: one of `minor`, `moderate`, `major`
-- `location.type`: `section` or `cross_section` for presentations; `turn` or `cross_turn` for discussions
 - Don't invent flaws that aren't in the transcript — evaluate what was actually said
 - Don't count the same flaw twice (e.g., once at section level and again at cross-section level — choose the most appropriate scope)
 - `key_patterns`: 2-3 sentences, written for a teacher audience

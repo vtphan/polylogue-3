@@ -39,16 +39,11 @@ Verify:
 
 If `--assignment` is provided, parse it.
 
-Otherwise, derive assignments from the scenario's agent roles:
+Otherwise, derive assignments from the scenario's agent roles. Since roles are flexible and scenario-specific, use this approach:
 
-| Role | Default sections |
-|------|-----------------|
-| Framer | introduction, conclusion |
-| Researcher | findings |
-| Designer | approach, solution |
-| Connector | conclusion (co-presents or supports) |
-
-If no roles are in the scenario, assign sections round-robin across agents.
+1. **Match by role semantics.** If agent roles suggest natural section assignments (e.g., a "Lead Scientist" might present findings, a "Project Manager" might present the approach), assign accordingly.
+2. **Distribute evenly.** Spread sections across agents so no agent is overloaded unless their role warrants multiple sections.
+3. **Round-robin fallback.** If roles don't suggest clear mappings, assign sections round-robin across agents in scenario order.
 
 Validate: every section has exactly one assigned speaker.
 

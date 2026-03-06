@@ -5,6 +5,9 @@ Write evaluation results to the registry.
 Reads evaluation output (from stdin or a JSON file), validates it,
 and writes to the appropriate evaluation file in the registry.
 
+Enum values are read from configs/evaluation/schemas/evaluation.schema.yaml
+— the single source of truth.
+
 Usage:
     python append_evaluation.py <scenario_id> <activity> [--input <file>]
 
@@ -21,11 +24,11 @@ import json
 import yaml
 from pathlib import Path
 
-
-VALID_FLAW_TYPES = ["reasoning", "epistemic", "completeness", "coherence"]
-VALID_SOURCES = ["knowledge_driven", "interaction_driven"]
-VALID_SEVERITIES = ["minor", "moderate", "major"]
-VALID_LOCATION_TYPES = ["section", "turn", "cross_section", "cross_turn"]
+# Add system scripts to path for shared utilities
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "system" / "scripts"))
+from schema_utils import (
+    get_flaw_types, get_flaw_sources, get_flaw_severities, get_location_types
+)
 
 
 def write_yaml(path: Path, data: dict):
@@ -36,6 +39,10 @@ def write_yaml(path: Path, data: dict):
 
 def validate_evaluation(eval_data: dict) -> list:
     """Validate evaluation data. Returns list of error strings."""
+    valid_flaw_types = get_flaw_types()
+    valid_sources = get_flaw_sources()
+    valid_severities = get_flaw_severities()
+    valid_location_types = get_location_types()
     errors = []
 
     if not eval_data.get("scenario_id"):
@@ -48,17 +55,17 @@ def validate_evaluation(eval_data: dict) -> list:
     for i, flaw in enumerate(flaws):
         prefix = f"flaws[{i}]"
 
-        if flaw.get("flaw_type") not in VALID_FLAW_TYPES:
+        if flaw.get("flaw_type") not in valid_flaw_types:
             errors.append(f"{prefix}.flaw_type invalid: {flaw.get('flaw_type')}")
 
-        if flaw.get("source") not in VALID_SOURCES:
+        if flaw.get("source") not in valid_sources:
             errors.append(f"{prefix}.source invalid: {flaw.get('source')}")
 
-        if flaw.get("severity") not in VALID_SEVERITIES:
+        if flaw.get("severity") not in valid_severities:
             errors.append(f"{prefix}.severity invalid: {flaw.get('severity')}")
 
         loc = flaw.get("location", {})
-        if loc.get("type") not in VALID_LOCATION_TYPES:
+        if loc.get("type") not in valid_location_types:
             errors.append(f"{prefix}.location.type invalid: {loc.get('type')}")
 
         if not loc.get("references"):

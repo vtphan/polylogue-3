@@ -25,13 +25,9 @@ Read `registry/{scenario_id}/discussion.yaml`.
 
 If the file doesn't exist or has no turns, report an error and exit.
 
-### Step 2: Load References
+### Step 2: Load Expected Flaws (Optional)
 
-Read:
-- `configs/reference/flaw_type_glossary.md` — flaw type definitions, subtypes, and PBL examples
-- `configs/reference/discussion_stage_glossary.md` — stage definitions and characteristics
-
-Optionally, if expected flaws are available for comparison:
+If expected flaws are available for comparison:
 - `configs/profiles/{scenario_id}/*.yaml` — load expected flaws from all agent profiles
 
 ### Step 3: Evaluate
@@ -40,9 +36,9 @@ Delegate to the **evaluator** subagent.
 
 Provide the subagent with:
 - The full discussion transcript (content + metadata, including reactive_tendency_activated)
-- Flaw type glossary
-- Discussion stage glossary
 - Activity type: `discussion`
+
+The evaluator reads the reference glossaries and evaluation schema from `configs/` directly (see its Reference section).
 
 The evaluator performs:
 

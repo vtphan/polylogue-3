@@ -17,10 +17,21 @@ Given an approved scenario with agent sketches, you produce one complete profile
 
 ---
 
+## Reference
+
+Before generating, read the following from `configs/`:
+
+- `configs/reference/flaw_type_glossary.md` — flaw types, subtypes, and interaction-driven patterns
+- `configs/reference/knowledge_category_glossary.md` — knowledge categories and their flaw mappings
+- `configs/reference/disposition_glossary.md` — disposition dimensions and values
+- `configs/agent/schemas/profile.schema.yaml` — the schema your output must conform to
+
+---
+
 ## Input
 
 ```yaml
-scenario:
+scenario:                                # Full approved scenario YAML
   scenario_id: string
   topic:
     driving_question: string
@@ -31,65 +42,46 @@ scenario:
     description: string
   activity: presentation | discussion
   agents:
-    descriptions:
-      - name: string
-        role: string
-        knowledge_focus: string
-        disposition_sketch: string
-        expected_flaws:
-          - flaw: string
-            flaw_type: string
-            mechanism: string
-
-# Reference glossaries (provided in full)
-flaw_type_glossary: string
-knowledge_category_glossary: string
-disposition_glossary: string
-
-# Profile schema
-profile_schema: string
+    - name: string
+      role: string
+      knowledge_focus: string
+      disposition_sketch: string
+      expected_flaws:
+        - flaw: string
+          flaw_type: string
+          mechanism: string
 ```
 
 ---
 
 ## Output
 
-One YAML document per agent, following this structure:
+One YAML document per agent, conforming to `configs/agent/schemas/profile.schema.yaml`.
+
+Key fields:
 
 ```yaml
 name: string
 agent_id: string                       # kebab-case from name
 scenario_id: string
-
-context: string                        # Inherited from scenario, may be refined per agent
-
+context: string
 knowledge_profile:
   strong_understanding:
     - area: string
       detail: string
-  shallow_understanding:
-    - area: string
-      detail: string
-  misconceptions:
-    - area: string
-      detail: string
-  blind_spots:
-    - area: string
-      detail: string
-
+  shallow_understanding: [...]
+  misconceptions: [...]
+  blind_spots: [...]
 disposition:
   confidence: low | moderate | high
   engagement_style: collaborative | moderate | competitive
   expressiveness: restrained | moderate | expressive
   reactive_tendency: string
-
 description: string                    # 2-3 sentence prose portrait
-
 expected_flaws:
   - flaw: string
     flaw_type: reasoning | epistemic | completeness | coherence
     mechanism: string
-
 metadata:
   version: "1.0"
   created_at: ISO 8601
@@ -128,11 +120,7 @@ The scenario provides brief sketches: a `knowledge_focus` (2-4 sentences) and a 
 
 ### Flaw Traceability
 
-Every expected flaw must have a clear mechanism connecting it to specific knowledge items and disposition settings:
-- Epistemic flaws: typically from shallow understanding or misconceptions + moderate-to-high confidence
-- Completeness flaws: typically from blind spots
-- Reasoning flaws: typically from misconceptions + disposition (e.g., competitive engagement → overcommits to a flawed argument)
-- Coherence flaws: typically from different agents having different knowledge profiles (note this in mechanism)
+Every expected flaw must have a clear mechanism connecting it to specific knowledge items and disposition settings. Consult the knowledge category glossary for specific flaw mappings.
 
 ### Agent Diversity
 
@@ -147,10 +135,7 @@ Across the set of agents:
 ## Constraints
 
 - `agent_id`: kebab-case, unique within scenario
-- `disposition.confidence`: one of `low`, `moderate`, `high`
-- `disposition.engagement_style`: one of `collaborative`, `moderate`, `competitive`
-- `disposition.expressiveness`: one of `restrained`, `moderate`, `expressive`
-- `expected_flaws[].flaw_type`: one of `reasoning`, `epistemic`, `completeness`, `coherence`
+- Disposition and flaw type enums: per the reference glossaries
 - `knowledge_profile`: 4-8 items total across categories recommended
 - `reactive_tendency`: 1-2 sentences, specific enough for consistent behavior
 - `description`: 2-3 sentences, prose (not bullet points)

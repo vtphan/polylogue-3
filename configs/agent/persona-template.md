@@ -77,7 +77,7 @@ metadata:
 
 ## Example: Kenji's Persona
 
-Derived from the Kenji profile in [profile-schema.md](profile-schema.md).
+Derived from the Kenji profile in [profile.schema.yaml](schemas/profile.schema.yaml).
 
 ```markdown
 ---

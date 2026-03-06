@@ -6,6 +6,9 @@ Reads the turn content and metadata (from stdin or a JSON file),
 validates it, and appends it to the discussion transcript YAML.
 Also updates the registry config.
 
+Enum values are read from configs/discussion/schemas/discussion.schema.yaml
+— the single source of truth.
+
 Usage:
     python append_turn.py <scenario_id> [--input <file>]
 
@@ -33,9 +36,9 @@ import yaml
 from datetime import datetime, timezone
 from pathlib import Path
 
-
-VALID_STAGES = ["opening_up", "working_through", "converging"]
-VALID_CATEGORIES = ["strong", "shallow", "misconception", "blind_spot"]
+# Add system scripts to path for shared utilities
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "system" / "scripts"))
+from schema_utils import get_discussion_stages, get_knowledge_categories
 
 
 def load_yaml(path: Path) -> dict:
@@ -51,14 +54,16 @@ def write_yaml(path: Path, data: dict):
 
 def validate_turn(turn_data: dict) -> list:
     """Validate turn data. Returns list of error strings."""
+    valid_stages = get_discussion_stages()
+    valid_categories = get_knowledge_categories()
     errors = []
 
     if not turn_data.get("speaker"):
         errors.append("Missing speaker")
 
-    if turn_data.get("stage") not in VALID_STAGES:
+    if turn_data.get("stage") not in valid_stages:
         errors.append(f"Invalid stage: {turn_data.get('stage')}. "
-                      f"Must be one of: {VALID_STAGES}")
+                      f"Must be one of: {valid_stages}")
 
     if not turn_data.get("content") or len(turn_data["content"].strip()) < 10:
         errors.append("Content is missing or too short (< 10 chars)")
@@ -68,7 +73,7 @@ def validate_turn(turn_data: dict) -> list:
         errors.append("Missing metadata.knowledge_areas_engaged")
     else:
         for item in metadata["knowledge_areas_engaged"]:
-            if item.get("category") not in VALID_CATEGORIES:
+            if item.get("category") not in valid_categories:
                 errors.append(
                     f"Invalid knowledge category: {item.get('category')}"
                 )

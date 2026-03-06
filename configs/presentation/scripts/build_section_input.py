@@ -60,7 +60,7 @@ def build_input(scenario_id: str, section_name: str, agent_id: str) -> dict:
 
     # Find agent's role from scenario
     agent_role = "team member"
-    for agent in scenario.get("agents", {}).get("descriptions", []):
+    for agent in scenario.get("agents", []):
         if agent.get("name", "").lower().replace(" ", "-") == agent_id or \
            agent.get("name", "").lower() == agent_id:
             agent_role = agent.get("role", "team member")
@@ -68,7 +68,7 @@ def build_input(scenario_id: str, section_name: str, agent_id: str) -> dict:
 
     # Build team context (names and roles only — no content)
     team_members = []
-    for agent in scenario.get("agents", {}).get("descriptions", []):
+    for agent in scenario.get("agents", []):
         team_members.append({
             "name": agent["name"],
             "role": agent.get("role", "team member"),

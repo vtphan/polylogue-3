@@ -29,7 +29,7 @@ For each `{agent_id}.yaml`, load the full profile.
 
 ### Step 2: Read Persona Template
 
-Read `specs/persona-template.md` — the template and examples for persona generation.
+Read `configs/agent/persona-template.md` — the template and examples for persona generation.
 
 ### Step 3: Generate Personas
 

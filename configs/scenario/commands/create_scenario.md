@@ -32,30 +32,16 @@ Extract from arguments:
 - `context`: context description
 - `scenario_id`: provided or generated (kebab-case from topic)
 
-### Step 2: Consult References
-
-Read:
-- `configs/reference/flaw_type_glossary.md` — flaw type definitions and examples
-- `configs/reference/knowledge_category_glossary.md` — knowledge categories
-- `configs/reference/disposition_glossary.md` — disposition dimensions
-
-If `activity` is `presentation`, also read:
-- `configs/reference/presentation_section_glossary.md` — section definitions and flaw locations
-
-If `activity` is `discussion`, also read:
-- `configs/reference/discussion_stage_glossary.md` — stage definitions
-
-### Step 3: Generate Scenario
+### Step 2: Generate Scenario
 
 Delegate to the **scenario-generator** subagent.
 
 Provide the subagent with:
 - Topic, activity, flaw emphasis, context
-- All reference glossary content from Step 2
 
-The subagent produces a complete scenario YAML following the schema.
+The subagent reads the reference glossaries and scenario schema from `configs/` directly (see its Reference section) and produces a complete scenario YAML.
 
-### Step 4: Validate
+### Step 3: Validate
 
 Read `configs/scenario/schemas/scenario.schema.yaml`.
 
@@ -68,13 +54,13 @@ Validate the generated scenario against the schema:
 
 If validation fails, fix and regenerate.
 
-### Step 5: Write Output
+### Step 4: Write Output
 
 Write to `configs/scenarios/{scenario_id}.yaml`.
 
 If file exists, ask confirmation before overwriting.
 
-### Step 6: Report
+### Step 5: Report
 
 ```
 Scenario created: {scenario_id}

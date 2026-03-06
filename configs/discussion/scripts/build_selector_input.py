@@ -30,7 +30,7 @@ def build_input(scenario_id: str) -> dict:
 
     # Build speakers list from scenario (names, roles, descriptions)
     speakers = []
-    for agent in scenario.get("agents", {}).get("descriptions", []):
+    for agent in scenario.get("agents", []):
         speakers.append({
             "agent_id": agent["name"].lower().replace(" ", "-"),
             "name": agent["name"],

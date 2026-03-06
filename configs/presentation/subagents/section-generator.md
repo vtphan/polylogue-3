@@ -17,6 +17,15 @@ Given a scenario, personas, and section assignments, you generate the full prese
 
 ---
 
+## Reference
+
+Before generating, read:
+
+- `configs/reference/presentation_section_glossary.md` — section definitions, purposes, expected content, and common flaw locations
+- `configs/presentation/schemas/presentation.schema.yaml` — schema for the output transcript
+
+---
+
 ## Input
 
 ```yaml
@@ -29,9 +38,8 @@ scenario:
   context:
     description: string
   agents:
-    descriptions:
-      - name: string
-        role: string
+    - name: string
+      role: string
 
 personas:                              # Map of agent_id → persona markdown content
   {agent_id}: string
@@ -40,9 +48,6 @@ section_assignments:                   # Ordered list
   - section: introduction | approach | findings | solution | conclusion
     speaker: string                    # agent_id
     role: string
-
-# Reference
-presentation_section_glossary: string  # Section definitions and expectations
 ```
 
 ---
@@ -53,7 +58,7 @@ For each section in order (introduction → approach → findings → solution �
 
 ### 1. Build Persona Input
 
-Construct the input for the assigned agent's persona:
+Construct the input for the assigned agent's persona. Use `build_section_input.py` or construct directly:
 
 ```yaml
 topic:
@@ -63,8 +68,8 @@ topic:
 
 your_assignment:
   section: "{section name}"
-  section_purpose: "{from glossary: what this section is for}"
-  expected_content: "{from glossary: what this section should cover}"
+  section_purpose: "{from section glossary}"
+  expected_content: "{from section glossary}"
 
 team_context:
   project: "{context description}"
@@ -100,7 +105,7 @@ metadata:
 
 ### 3. Format Section Output
 
-Package the result as a section entry:
+Package the result as a section entry per `configs/presentation/schemas/presentation.schema.yaml`:
 
 ```yaml
 section_id: "section_{nn}"            # Sequential: section_01, section_02, ...
@@ -121,22 +126,7 @@ added_at: "{ISO 8601}"
 
 ## Output
 
-The full ordered list of section entries, ready to be appended to the presentation transcript.
-
-```yaml
-sections:
-  - section_id: "section_01"
-    section: introduction
-    speaker: "{agent_id}"
-    role: "{role}"
-    content: |
-      ...
-    metadata: ...
-    added_at: ...
-  - section_id: "section_02"
-    section: approach
-    ...
-```
+The full ordered list of section entries, ready to be appended to the presentation transcript via `append_section.py`.
 
 ---
 

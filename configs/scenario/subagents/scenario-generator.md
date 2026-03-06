@@ -17,6 +17,19 @@ Given a topic, activity type, and pedagogical goals, you produce a complete scen
 
 ---
 
+## Reference
+
+Before generating, read the following from `configs/`:
+
+- `configs/reference/flaw_type_glossary.md` — flaw types, subtypes, and interaction-driven patterns
+- `configs/reference/knowledge_category_glossary.md` — knowledge categories and their flaw mappings
+- `configs/reference/disposition_glossary.md` — disposition dimensions and values
+- `configs/reference/presentation_section_glossary.md` — section definitions (if activity is presentation)
+- `configs/reference/discussion_stage_glossary.md` — stage definitions (if activity is discussion)
+- `configs/scenario/schemas/scenario.schema.yaml` — schema your output must conform to
+
+---
+
 ## Input
 
 ```yaml
@@ -24,20 +37,13 @@ topic: string                          # PBL driving question or topic
 activity: presentation | discussion    # Activity type
 flaw_emphasis: [string]                # Which flaw types to emphasize
 context: string                        # Context description
-
-# Reference glossaries (provided in full)
-flaw_type_glossary: string
-knowledge_category_glossary: string
-disposition_glossary: string
-section_glossary: string               # If presentation
-stage_glossary: string                 # If discussion
 ```
 
 ---
 
 ## Output
 
-A complete scenario YAML document following this structure:
+A complete scenario YAML document conforming to `configs/scenario/schemas/scenario.schema.yaml`:
 
 ```yaml
 scenario_id: string                    # kebab-case
@@ -74,11 +80,7 @@ notes: string
 ### Backward from Flaws
 
 1. Start with the flaw types the teacher wants to emphasize.
-2. For each target flaw, determine what **knowledge gap** would produce it:
-   - Epistemic flaws ← shallow understanding or misconceptions
-   - Completeness flaws ← blind spots
-   - Reasoning flaws ← misconceptions combined with certain dispositions
-   - Coherence flaws ← different agents having different knowledge gaps (their contributions won't fit together)
+2. For each target flaw, determine what **knowledge gap** would produce it. Consult the knowledge category glossary for specific flaw mappings.
 3. Distribute knowledge gaps across agents so each agent carries 2-3 expected flaws.
 4. Choose dispositions that shape how flaws are expressed (high confidence makes flaws harder to catch; low confidence makes them subtler).
 
@@ -108,9 +110,7 @@ Create pedagogically productive mismatches — a Researcher with shallow underst
 ## Constraints
 
 - `scenario_id`: kebab-case, unique
-- `activity`: exactly one of `presentation`, `discussion`
-- `expected_flaws[].flaw_type`: one of `reasoning`, `epistemic`, `completeness`, `coherence`
-- `context.level`: one of `broad`, `project_type`, `domain`, `specific`
+- All enums (activity, flaw_type, context.level): per the reference glossaries and scenario schema
 - Each agent should have 1-3 expected flaws
 - `knowledge_focus`: 2-4 sentences covering what the agent knows well and where they're weak
 - `disposition_sketch`: 1-2 sentences on communication style

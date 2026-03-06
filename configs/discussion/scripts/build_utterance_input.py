@@ -56,7 +56,7 @@ def build_input(scenario_id: str, agent_id: str) -> dict:
 
     # Build team context (names only)
     team_members = []
-    for agent in scenario.get("agents", {}).get("descriptions", []):
+    for agent in scenario.get("agents", []):
         team_members.append({
             "name": agent["name"],
             "role": agent.get("role"),

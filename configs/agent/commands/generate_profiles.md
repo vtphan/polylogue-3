@@ -31,29 +31,16 @@ Extract:
 - `activity`: presentation or discussion
 - `agents`: agent sketches (name, role, knowledge_focus, disposition_sketch, expected_flaws)
 
-### Step 2: Consult References
-
-Read:
-- `configs/reference/flaw_type_glossary.md` — flaw type definitions and examples
-- `configs/reference/knowledge_category_glossary.md` — knowledge categories and behavioral manifestations
-- `configs/reference/disposition_glossary.md` — disposition dimensions and flaw effects
-
-### Step 3: Read Schema
-
-Read `configs/agent/schemas/profile.schema.yaml` — the schema that profiles must conform to.
-
-### Step 4: Generate Profiles
+### Step 2: Generate Profiles
 
 Delegate to the **profile-generator** subagent.
 
 Provide the subagent with:
 - The full scenario document
-- All reference glossary content from Step 2
-- The profile schema from Step 3
 
-The subagent produces one complete profile YAML per agent.
+The subagent reads the reference glossaries and profile schema from `configs/` directly (see its Reference section) and produces one complete profile YAML per agent.
 
-### Step 5: Validate
+### Step 3: Validate
 
 For each generated profile, validate against the schema:
 - `agent_id` is kebab-case
@@ -66,7 +53,7 @@ For each generated profile, validate against the schema:
 
 If validation fails, fix and regenerate.
 
-### Step 6: Write Output
+### Step 4: Write Output
 
 Create directory `configs/profiles/{scenario_id}/` if it doesn't exist.
 
@@ -74,7 +61,7 @@ Write each profile to `configs/profiles/{scenario_id}/{agent_id}.yaml`.
 
 If files exist, ask confirmation before overwriting.
 
-### Step 7: Report
+### Step 5: Report
 
 ```
 Profiles generated for scenario: {scenario_id}

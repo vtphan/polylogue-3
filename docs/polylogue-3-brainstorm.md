@@ -18,7 +18,7 @@ Working notes toward a coherent architecture. This document captures ideas and d
 - [Workflow](../specs/workflow.md) — Pipeline stages, inputs, outputs
 - [Operationalization](../specs/operationalization.md) — Commands, subagents, scripts, directory structure
 - [Evaluation](../specs/evaluation.md) — Flaw identification, single critical-thinking perspective
-- [Persona Template](../specs/persona-template.md) — How profiles become runtime agents
+- [Persona Template](../configs/agent/persona-template.md) — How profiles become runtime agents
 - [Transcript Schemas](../specs/transcript-schemas.md) — Presentation and discussion output formats
 
 **Glossaries** (in `configs/reference/`):
