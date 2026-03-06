@@ -26,7 +26,23 @@ Teachers provide a PBL topic and pedagogical goals. The system generates a team 
 
 ---
 
-## Directory Structure
+## Directory Organization
+
+The project has five top-level directories, each with a distinct role:
+
+| Directory | Role | Used by |
+|-----------|------|---------|
+| `docs/` | Design documents — ideas, concepts, architecture notes | Humans (not read by the pipeline) |
+| `specs/` | Specifications — concise design-time references | Humans (not read by the pipeline) |
+| `configs/` | Operational artifacts — commands, subagents, schemas, scripts, glossaries, templates | Claude Code (the orchestration agent) |
+| `.claude/` | Runtime artifacts — commands and subagents copied from `configs/` | Claude Code (slash commands and subagent invocations) |
+| `registry/` | Runtime outputs — generated transcripts, state tracking, evaluations | Pipeline stages (read/write) |
+
+**Single source of truth:** All subagents and scripts read reference data, schemas, and templates from `configs/` at runtime. Nothing is hardcoded. `docs/` and `specs/` are never read by the pipeline.
+
+**Flow:** `configs/` → `.claude/` (via `/initialize_polylogue`) → `registry/` (via pipeline stages).
+
+### Directory Structure
 
 ```
 configs/
@@ -40,16 +56,32 @@ configs/
 ├── evaluation/          # Evaluation-layer artifacts
 └── system/              # System-level artifacts
 
-.claude/agents/personas/{scenario_id}/   # Deployed persona files (runtime)
+.claude/commands/                        # Slash commands (synced from configs/)
+.claude/agents/{layer}/                  # Subagents (synced from configs/)
+.claude/agents/personas/{scenario_id}/   # Deployed persona files (generated)
 
 registry/{scenario_id}/                  # Generated transcripts and state
 ```
 
 Convention: plural directories (`scenarios/`, `profiles/`) hold generated data. Singular directories (`scenario/`, `agent/`, etc.) hold layer artifacts.
 
+See `configs/workflow.md` for the full operational map of each pipeline stage.
+
 ---
 
 ## Pipeline
+
+### Bootstrap
+
+`/initialize_polylogue` copies commands and subagents from `configs/` to `.claude/`. Since it is itself a command, it must be manually copied first:
+
+```
+cp configs/system/commands/initialize_polylogue.md .claude/commands/
+```
+
+After that, run `/initialize_polylogue` to sync everything else. This only needs to happen once (or after adding new commands/subagents to `configs/`).
+
+### Stages
 
 ```
 /create_scenario → /generate_profiles → /generate_personas → /generate_presentation or /begin_discussion
