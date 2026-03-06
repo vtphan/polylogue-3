@@ -1,0 +1,16 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+
+# Runtime artifacts (managed by pipeline, not version controlled)
+registry/
+!registry/.gitkeep
+.claude/
+
+# Editor
+*.swp
+*.swo
+*~
