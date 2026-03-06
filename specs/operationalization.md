@@ -71,21 +71,22 @@ configs/
 │       ├── build_stage_input.py       # Builds input for stage tracker
 │       └── append_turn.py            # Appends turn to discussion transcript
 │
-├── evaluation/                         # Evaluation-layer artifacts (TBD)
+├── evaluation/                         # Evaluation-layer artifacts
 │   ├── commands/
 │   │   ├── evaluate_presentation.md
 │   │   └── evaluate_discussion.md
-│   ├── evaluators/
-│   │   ├── profiles/                  # Evaluator profiles
-│   │   └── subagents/                 # Evaluator personas
+│   ├── subagents/
+│   │   └── evaluator.md              # Single critical-thinking evaluator
 │   ├── schemas/
 │   │   └── evaluation.schema.yaml
 │   └── scripts/
 │       └── append_evaluation.py
 │
 └── system/                             # System-level artifacts
-    └── commands/
-        └── initialize_polylogue.md    # Syncs configs/ to .claude/
+    ├── commands/
+    │   └── initialize_polylogue.md    # Syncs configs/ to .claude/
+    └── scripts/
+        └── manage_registry.py         # Archive, list, clean registry
 ```
 
 ### Runtime (synced to `.claude/` by `/initialize_polylogue`)
@@ -104,7 +105,7 @@ configs/
 │   │   ├── speaker-selector.md
 │   │   └── stage-tracker.md
 │   ├── evaluation/
-│   │   └── {evaluator_id}.md
+│   │   └── evaluator.md
 │   └── personas/                       # Generated personas (per scenario)
 │       └── {scenario_id}/
 │           └── {agent_id}.md
@@ -186,14 +187,14 @@ Run after cloning, after creating/modifying agents, or after changing any config
 
 This mirrors Polylogue 2's continue_conversation loop, adapted for stages instead of phases.
 
-### Evaluation Layer (TBD)
+### Evaluation Layer
 
 | Command | Purpose | Input | Output |
 |---------|---------|-------|--------|
-| `/evaluate_presentation` | Evaluate a presentation transcript | `{scenario_id} [evaluator_ids]` | `registry/{id}/presentation_evaluation.yaml` |
-| `/evaluate_discussion` | Evaluate a discussion transcript | `{scenario_id} [evaluator_ids]` | `registry/{id}/discussion_evaluation.yaml` |
+| `/evaluate_presentation` | Evaluate a presentation transcript | `{scenario_id}` | `registry/{id}/presentation_evaluation.yaml` |
+| `/evaluate_discussion` | Evaluate a discussion transcript | `{scenario_id}` | `registry/{id}/discussion_evaluation.yaml` |
 
-Evaluation layer needs further design — perspectives, criteria, and evaluator profiles for Polylogue 3's broader flaw taxonomy.
+Single critical-thinking evaluator. Identifies flaws by type (reasoning, epistemic, completeness, coherence), source (knowledge-driven, interaction-driven), and severity (minor, moderate, major).
 
 ---
 
@@ -211,6 +212,7 @@ These are system-level agents that Claude Code delegates to. They are NOT presen
 | **section-generator** | Presentation | Orchestrates section-by-section generation | Scenario + personas + section assignment | Section content + metadata |
 | **speaker-selector** | Discussion | Picks next speaker | Available speakers, last speaker, conversation history (content only) | Next speaker + rationale |
 | **stage-tracker** | Discussion | Detects stage transitions | Conversation history (with metadata), current stage | Current stage, stage_changed, rationale |
+| **evaluator** | Evaluation | Identifies critical thinking flaws | Transcript (content + metadata), flaw glossary, activity type | Flaw list + summary |
 
 ### Presenting/Discussing Agents (Personas)
 
@@ -225,9 +227,9 @@ A persona produces:
 - Content (utterance or section text)
 - Metadata (knowledge areas engaged, rationale, reactive tendency activated)
 
-### Evaluator Agents
+### Evaluator
 
-Evaluator agents assess generated transcripts from specific perspectives. Design TBD — needs to account for the broader flaw taxonomy (reasoning, epistemic, completeness, coherence) and both activity types.
+A single evaluator subagent focused on critical thinking flaw identification. It receives the full transcript (content + metadata), the flaw type glossary, and the activity type. It produces per-flaw assessments and a summary. No evaluator profiles needed — unlike Polylogue 2's four evaluator characters.
 
 ---
 
@@ -269,7 +271,7 @@ Schemas constrain YAML documents to ensure consistency. Enumerated values are en
 | `profile.schema.yaml` | Agent profiles | `confidence`: low, moderate, high. `engagement_style`: collaborative, moderate, competitive. `expressiveness`: restrained, moderate, expressive. `knowledge category`: strong, shallow, misconception, blind_spot |
 | `presentation.schema.yaml` | Presentation transcripts | `section`: introduction, approach, findings, solution, conclusion |
 | `discussion.schema.yaml` | Discussion transcripts | `stage`: opening_up, working_through, converging |
-| `evaluation.schema.yaml` | Evaluation results (TBD) | `flaw_type`, `valence`, `confidence` |
+| `evaluation.schema.yaml` | Evaluation results | `flaw_type`: reasoning, epistemic, completeness, coherence. `source`: knowledge_driven, interaction_driven. `severity`: minor, moderate, major. `location.type`: section, turn, cross_section, cross_turn |
 
 ---
 
@@ -298,7 +300,7 @@ What each component sees and produces:
 | **Speaker-selector** | Speaker descriptions, last speaker, history (content only) | Next speaker + rationale |
 | **Stage-tracker** | Current stage, history (with metadata) | Stage, stage_changed, rationale |
 | **Section-generator** | Scenario, all personas, section assignments | Orchestrates section generation |
-| **Evaluator** | Transcript (content + metadata), flaw glossary | Evaluation (flaw type, category, rationale) |
+| **Evaluator** | Transcript (content + metadata), flaw glossary, activity type | Per-flaw assessments (flaw_type, source, severity, evidence, explanation) + summary |
 
 ---
 

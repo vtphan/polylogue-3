@@ -23,7 +23,7 @@ Consistent vocabulary for the Polylogue 3 framework.
 | **Section** | A structural unit of a presentation (Introduction, Approach, Findings, Solution, Conclusion). | Linear and planned. |
 | **Stage** | A broad phase of a discussion (Opening up, Working through, Converging). | Loose and non-linear, unlike Polylogue 2's seven phases. |
 | **Role** | A temporary assignment at the discourse layer — what an agent is responsible for in a specific activity. Not part of agent identity. | Presentation roles: Framer, Researcher, Designer, Connector. Discussion roles (optional): Proposer, Questioner, Builder, Critic. |
-| **Transcript** | The generated output of a presentation or discussion, stored in the registry. | registry/{topic}/ |
+| **Transcript** | The generated output of a presentation or discussion, stored in the registry. | registry/{scenario_id}/ |
 
 ## Agent Components
 
@@ -45,7 +45,7 @@ Consistent vocabulary for the Polylogue 3 framework.
 
 | Term | What it is | Notes |
 |------|-----------|-------|
-| **Perspective** | An evaluative lens through which discourse is judged. Carried over from Polylogue 2. | Specific perspectives TBD for Polylogue 3. |
+| **Perspective** | An evaluative lens through which discourse is judged. | Polylogue 3 uses a single perspective: **critical thinking**. Four flaw types (reasoning, epistemic, completeness, coherence). No multi-perspective evaluation. |
 
 ## Workflow Terms
 

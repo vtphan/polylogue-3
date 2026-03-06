@@ -61,7 +61,7 @@ Two human checkpoints. No discourse is generated until both the scenario and pro
 
 **Key rule:** Expected flaws are **excluded** from personas. The persona contains context, knowledge profile, disposition, and description — everything the agent needs to behave naturally, nothing that would bias it toward performing flaws.
 
-**Output:** `.claude/agents/{scenario_id}/{agent_id}.md` (one per agent)
+**Output:** `.claude/agents/personas/{scenario_id}/{agent_id}.md` (one per agent)
 
 **No human checkpoint required** (but teacher may review if desired). Persona generation is a mechanical transformation, not a creative step.
 
@@ -140,7 +140,7 @@ added_at: ISO 8601
 |-------|-------|--------|-----------------|
 | 1. Scenario | Teacher input (natural language) | `configs/scenarios/{id}.yaml` | Yes — review and revise |
 | 2. Profiles | Approved scenario | `configs/profiles/{id}/{agent}.yaml` | Yes — review and revise |
-| 3. Personas | Approved profiles | `.claude/agents/{id}/{agent}.md` | Optional |
+| 3. Personas | Approved profiles | `.claude/agents/personas/{id}/{agent}.md` | Optional |
 | 4. Transcript | Personas + scenario | `registry/{id}/presentation.yaml` or `discussion.yaml` | Controls via commands |
 
 ## Directory Structure
@@ -153,9 +153,10 @@ configs/
       {agent_id}.yaml
 
 .claude/
-  agents/              # Personas — runtime agent files (Markdown)
-    {scenario_id}/
-      {agent_id}.md
+  agents/
+    personas/          # Personas — runtime agent files (Markdown)
+      {scenario_id}/
+        {agent_id}.md
 
 registry/
   {scenario_id}/       # Generated transcripts (YAML)

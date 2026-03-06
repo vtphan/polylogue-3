@@ -63,6 +63,7 @@ Copy all subagent files from their layer directories:
 | `configs/presentation/subagents/section-generator.md` | `.claude/agents/presentation/section-generator.md` |
 | `configs/discussion/subagents/speaker-selector.md` | `.claude/agents/discussion/speaker-selector.md` |
 | `configs/discussion/subagents/stage-tracker.md` | `.claude/agents/discussion/stage-tracker.md` |
+| `configs/evaluation/subagents/evaluator.md` | `.claude/agents/evaluation/evaluator.md` |
 
 Skip any source files that don't exist yet.
 
