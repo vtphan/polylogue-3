@@ -1,0 +1,360 @@
+scenario_id: plastic-pollution-mississippi-river
+activity: presentation
+evaluated_at: "2026-03-06T12:00:00Z"
+
+flaws:
+  - flaw_id: flaw_001
+    location:
+      type: section
+      references:
+        - introduction
+    flaw_type: reasoning
+    source: knowledge_driven
+    severity: major
+    description: >
+      Overgeneralization about how plastic enters the Mississippi River, attributing the entire problem to littering
+      while ignoring stormwater runoff, industrial discharge, and wastewater treatment plant outflows.
+    evidence: >
+      "That is how plastic gets into the Mississippi -- people just litter, plain and simple."
+    explanation: >
+      Amara frames plastic pollution as solely caused by individual littering behavior. Research shows that
+      stormwater runoff carrying microplastics from roads, industrial discharge, and wastewater effluent are
+      major pathways for plastic entering rivers. By reducing the problem to "people just litter, plain and
+      simple," the presentation misidentifies the root causes, which in turn undermines the solution design
+      later in the presentation. This stems from a misconception about pollution pathways noted in the
+      agent's knowledge areas.
+
+  - flaw_id: flaw_002
+    location:
+      type: section
+      references:
+        - introduction
+    flaw_type: reasoning
+    source: knowledge_driven
+    severity: moderate
+    description: >
+      False equivalence between macroplastics and microplastics, treating them as the same problem
+      differing only in size.
+    evidence: >
+      "And whether it is a big plastic bag or tiny little pieces called microplastics, it is all the same
+      problem, just different sizes. The big pieces break down into the small pieces eventually anyway."
+    explanation: >
+      Macroplastics and microplastics pose different threats, enter waterways through different pathways,
+      and require different solutions. Microplastics from synthetic clothing fibers or microbeads enter
+      through wastewater, not littering. Treating them as interchangeable obscures the complexity of the
+      problem and leads to overly simplistic solutions. While macroplastics do fragment into microplastics
+      over time, many microplastics are manufactured at that size and never existed as larger pieces.
+
+  - flaw_id: flaw_003
+    location:
+      type: section
+      references:
+        - introduction
+    flaw_type: epistemic
+    source: knowledge_driven
+    severity: minor
+    description: >
+      Ocean-focused statistics used to frame a river-specific problem without establishing the connection.
+    evidence: >
+      "Every single year, over 8 million metric tons of plastic end up in our oceans. That is like dumping
+      a garbage truck full of plastic into the ocean every single minute. And you have probably heard of the
+      Great Pacific Garbage Patch..."
+    explanation: >
+      Amara opens with global ocean pollution statistics (8 million metric tons, Great Pacific Garbage Patch)
+      but never explains how these connect to the Mississippi River specifically. The transition is simply
+      "what does this have to do with Memphis? Well, we live right on the Mississippi River." This is a
+      rhetorical leap -- the ocean statistics are attention-grabbing but do not directly support claims about
+      the Mississippi. No data about the Mississippi's own plastic load is provided in the introduction.
+
+  - flaw_id: flaw_004
+    location:
+      type: section
+      references:
+        - approach
+    flaw_type: completeness
+    source: knowledge_driven
+    severity: moderate
+    description: >
+      No discussion of how the team evaluated the quality or reliability of their sources, or any
+      systematic methodology beyond dividing topics by interest.
+    evidence: >
+      "We also did some general research online -- reading articles, watching videos, and looking at
+      websites from environmental organizations."
+    explanation: >
+      The approach section describes task division and general online research but never addresses source
+      evaluation, how conflicting information was handled, or what criteria determined whether a source was
+      trustworthy. For a research presentation, the absence of any methodological rigor beyond "reading
+      articles, watching videos" weakens the credibility of the findings that follow. The team's approach
+      is described as interest-based division rather than systematic investigation.
+
+  - flaw_id: flaw_005
+    location:
+      type: section
+      references:
+        - findings
+    flaw_type: epistemic
+    source: knowledge_driven
+    severity: major
+    description: >
+      Presents research findings as definitive and settled science without acknowledging the preliminary
+      nature of microplastic research or limitations in the studies cited.
+    evidence: >
+      "So overall, the data is very clear: microplastics are present in Mississippi River fish near Memphis,
+      they are found in significant quantities, and they cause documented health effects."
+    explanation: >
+      Microplastic research in freshwater ecosystems is a relatively young field with significant
+      methodological challenges (detection methods vary, sample sizes are often small, causal mechanisms
+      are still being established). Jordan presents findings as if the science is settled -- "the data is
+      very clear" -- without noting any study limitations, sample sizes, or areas of ongoing debate. This
+      unacknowledged uncertainty is an epistemic flaw that gives the audience a misleadingly confident
+      picture of the evidence base.
+
+  - flaw_id: flaw_006
+    location:
+      type: section
+      references:
+        - findings
+    flaw_type: reasoning
+    source: knowledge_driven
+    severity: moderate
+    description: >
+      Overgeneralization from a small number of species to broad claims about "fish populations" in the
+      Mississippi River.
+    evidence: >
+      "Researchers examined channel catfish, largemouth bass, and freshwater drum, and they found an average
+      of 12 to 15 microplastic particles per fish. That means almost every fish they tested had plastic
+      inside it."
+    explanation: >
+      Jordan cites data from three species and extrapolates to general claims about Mississippi River fish
+      populations. The Mississippi supports hundreds of fish species with different feeding behaviors,
+      habitats, and trophic levels. Findings from catfish, bass, and drum -- while concerning -- do not
+      necessarily generalize to the entire fish population. The leap from "three species tested" to "this
+      is a direct threat to the fish populations in our river" is an overgeneralization.
+
+  - flaw_id: flaw_007
+    location:
+      type: section
+      references:
+        - findings
+    flaw_type: reasoning
+    source: knowledge_driven
+    severity: moderate
+    description: >
+      Missing premise in the bioaccumulation argument -- asserts increasing concentration up the food chain
+      without explaining the mechanism or providing supporting data.
+    evidence: >
+      "And through bioaccumulation, these plastics build up as you go up the food chain. Smaller fish eat
+      the plastics, then bigger fish eat those smaller fish, and the concentration of plastics keeps
+      increasing at each level."
+    explanation: >
+      Jordan introduces bioaccumulation as a fact but does not explain the trophic transfer mechanism for
+      microplastics or cite any data showing concentration differences between trophic levels in Mississippi
+      River fish. Bioaccumulation is well-established for certain chemical pollutants (e.g., mercury), but
+      the evidence for microplastic bioaccumulation specifically is more complex and debated. The argument
+      jumps from "fish have plastics" to "predators have higher concentrations" without supporting the
+      intermediate step.
+
+  - flaw_id: flaw_008
+    location:
+      type: section
+      references:
+        - solution
+    flaw_type: completeness
+    source: knowledge_driven
+    severity: major
+    description: >
+      No feasibility analysis for any of the proposed solutions -- no discussion of costs, timelines,
+      permitting requirements, maintenance needs, or implementation logistics.
+    evidence: >
+      "We should absolutely get one of these installed at the Wolf River or one of the tributaries...
+      We could also set up boom barriers... Memphis should pass a city-wide ban on single-use plastic
+      bags and styrofoam containers."
+    explanation: >
+      Keiko proposes Mr. Trash Wheel installation, boom barriers, a city-wide plastic ban, a bottle deposit
+      program, mandatory compostable containers for restaurants, and a custom app -- all without any
+      discussion of cost, funding sources, permitting, maintenance, political feasibility, or timeline.
+      Mr. Trash Wheel installations cost hundreds of thousands of dollars. City-wide bans require legislative
+      processes. A custom app requires development and maintenance funding. Without feasibility analysis,
+      the solutions read as a wish list rather than actionable recommendations.
+
+  - flaw_id: flaw_009
+    location:
+      type: section
+      references:
+        - solution
+    flaw_type: completeness
+    source: knowledge_driven
+    severity: major
+    description: >
+      Missing stakeholder analysis -- no identification of who is most affected by the pollution, who would
+      need to implement the solutions, or who might oppose them.
+    evidence: >
+      "Schools, churches, community centers -- everyone could be part of this. If every person in Memphis
+      just picked up five pieces of trash a week from near the river, that would be millions of pieces of
+      plastic removed every year."
+    explanation: >
+      The solution section never identifies key stakeholders: river-adjacent communities who bear
+      disproportionate pollution burdens, the fishing communities who depend on the river, city council
+      members who would need to pass legislation, restaurant owners who would be affected by container
+      mandates, or industrial actors contributing to the pollution. "Everyone" is treated as a single
+      undifferentiated group. Without stakeholder analysis, the solutions cannot address equity concerns
+      or anticipate opposition.
+
+  - flaw_id: flaw_010
+    location:
+      type: section
+      references:
+        - solution
+    flaw_type: completeness
+    source: knowledge_driven
+    severity: moderate
+    description: >
+      Ignored constraints on community-driven policy change -- presents legislative and regulatory actions
+      as if they can be directly enacted by community groups.
+    evidence: >
+      "Memphis should pass a city-wide ban on single-use plastic bags and styrofoam containers. Other
+      cities have done it, and it works. We should also push for a bottle deposit program where you get
+      money back for returning plastic bottles."
+    explanation: >
+      Keiko proposes city-wide bans and deposit programs as community solutions without acknowledging that
+      these require legislative action, political will, industry lobbying considerations, and in some states
+      face preemption by state law. The phrase "other cities have done it, and it works" glosses over the
+      significant political and legal barriers. The gap between community advocacy and policy enactment is
+      never addressed.
+
+  - flaw_id: flaw_011
+    location:
+      type: section
+      references:
+        - solution
+    flaw_type: epistemic
+    source: knowledge_driven
+    severity: moderate
+    description: >
+      Overstating the likely impact of proposed interventions with an unsupported optimistic claim.
+    evidence: >
+      "I honestly think that if we do all of these things, we can make the Mississippi River near Memphis
+      one of the cleanest stretches of the whole river."
+    explanation: >
+      This claim has no evidentiary basis. The Mississippi River near Memphis receives pollution from
+      upstream sources across a massive drainage basin covering 31 states. Local cleanup and policy efforts
+      in Memphis alone cannot control upstream inputs. Claiming Memphis could become "one of the cleanest
+      stretches" dramatically overstates what local action can achieve and ignores the systemic nature of
+      river pollution.
+
+  - flaw_id: flaw_012
+    location:
+      type: section
+      references:
+        - conclusion
+    flaw_type: reasoning
+    source: knowledge_driven
+    severity: moderate
+    description: >
+      Missing premise connecting cleanup activities to ecological outcomes for fish -- asserts that cleanups
+      help but does not explain how removing surface trash translates to reduced microplastic harm to fish.
+    evidence: >
+      "I think it shows that cleanups, along with the technology solutions and policy ideas that Keiko
+      talked about, can all make a real difference."
+    explanation: >
+      Tomas asserts that community cleanups (which primarily remove visible surface trash) will make "a real
+      difference" for the microplastic-in-fish problem that Jordan documented. However, the causal chain is
+      never established. Cleanups remove macroplastics from riverbanks and surfaces, but the microplastics
+      found in fish (fibers, fragments, microbeads) largely enter through wastewater and stormwater runoff.
+      The premise that connects the proposed intervention to the documented harm is missing.
+
+  - flaw_id: flaw_013
+    location:
+      type: section
+      references:
+        - conclusion
+    flaw_type: completeness
+    source: knowledge_driven
+    severity: moderate
+    description: >
+      No comparative analysis of intervention approaches -- all solutions presented as equally valuable
+      without discussion of tradeoffs or prioritization.
+    evidence: >
+      "Maybe no single thing is going to fix it completely, but if we do all of them together, we can
+      probably make a big difference."
+    explanation: >
+      Tomas wraps up by suggesting all approaches are complementary without evaluating their relative
+      effectiveness, cost-benefit ratios, or tradeoffs. Cleanup events, trash wheel technology, policy bans,
+      and social media campaigns have vastly different scales of impact, costs, and implementation barriers.
+      Presenting them all as equally good avoids the harder analytical work of prioritization and resource
+      allocation that a real community would need to perform.
+
+  - flaw_id: flaw_014
+    location:
+      type: cross_section
+      references:
+        - introduction
+        - solution
+    flaw_type: coherence
+    source: knowledge_driven
+    severity: major
+    description: >
+      The introduction frames pollution as caused by individual littering, but the findings section
+      identifies microplastic sources (fibers, microbeads) that come from non-littering pathways --
+      yet the solution section only addresses littering-type interventions, ignoring the mismatch.
+    evidence: >
+      Introduction: "people just litter, plain and simple." Findings: "fibers from synthetic clothing,
+      fragments from larger plastics breaking down, and microbeads from personal care products." Solution:
+      focuses on trash wheels, boom barriers, cleanups, and plastic bag bans.
+    explanation: >
+      Jordan's findings identify fiber and microbead microplastics that enter waterways through laundry
+      wastewater and personal care product use -- pathways completely unrelated to littering. Yet neither
+      the introduction's problem framing nor Keiko's solutions address these sources. The solutions
+      (cleanups, trash wheels, bag bans) target visible litter, not the microplastic types actually found
+      in fish. This is a fundamental coherence gap: the evidence points to one set of causes, but the
+      solutions address a different set. This disconnect likely stems from agent isolation -- each agent
+      worked from their own knowledge without seeing other sections.
+
+  - flaw_id: flaw_015
+    location:
+      type: cross_section
+      references:
+        - findings
+        - conclusion
+    flaw_type: coherence
+    source: knowledge_driven
+    severity: moderate
+    description: >
+      The findings present strong claims about health effects on fish, but the conclusion softens
+      certainty about human health implications without reconciling the gap.
+    evidence: >
+      Findings: "This is not just a pollution problem -- it is a direct threat to the fish populations
+      in our river and potentially to anyone who eats those fish." Conclusion: "And that probably is not
+      great for people who eat those fish either, although I am not sure we looked into that part as much
+      as we maybe should have."
+    explanation: >
+      Jordan's findings section makes a confident claim that microplastics threaten "anyone who eats those
+      fish," but Tomas's conclusion acknowledges the team did not actually research the human health
+      dimension. This creates an inconsistency: a strong claim is made in the findings that the conclusion
+      effectively walks back by admitting insufficient research. The presentation would be stronger if the
+      findings section had been appropriately hedged, or if the human health angle had been properly
+      investigated.
+
+summary:
+  total_flaws: 15
+  by_type:
+    reasoning: 5
+    epistemic: 3
+    completeness: 4
+    coherence: 3
+  by_source:
+    knowledge_driven: 15
+    interaction_driven: 0
+  by_severity:
+    minor: 1
+    moderate: 8
+    major: 6
+  key_patterns: >
+    The presentation's most significant weakness is a fundamental disconnect between the scientific
+    findings (microplastics from fibers and microbeads entering fish through non-littering pathways)
+    and both the problem framing (littering as sole cause) and the proposed solutions (cleanups and
+    bans targeting visible trash). The solution section consistently lacks feasibility analysis and
+    stakeholder identification, proposing ambitious infrastructure and policy changes as if they
+    require no resources, political processes, or tradeoff analysis. The findings section presents
+    preliminary and limited research as settled science, overgeneralizing from a few species and
+    omitting all uncertainty, which inflates the evidentiary confidence of the entire presentation.
