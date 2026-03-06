@@ -54,7 +54,7 @@ Critical thinking flaws have two distinct origins:
 
 **The key observation:** In a group presentation, flaws are predominantly knowledge-driven. The team has prepared; what you see is the product of their thinking. Gaps, overstatements, and missing components reflect what they knew (or didn't) during preparation. Dispositions affect *how* flaws are expressed (confidently, vaguely, etc.) but don't generate the flaws themselves.
 
-In a group discussion, both sources are active. Agents still have knowledge gaps, but on top of that, the dynamic interaction produces additional flaws through the disposition-sensitivity-trigger mechanism from Polylogue 2.
+In a group discussion, both sources are active. Agents still have knowledge gaps, but on top of that, the dynamic interaction produces additional flaws through disposition-driven dynamics. (Note: Polylogue 2's 18-sensitivity trigger system was replaced in the final design by a simplified model — three disposition dimensions plus a qualitative reactive tendency. See the agent architecture doc for details.)
 
 This distinction has direct pedagogical implications:
 
@@ -89,7 +89,7 @@ Phases can follow Polylogue 2's model (opening, exploratory, deepening, assertiv
 
 After a presentation, a Q&A session creates a hybrid zone. The presentation content has knowledge-driven flaws; probing questions can reveal interaction-driven flaws as presenters respond under pressure. This could serve as a pedagogical bridge — students have already identified static flaws, and now see how those same knowledge gaps produce dynamic flaws when challenged.
 
-Whether to build Q&A as a formal third mode or treat it as a variant of discussion mode is an open question.
+Whether to build Q&A as a formal third mode or treat it as a variant of discussion mode is an open question. (Note: Resolved — Q&A is a student-driven pedagogical activity, not a system mode. AI generates presentations and discussions as prepared artifacts; students conduct Q&A themselves. See discourse-layer doc, "Q&A Is a Pedagogical Activity, Not a Discourse Mode.")
 
 ---
 

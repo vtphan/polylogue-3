@@ -20,7 +20,7 @@ Definitions for the four knowledge profile categories. Referenced by profile-gen
 
 **Behavioral manifestation:** Uses correct terminology but explanations are vague or circular. May state facts correctly but can't explain *why*. Defaults to repeating what they've heard rather than reasoning from understanding.
 
-**Flaw relationship:** Produces **epistemic flaws** — overstating evidence, vague claims presented as substance, inability to connect evidence to conclusions. Also produces **reasoning flaws** when the agent tries to build arguments on a foundation they don't fully understand.
+**Flaw relationship:** Produces **epistemic flaws** — overstating evidence, unacknowledged uncertainty, vague claims presented as substance. Also produces **reasoning flaws** — missing premises, overgeneralization — when the agent tries to build arguments on a foundation they don't fully understand. May contribute to **coherence flaws** (evidence-claim disconnect) when shallow knowledge in one area doesn't connect to claims made in another.
 
 ---
 
@@ -30,7 +30,7 @@ Definitions for the four knowledge profile categories. Referenced by profile-gen
 
 **Behavioral manifestation:** States wrong claims as fact. Builds reasoning on false premises. May produce internally consistent but ultimately incorrect arguments. Can sound very convincing because the agent is confident in their (wrong) understanding.
 
-**Flaw relationship:** Produces **epistemic flaws** (wrong claims stated as fact) and **reasoning flaws** (flawed reasoning built on false premises). Misconceptions are particularly pedagogically valuable because they're realistic — students hold similar misconceptions.
+**Flaw relationship:** Produces **epistemic flaws** — assumption as fact, selective evidence (favoring what confirms the misconception), correlation as causation. Produces **reasoning flaws** — circular reasoning, false equivalence, flawed arguments built on false premises. May produce **coherence flaws** (internal contradiction) when the misconception conflicts with correct information presented elsewhere. Misconceptions are particularly pedagogically valuable because they're realistic — students hold similar misconceptions.
 
 ---
 
@@ -40,4 +40,4 @@ Definitions for the four knowledge profile categories. Referenced by profile-gen
 
 **Behavioral manifestation:** Simply doesn't mention the area. Doesn't account for it in proposals or analyses. If the area is raised by someone else (in discussion), the agent may dismiss it, deflect, or try to accommodate superficially.
 
-**Flaw relationship:** Produces **completeness flaws** — missing components, unaddressed stakeholders, proposals without feasibility analysis. Blind spots are the primary mechanism for completeness flaws.
+**Flaw relationship:** Produces **completeness flaws** — missing stakeholders, no feasibility analysis, unaddressed tradeoffs, missing counterexamples, ignored constraints. Blind spots are the primary mechanism for completeness flaws. May also contribute to **coherence flaws** (goal-method mismatch, conclusion overreach) when the missing area is essential to connecting goals to methods or evidence to conclusions.

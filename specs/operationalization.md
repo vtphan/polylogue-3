@@ -10,9 +10,11 @@ Claude Code is the main orchestrating agent. It executes slash commands, delegat
 
 ### Design-Time (version-controlled in `configs/`)
 
+**Naming convention:** Plural directories (`scenarios/`, `profiles/`) hold generated data documents. Singular directories (`scenario/`, `agent/`, `presentation/`, etc.) hold layer artifacts (commands, subagents, schemas, scripts).
+
 ```
 configs/
-├── scenarios/                          # Scenario documents
+├── scenarios/                          # Scenario documents (generated data)
 │   └── {scenario_id}.yaml
 │
 ├── profiles/                           # Agent profiles organized by scenario
@@ -28,7 +30,8 @@ configs/
 │
 ├── scenario/                           # Scenario-layer artifacts
 │   ├── commands/
-│   │   └── create_scenario.md
+│   │   ├── create_scenario.md
+│   │   └── validate_scenario.md
 │   ├── subagents/
 │   │   └── scenario-generator.md      # Generates scenarios from teacher input
 │   └── schemas/
@@ -85,6 +88,8 @@ configs/
 └── system/                             # System-level artifacts
     ├── commands/
     │   └── initialize_polylogue.md    # Syncs configs/ to .claude/
+    ├── schemas/
+    │   └── config.schema.yaml         # Registry config schema
     └── scripts/
         └── manage_registry.py         # Archive, list, clean registry
 ```
@@ -112,6 +117,7 @@ configs/
 │
 └── commands/
     ├── create_scenario.md
+    ├── validate_scenario.md
     ├── generate_profiles.md
     ├── generate_personas.md
     ├── validate_profile.md
@@ -150,8 +156,9 @@ Run after cloning, after creating/modifying agents, or after changing any config
 | Command | Purpose | Input | Output |
 |---------|---------|-------|--------|
 | `/create_scenario` | Generate a scenario from teacher input | Topic, activity type, pedagogical goals (natural language) | `configs/scenarios/{id}.yaml` |
+| `/validate_scenario` | Validate a scenario against schema and design constraints | `{scenario_id}` | Validation report |
 
-**Workflow:** Teacher provides natural language input → LLM (via scenario-generator subagent) produces scenario YAML → teacher reviews and manually revises → scenario is approved.
+**Workflow:** Teacher provides natural language input → LLM (via scenario-generator subagent) produces scenario YAML → teacher reviews and manually revises → `/validate_scenario` to check → scenario is approved.
 
 ### Agent Layer
 
@@ -242,7 +249,7 @@ Scripts mediate between registry state and subagent inputs/outputs. They enforce
 | Script | Purpose | Input | Output |
 |--------|---------|-------|--------|
 | `build_section_input.py` | Build input for a section's agent | Scenario config, persona, section assignment | Structured YAML input |
-| `append_section.py` | Append section to transcript | Section content + metadata (JSON) | Updated `presentation.yaml` |
+| `append_section.py` | Append section to transcript | Section content + metadata (JSON) | Updated `presentation.yaml` (validates content ≥50 chars) |
 
 ### Discussion Scripts
 
@@ -251,7 +258,7 @@ Scripts mediate between registry state and subagent inputs/outputs. They enforce
 | `build_utterance_input.py` | Build input for discussant | Config, conversation history | YAML: topic, context, history (content only) |
 | `build_selector_input.py` | Build input for speaker selector | Config, conversation history, personas | YAML: speakers, last_speaker, history |
 | `build_stage_input.py` | Build input for stage tracker | Config, conversation history | YAML: current_stage, history (with metadata) |
-| `append_turn.py` | Append turn to transcript | Turn content + metadata (JSON) | Updated `discussion.yaml` |
+| `append_turn.py` | Append turn to transcript | Turn content + metadata (JSON) | Updated `discussion.yaml` (validates content ≥10 chars) |
 
 ### System Scripts
 
@@ -323,12 +330,12 @@ Teacher: "I want a presentation scenario for 6th grade ecosystem project,
   → (Expected flaws excluded from personas)
 
 /generate_presentation 6th-stem-ecosystems
-  → section-generator orchestrates:
-     Lily (Framer) → Introduction
+  → section-generator orchestrates (roles assigned in scenario):
+     Lily (Community Liaison) → Introduction
      Amara (Designer) → Approach
      Kenji (Researcher) → Findings
      Amara (Designer) → Solution
-     Lily (Framer) → Conclusion
+     Lily (Community Liaison) → Conclusion
   → Output: registry/6th-stem-ecosystems/presentation.yaml
 
   → Students evaluate the presentation, identify flaws, conduct Q&A activities

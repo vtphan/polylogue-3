@@ -29,7 +29,7 @@ Extract:
 - `topic`: driving question, domain, description
 - `context`: level and description
 - `activity`: presentation or discussion
-- `agents.descriptions`: agent sketches (name, role, knowledge_focus, disposition_sketch, expected_flaws)
+- `agents`: agent sketches (name, role, knowledge_focus, disposition_sketch, expected_flaws)
 
 ### Step 2: Consult References
 

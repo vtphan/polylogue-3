@@ -23,7 +23,6 @@ Given a topic, activity type, and pedagogical goals, you produce a complete scen
 topic: string                          # PBL driving question or topic
 activity: presentation | discussion    # Activity type
 flaw_emphasis: [string]                # Which flaw types to emphasize
-agent_count: integer                   # Number of agents (3-5)
 context: string                        # Context description
 
 # Reference glossaries (provided in full)
@@ -56,16 +55,14 @@ context:
 activity: presentation | discussion
 
 agents:
-  count: integer
-  descriptions:
-    - name: string
-      role: string
-      knowledge_focus: string
-      disposition_sketch: string
-      expected_flaws:
-        - flaw: string
-          flaw_type: reasoning | epistemic | completeness | coherence
-          mechanism: string
+  - name: string
+    role: string
+    knowledge_focus: string
+    disposition_sketch: string
+    expected_flaws:
+      - flaw: string
+        flaw_type: reasoning | epistemic | completeness | coherence
+        mechanism: string
 
 notes: string
 ```
@@ -92,11 +89,13 @@ notes: string
 - Names should be diverse and age-appropriate.
 - Dispositions should be varied so agents sound distinct from each other.
 
-### Roles
+### Roles and Agent Count
 
-For **presentations**: Assign roles that map to presentation sections (Framer, Researcher, Designer, Connector). Create pedagogically productive mismatches — a Researcher with shallow understanding of the science, a Designer with a blind spot on feasibility.
+Determine the appropriate number of agents and their roles based on the project context. Consider what roles the project naturally requires — who does the research, who designs the solution, who handles community engagement, etc. PBL groups at UMS typically have 3–5 members; use this as a starting point, but let the project context dictate.
 
-For **discussions**: Assign roles that structure participation (Proposer, Questioner, Builder, Critic) or leave unassigned. Note in the scenario notes if interaction-driven flaws are expected from specific dynamics (e.g., "Zara's competitiveness may trigger Tomas's critical stance").
+Roles are flexible and scenario-specific. The architecture imposes no fixed role set. For **presentations**, project roles naturally determine which sections each agent presents. For **discussions**, agents can carry their project roles or use a structured framework like Six Thinking Hats (White/Red/Black/Yellow/Green/Blue).
+
+Create pedagogically productive mismatches — a Researcher with shallow understanding of the science, a Designer with a blind spot on feasibility. Note in the scenario notes if interaction-driven flaws are expected from specific dynamics (e.g., "Zara's competitiveness may trigger Tomas's critical stance").
 
 ### Coverage
 
@@ -109,7 +108,6 @@ For **discussions**: Assign roles that structure participation (Proposer, Questi
 ## Constraints
 
 - `scenario_id`: kebab-case, unique
-- `agents.count`: 3-5
 - `activity`: exactly one of `presentation`, `discussion`
 - `expected_flaws[].flaw_type`: one of `reasoning`, `epistemic`, `completeness`, `coherence`
 - `context.level`: one of `broad`, `project_type`, `domain`, `specific`

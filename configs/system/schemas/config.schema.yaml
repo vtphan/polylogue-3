@@ -1,0 +1,61 @@
+# Registry Config Schema
+# Validates registry/{scenario_id}/config.yaml documents
+
+type: object
+required:
+  - scenario_id
+  - created_at
+  - topic
+  - activity
+  - agents
+
+properties:
+  scenario_id:
+    type: string
+    pattern: "^[a-z0-9]+(-[a-z0-9]+)*$"    # kebab-case
+
+  created_at:
+    type: string
+    format: date-time
+
+  topic:
+    type: string
+
+  activity:
+    type: string
+    enum: [presentation, discussion]
+
+  agents:
+    type: array
+    items:
+      type: object
+      required: [agent_id, name]
+      properties:
+        agent_id:
+          type: string
+        name:
+          type: string
+
+  discussion_state:
+    type: object
+    properties:
+      current_stage:
+        type: string
+        enum: [opening_up, working_through, converging]
+      total_turns:
+        type: integer
+        minimum: 0
+      last_speaker:
+        type: [string, "null"]
+
+  presentation_state:
+    type: object
+    properties:
+      sections_completed:
+        type: array
+        items:
+          type: string
+          enum: [introduction, approach, findings, solution, conclusion]
+      total_sections:
+        type: integer
+        minimum: 0

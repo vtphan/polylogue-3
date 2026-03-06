@@ -17,7 +17,7 @@ created_at: ISO 8601
 agents:
   - agent_id: string
     name: string
-    role: string                       # Presentation role (Framer, Researcher, etc.)
+    role: string                       # Scenario-defined role
 
 sections:
   - section_id: string                 # section_01, section_02, ...

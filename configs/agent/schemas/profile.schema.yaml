@@ -30,6 +30,7 @@ properties:
 
   knowledge_profile:
     type: object
+    minProperties: 1                       # At least one knowledge category must be populated
     properties:
       strong_understanding:
         type: array

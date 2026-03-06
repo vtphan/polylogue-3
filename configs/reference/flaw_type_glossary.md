@@ -83,6 +83,22 @@ Every identified flaw should be classified by source:
 | Source | Definition | When it occurs |
 |--------|-----------|---------------|
 | **Knowledge-driven** | Flaw arises from the agent's knowledge profile (misconception, shallow understanding, or blind spot) | Both presentations and discussions |
-| **Interaction-driven** | Flaw arises from how agents respond to each other (escalation, deflection, conformity, superficial agreement) | Discussions only |
+| **Interaction-driven** | Flaw arises from how agents respond to each other during live exchange | Discussions only |
 
 A flaw may have elements of both. When classifying, use the primary source — what mainly caused this flaw to appear?
+
+---
+
+## Interaction-Driven Flaw Patterns
+
+These patterns occur only in discussions, when the dynamics of the exchange produce or amplify flaws. Each pattern maps to one or more parent flaw types.
+
+| Pattern | What happens | Parent flaw type(s) | PBL Example |
+|---------|-------------|---------------------|-------------|
+| **Escalation** | Agent is challenged and responds by doubling down — becoming more absolute rather than engaging with the criticism | Reasoning (overgeneralization, fallacy), Epistemic (overstating evidence) | When questioned about the cleanup's effectiveness, agent insists "it definitely works" and dismisses the challenge rather than addressing it |
+| **Deflection** | Agent is challenged and changes the subject or appeals to something irrelevant rather than addressing the argument | Reasoning (fallacy — red herring, appeal to authority) | When asked for evidence, agent responds "well, our teacher said this was a good approach" |
+| **Conformity** | Agent abandons a valid point because the group isn't receptive — social pressure overrides reasoning | Completeness (lost perspective, unaddressed tradeoff) | Agent raises a legitimate concern about cost, but drops it when other agents push back, leaving feasibility unexamined |
+| **Superficial consensus** | Agents agree without resolving underlying disagreements — surface harmony masks real conflicts | Coherence (internal contradiction), Completeness (unaddressed tradeoffs) | Group agrees on a solution without noticing that two members have contradictory understandings of why it works |
+| **Abandonment** | Agent gives up a line of reasoning prematurely — not because it was refuted, but because the discussion moved on or pressure mounted | Completeness (missing analysis), Coherence (conclusion overreach) | Agent starts to question the data quality but drops the point after being talked over, leading the group to conclusions the data doesn't support |
+
+These patterns are identified by the evaluator through cross-turn analysis — they span multiple turns and are visible only when tracking how positions shift (or fail to shift) across the arc of the discussion.

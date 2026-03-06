@@ -16,7 +16,7 @@ Initialize a new group discussion. Sets up the registry, validates that personas
 | `scenario_id` | Yes | ID of the scenario to start a discussion for |
 | `--selection` | No | Speaker selection method: `responsive` (default) or `round_robin` |
 | `--max_turns` | No | Maximum turns before stopping (default: none — runs until converging or human stops) |
-| `--opening_turns` | No | Number of turns to generate in the opening round (default: agents.count — one per agent) |
+| `--opening_turns` | No | Number of turns to generate in the opening round (default: one per agent) |
 
 ---
 
