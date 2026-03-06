@@ -15,16 +15,28 @@ Syncs commands and subagents from `configs/` to `.claude/` so they are available
 | **Reads** | `configs/*/commands/*.md`, `configs/*/subagents/*.md` |
 | **Writes** | `.claude/commands/*.md`, `.claude/agents/{layer}/*.md` |
 
+### Registry management (manual utility)
+
+`manage_registry.py` is a standalone CLI tool for inspecting and maintaining the registry. Not called by any pipeline stage — used ad hoc by the operator.
+
+```
+python configs/system/scripts/manage_registry.py list                   # List active scenarios
+python configs/system/scripts/manage_registry.py status <scenario_id>   # Detailed status
+python configs/system/scripts/manage_registry.py archive <scenario_id>  # Move to registry/archive/
+python configs/system/scripts/manage_registry.py clean                  # Remove broken entries
+```
+
 ---
 
 ## Stage 1: Scenario
 
 ### `/create_scenario "topic" activity [options]`
 
-Generates a scenario with agent sketches designed backward from target flaws.
+Generates a scenario with agent sketches designed backward from target flaws. `activity` is required: `presentation` or `discussion`.
 
 | | |
 |---|---|
+| **Arguments** | `"topic"` (required), `activity` (required: presentation or discussion) |
 | **Options** | `--flaws`, `--context`, `--id` |
 | **Subagent** | scenario-generator → reads `configs/reference/*.md`, `configs/scenario/schemas/scenario.schema.yaml` |
 | **Writes** | `configs/scenarios/{scenario_id}.yaml` |
@@ -87,8 +99,8 @@ Generates sections in order. Agents are isolated — each sees only their own pe
 |---|---|
 | **Options** | `--sections`, `--assignment` |
 | **Reads** | `configs/scenarios/{scenario_id}.yaml`, `.claude/agents/personas/{scenario_id}/*.md` |
-| **Subagent** | section-generator → reads `configs/reference/presentation_section_glossary.md`, `configs/presentation/schemas/presentation.schema.yaml` |
-| **Scripts** | `build_section_input.py`, `append_section.py` |
+| **Subagent** | section-generator → orchestrates per-section generation; reads `configs/reference/presentation_section_glossary.md`, `configs/presentation/schemas/presentation.schema.yaml` for context |
+| **Scripts** | `build_section_input.py` (assembles persona + topic + assignment), `append_section.py` (validates against schema, appends to transcript, updates config) |
 | **Writes** | `registry/{scenario_id}/config.yaml`, `registry/{scenario_id}/presentation.yaml` |
 
 Section order: introduction → approach → findings → solution → conclusion.
@@ -104,7 +116,7 @@ Initializes discussion and generates opening turns (one per agent, round-robin).
 | | |
 |---|---|
 | **Options** | `--selection` (responsive/round_robin), `--max_turns`, `--opening_turns` |
-| **Reads** | `configs/scenarios/{scenario_id}.yaml`, `.claude/agents/personas/{scenario_id}/*.md`, `configs/reference/discussion_stage_glossary.md` |
+| **Reads** | `configs/scenarios/{scenario_id}.yaml`, `.claude/agents/personas/{scenario_id}/*.md`, `configs/reference/discussion_stage_glossary.md` (command reads directly — it orchestrates the turn loop, not a single subagent) |
 | **Subagents** | stage-tracker → reads `configs/reference/discussion_stage_glossary.md` |
 | **Scripts** | `build_utterance_input.py`, `append_turn.py`, `build_stage_input.py` |
 | **Writes** | `registry/{scenario_id}/config.yaml`, `registry/{scenario_id}/discussion.yaml` |
@@ -116,7 +128,7 @@ Generates turns until a stage transition, turn limit, or convergence.
 | | |
 |---|---|
 | **Options** | `--stages`, `--max_turns`, `--selection`, `--scenario` |
-| **Reads** | `registry/{scenario_id}/config.yaml`, `registry/{scenario_id}/discussion.yaml`, `.claude/agents/personas/{scenario_id}/*.md`, `configs/reference/discussion_stage_glossary.md` |
+| **Reads** | `registry/{scenario_id}/config.yaml`, `registry/{scenario_id}/discussion.yaml`, `.claude/agents/personas/{scenario_id}/*.md`, `configs/reference/discussion_stage_glossary.md` (command reads directly) |
 | **Subagents** | speaker-selector, stage-tracker |
 | **Scripts** | `build_selector_input.py`, `build_utterance_input.py`, `append_turn.py`, `build_stage_input.py` |
 | **Writes** | `registry/{scenario_id}/config.yaml`, `registry/{scenario_id}/discussion.yaml` |
