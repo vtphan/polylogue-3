@@ -21,7 +21,7 @@ context:
                                        # e.g., "6th grade students working on a STEM project
                                        #        about environmental threats to local ecosystems"
 
-activity: presentation | discussion | both
+activity: presentation | discussion
 
 agents:
   count: integer                       # 3-5 recommended
@@ -110,11 +110,82 @@ agents:
 notes: "Aligned to 6th grade STEM PBL at UMS. Target flaw types weighted toward epistemic and completeness — common issues in early-stage student projects. Presentation roles mirror UMS team structure."
 ```
 
+## Example: Discussion Activity
+
+```yaml
+scenario_id: "7th-stem-sensory-discussion"
+created_at: "2026-03-05T11:00:00Z"
+
+topic:
+  driving_question: "How do our senses influence our actions and decisions, both now and in the future?"
+  domain: "sensory science and design"
+  description: "Team is designing a sensory-based product (a calming room for the school counselor's office). During a working session, they discuss what sensory inputs to use and how to justify their design choices with evidence."
+
+context:
+  level: specific
+  description: "7th grade students working on a STEM project about how senses influence behavior, designing a calming sensory room for the school counselor's office."
+
+activity: discussion
+
+agents:
+  count: 4
+  descriptions:
+    - name: "Zara"
+      role: Proposer
+      knowledge_focus: "Strong on visual and auditory sensory inputs. Misconception: believes calming colors work the same for everyone. Blind spot: individual differences in sensory processing."
+      disposition_sketch: "High confidence, competitive engagement, expressive."
+      expected_flaws:
+        - flaw: "Asserts universal color effects without acknowledging individual variation"
+          flaw_type: epistemic
+          mechanism: "Misconception about color universality + high confidence → stated as fact"
+        - flaw: "Dismisses alternative design approaches without engaging with them"
+          flaw_type: reasoning
+          mechanism: "Competitive engagement → defends own ideas rather than considering alternatives"
+
+    - name: "Marcus"
+      role: Questioner
+      knowledge_focus: "Strong on experimental method from class. Shallow on the actual sensory science. Blind spot: practical constraints of building in a real school."
+      disposition_sketch: "Moderate confidence, collaborative, restrained and data-focused."
+      expected_flaws:
+        - flaw: "Asks good methodological questions but can't evaluate the answers substantively"
+          flaw_type: epistemic
+          mechanism: "Shallow sensory science → can ask 'what's the evidence?' but can't judge if the evidence is good"
+        - flaw: "Proposes experimental designs that ignore practical constraints"
+          flaw_type: completeness
+          mechanism: "Blind spot on practical constraints → designs experiments that can't be run in a school"
+
+    - name: "Priya"
+      role: Builder
+      knowledge_focus: "Strong on the connection between smell and memory (studied this in class). Misconception: extrapolates from smell to all senses (thinks all senses trigger memory the same way). Shallow on statistical reasoning."
+      disposition_sketch: "Moderate confidence, collaborative, expressive and story-driven."
+      expected_flaws:
+        - flaw: "Overgeneralizes from smell research to all senses"
+          flaw_type: reasoning
+          mechanism: "Misconception about sensory equivalence → applies smell findings universally"
+        - flaw: "Uses personal anecdotes as primary evidence"
+          flaw_type: epistemic
+          mechanism: "Expressive + shallow stats → defaults to stories over data"
+
+    - name: "Tomas"
+      role: Critic
+      knowledge_focus: "Strong on the idea that design should be evidence-based. Shallow on what counts as good evidence in sensory science. Blind spot: doesn't consider that some design choices are value-based, not just evidence-based."
+      disposition_sketch: "High confidence, competitive, restrained and analytical."
+      expected_flaws:
+        - flaw: "Rejects design ideas that are reasonable but not backed by peer-reviewed studies"
+          flaw_type: reasoning
+          mechanism: "Shallow understanding of evidence types → applies an unreasonably high bar"
+        - flaw: "Treats aesthetic and comfort preferences as 'unscientific' without recognizing their legitimacy"
+          flaw_type: completeness
+          mechanism: "Blind spot on value-based reasoning → entire dimension of design excluded"
+
+notes: "Aligned to 7th grade STEM PBL at UMS. Discussion roles assigned (proposer, questioner, builder, critic) to structure participation. Target flaw types include reasoning and epistemic — common in group work sessions where students are building on partial knowledge. Interaction-driven flaws expected: Zara's competitiveness may trigger Tomas's critical stance, producing an escalation dynamic that crowds out Priya and Marcus."
+```
+
 ## Constraints
 
 - `scenario_id`: unique, kebab-case
 - `agents.count`: 3-5
-- `activity`: one of `presentation`, `discussion`, `both`
+- `activity`: one of `presentation`, `discussion`
 - `expected_flaws[].flaw_type`: one of `reasoning`, `epistemic`, `completeness`, `coherence`
 - `context.level`: one of `broad`, `project_type`, `domain`, `specific`
 - All string fields are natural language — readable and editable by teachers

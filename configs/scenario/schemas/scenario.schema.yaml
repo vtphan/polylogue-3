@@ -1,0 +1,84 @@
+# Scenario Schema
+# Validates scenario YAML documents
+
+type: object
+required:
+  - scenario_id
+  - created_at
+  - topic
+  - context
+  - activity
+  - agents
+
+properties:
+  scenario_id:
+    type: string
+    pattern: "^[a-z0-9]+(-[a-z0-9]+)*$"    # kebab-case
+
+  created_at:
+    type: string
+    format: date-time
+
+  topic:
+    type: object
+    required: [driving_question, domain, description]
+    properties:
+      driving_question:
+        type: string
+      domain:
+        type: string
+      description:
+        type: string
+
+  context:
+    type: object
+    required: [level, description]
+    properties:
+      level:
+        type: string
+        enum: [broad, project_type, domain, specific]
+      description:
+        type: string
+
+  activity:
+    type: string
+    enum: [presentation, discussion]
+
+  agents:
+    type: object
+    required: [count, descriptions]
+    properties:
+      count:
+        type: integer
+        minimum: 3
+        maximum: 5
+      descriptions:
+        type: array
+        items:
+          type: object
+          required: [name, role, knowledge_focus, disposition_sketch, expected_flaws]
+          properties:
+            name:
+              type: string
+            role:
+              type: string
+            knowledge_focus:
+              type: string
+            disposition_sketch:
+              type: string
+            expected_flaws:
+              type: array
+              items:
+                type: object
+                required: [flaw, flaw_type, mechanism]
+                properties:
+                  flaw:
+                    type: string
+                  flaw_type:
+                    type: string
+                    enum: [reasoning, epistemic, completeness, coherence]
+                  mechanism:
+                    type: string
+
+  notes:
+    type: string

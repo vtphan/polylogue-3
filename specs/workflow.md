@@ -21,7 +21,7 @@ Two human checkpoints. No discourse is generated until both the scenario and pro
 
 **Input:** Teacher provides (natural language):
 - PBL topic or driving question
-- Activity type (presentation, discussion, or both)
+- Activity type (presentation or discussion)
 - Pedagogical goals (what flaw types students should practice identifying)
 - Any constraints (number of agents, specific knowledge areas to cover)
 

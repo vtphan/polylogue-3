@@ -1,0 +1,98 @@
+# Evaluation Schema
+# Validates evaluation output YAML documents
+
+type: object
+required:
+  - scenario_id
+  - activity
+  - evaluated_at
+  - flaws
+  - summary
+
+properties:
+  scenario_id:
+    type: string
+    pattern: "^[a-z0-9]+(-[a-z0-9]+)*$"
+
+  activity:
+    type: string
+    enum: [presentation, discussion]
+
+  evaluated_at:
+    type: string
+    format: date-time
+
+  flaws:
+    type: array
+    items:
+      type: object
+      required: [flaw_id, location, flaw_type, source, severity, description, evidence, explanation]
+      properties:
+        flaw_id:
+          type: string
+          pattern: "^flaw_\\d{3}$"
+        location:
+          type: object
+          required: [type, references]
+          properties:
+            type:
+              type: string
+              enum: [section, turn, cross_section, cross_turn]
+            references:
+              type: array
+              items:
+                type: string
+        flaw_type:
+          type: string
+          enum: [reasoning, epistemic, completeness, coherence]
+        source:
+          type: string
+          enum: [knowledge_driven, interaction_driven]
+        severity:
+          type: string
+          enum: [minor, moderate, major]
+        description:
+          type: string
+        evidence:
+          type: string
+        explanation:
+          type: string
+
+  summary:
+    type: object
+    required: [total_flaws, by_type, by_source, by_severity, key_patterns]
+    properties:
+      total_flaws:
+        type: integer
+      by_type:
+        type: object
+        required: [reasoning, epistemic, completeness, coherence]
+        properties:
+          reasoning:
+            type: integer
+          epistemic:
+            type: integer
+          completeness:
+            type: integer
+          coherence:
+            type: integer
+      by_source:
+        type: object
+        required: [knowledge_driven, interaction_driven]
+        properties:
+          knowledge_driven:
+            type: integer
+          interaction_driven:
+            type: integer
+      by_severity:
+        type: object
+        required: [minor, moderate, major]
+        properties:
+          minor:
+            type: integer
+          moderate:
+            type: integer
+          major:
+            type: integer
+      key_patterns:
+        type: string
