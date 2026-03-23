@@ -2,8 +2,8 @@
 
 ## Status
 
-**Current phase:** Phase 0 — Foundation (complete)
-**Next action:** Begin Phase 1 (Student Core) — transcript renderer
+**Current phase:** Phase 2 — Teacher Core (in progress)
+**Next action:** Session management + live dashboard + scaffold sending
 **Blocked by:** Nothing
 **Environment:** macOS, Node 23.11.0, npm 11.3.0, Next.js 16.2.1, Prisma 6.19.2, PostgreSQL 15.13
 
@@ -260,7 +260,73 @@ This confirms the full auth → role → routing pipeline works end to end.
 
 ---
 
-## Phase 1-5: Not Yet Detailed
+## Phase 1: Student Core
+
+Goal: A student can view a transcript (presentation or discussion), highlight passages, classify them by flaw type, and submit their annotations. No sessions or groups yet — students access activities directly. Group/session context comes in Phase 2.
+
+### 1a. Activity API Routes
+
+**`GET /api/activities`** — List available activities (student view: id, scenario_id, type, topic, agents only).
+
+**`GET /api/activities/[id]`** — Single activity. Returns `transcript_content` (metadata-stripped) for students. Teachers/researchers get full `transcript`.
+
+### 1b. Student Activity List Page
+
+**`/student`** — Shows cards for all available activities. Each card: topic, activity type badge (presentation/discussion), agent names.
+
+### 1c. Transcript Renderer
+
+**`/student/activity/[id]`** — The core page.
+
+Shared `<TranscriptRenderer>` component that handles both types:
+- **Presentation**: Sections displayed as cards, one per section. Section label + speaker name + role + content.
+- **Discussion**: Turns displayed as chat bubbles, grouped by stage. Speaker name + role + stage badge + content.
+
+Agent avatars: colored circle with initials, consistent per agent (derived from agent_id hash).
+
+### 1d. Text Selection & Annotation
+
+When student selects text in the transcript:
+1. A floating toolbar appears near the selection
+2. Toolbar shows 4 flaw type buttons (color-coded): Reasoning, Epistemic, Completeness, Coherence
+3. Student taps one → annotation is created and persisted
+4. Highlighted text remains visible with a colored underline matching the flaw type
+
+Annotation stored as: `{ section_id/turn_id, start_offset, end_offset, highlighted_text, flaw_type }`
+
+### 1e. Flaw Palette Sidebar
+
+Fixed sidebar showing:
+- The 4 flaw types with colors, names, and one-line middle-school-friendly definitions
+- Count of annotations per type the student has made
+- List of their annotations (click to scroll to that location in transcript)
+
+### 1f. Annotation API
+
+**`POST /api/annotations`** — Create annotation. Body: `{ activity_id, location, flaw_type }`. For Phase 1, `group_id` is a placeholder (no groups yet).
+
+**`GET /api/annotations?activity_id=X`** — Get current user's annotations for an activity.
+
+**`DELETE /api/annotations/[id]`** — Remove an annotation.
+
+### 1g. Submit & Review
+
+Submit button locks annotations (no further edits). For Phase 1, the feedback comparison view (side-by-side with reference evaluation) is deferred to Phase 4. Submit just saves a "submitted" state.
+
+### Phase 1 Verification Checklist
+
+- [ ] Student sees activity list with both scenarios
+- [ ] Clicking an activity shows the full transcript (presentation sections or discussion turns)
+- [ ] Can select text and tag it with a flaw type
+- [ ] Annotations persist across page reloads
+- [ ] Can delete an annotation
+- [ ] Flaw palette shows annotation counts and list
+- [ ] Presentation and discussion renderers both work correctly
+- [ ] No metadata (knowledge areas, rationale) visible to students
+
+---
+
+## Phase 2-5: Not Yet Detailed
 
 Will be expanded one phase at a time. See `app-concept.md` for the high-level breakdown.
 
