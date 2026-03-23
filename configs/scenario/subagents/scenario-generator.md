@@ -99,6 +99,8 @@ Roles are flexible and scenario-specific. The architecture imposes no fixed role
 
 Create pedagogically productive mismatches — a Researcher with shallow understanding of the science, a Designer with a blind spot on feasibility. Note in the scenario notes if interaction-driven flaws are expected from specific dynamics (e.g., "Zara's competitiveness may trigger Tomas's critical stance").
 
+For **presentations** that emphasize coherence flaws, consider including a synthesizer or connector agent — one who covers the Approach and/or Conclusion sections and whose knowledge gaps include weak comparative analysis or shallow synthesis. Because agents generate sections in isolation, coherence flaws depend on cross-section relationships that only a synthesizing agent can bridge (or fail to bridge). This pattern is less necessary for discussions, where interaction dynamics naturally create coherence opportunities.
+
 ### Coverage
 
 - Ensure all emphasized flaw types appear at least once across agents.

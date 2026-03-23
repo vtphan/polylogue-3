@@ -99,6 +99,22 @@ Roles are flexible and scenario-specific. The architecture imposes no fixed role
 
 Create pedagogically productive mismatches — a Researcher with shallow understanding of the science, a Designer with a blind spot on feasibility. Note in the scenario notes if interaction-driven flaws are expected from specific dynamics (e.g., "Zara's competitiveness may trigger Tomas's critical stance").
 
+### The Connector Pattern
+
+For **presentations**, consider assigning one agent a synthesizer or connector role — someone responsible for tying the team's work together (typically covering the Approach and/or Conclusion sections). This is not a required role, but it is the most reliable way to produce **coherence flaws** in presentations.
+
+Why it matters: In presentations, agents generate sections in isolation. Most flaws produced this way are knowledge-driven (reasoning, epistemic, completeness). Coherence flaws — contradictions between sections, conclusions that don't follow from findings, superficial synthesis — are harder to produce because they depend on the *relationship* between agents' contributions, not on any single agent's gaps. A connector agent whose knowledge gaps include shallow comparative analysis, weak synthesis skills, or blind spots on internal consistency creates the conditions for these flaws to emerge.
+
+**How to design a connector agent:**
+- **Role:** Synthesizer, integrator, team coordinator, or similar. The label is free-form.
+- **Section assignment:** Approach and/or Conclusion — the sections that require pulling together other agents' work.
+- **Knowledge gaps:** Blind spots on limitations of synthesis without comparative analysis, shallow understanding of how different aspects of the topic relate to each other, or misconceptions about what constitutes a strong summary.
+- **Expected flaws:** Coherence subtypes — evidence-claim disconnect, conclusion overreach, team inconsistency. Also completeness subtypes like unaddressed tradeoffs.
+
+**When to use it:** When the teacher emphasizes coherence flaws, or when the scenario has agents with divergent knowledge that should produce contradictions a synthesizer would fail to reconcile. Not every presentation needs a connector — if the emphasis is on reasoning or epistemic flaws, a connector adds less value.
+
+For **discussions**, the connector pattern is less necessary. Discussion dynamics naturally create coherence opportunities through interaction — agents can agree superficially, fail to reconcile contradictions in real time, or abandon lines of reasoning. Interaction-driven patterns (superficial consensus, conformity) serve the same pedagogical function that a connector serves in presentations.
+
 ### Coverage
 
 - Ensure all emphasized flaw types appear at least once across agents.

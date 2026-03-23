@@ -74,6 +74,8 @@ Definitions and examples for the four critical thinking flaw types. Referenced b
 
 **Primary source:** In presentations, coherence flaws are knowledge-driven (different agents have different knowledge, producing inconsistencies). In discussions, they can also be interaction-driven (superficial agreement that doesn't resolve real disagreements).
 
+**Connector pattern (presentations):** Coherence flaws are the hardest flaw type to produce reliably in presentations because they depend on relationships between sections, not on any single agent's knowledge gaps. The most reliable mechanism is a connector or synthesizer agent — one who covers cross-cutting sections (Approach, Conclusion) and whose knowledge gaps include weak synthesis or shallow comparative analysis. When this agent tries to tie together other agents' contributions without fully understanding them, coherence flaws emerge naturally: conclusions that don't follow from findings, superficial summaries that paper over contradictions, and evidence-claim disconnects between sections. See the scenario-generator's Connector Pattern guidance for design details.
+
 ---
 
 ## Flaw Source Classification

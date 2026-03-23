@@ -13,3 +13,5 @@ Definitions for the five presentation sections. Referenced by section-generator 
 | **Conclusion** | Wrap up and reflect | Summary, limitations, next steps, connection back to driving question | Claims beyond what evidence supports; overgeneralization; ignoring limitations |
 
 Not every presentation requires all five sections. Simpler projects may combine Approach and Findings. The sections are a default structure.
+
+The **Approach** and **Conclusion** sections are natural homes for a synthesizer or connector agent, since both require pulling together other agents' contributions. Assigning one agent to both amplifies coherence flaw opportunities — the same agent's knowledge gaps shape how the presentation opens and closes.

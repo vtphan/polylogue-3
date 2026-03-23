@@ -84,6 +84,8 @@ Ready-to-use prompts for generating scenarios. Each is grounded in a real UMS PB
 
 ## Notes
 
+**Connector agents:** Presentations that emphasize coherence flaws benefit from a synthesizer or connector agent covering the Approach and/or Conclusion sections — see the plastic pollution scenario (Tomas) for an example. This pattern is less necessary for discussions, where interaction dynamics produce coherence opportunities naturally.
+
 **How these prompts are structured:**
 
 - **Topic** (quoted string): A specific investigation question that a student group would choose. Concrete enough to generate realistic knowledge profiles — not the broad driving question.
