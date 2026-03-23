@@ -67,14 +67,7 @@ export async function PATCH(
 
   const { id } = await params;
   const body = await request.json();
-  const { status } = body as { status: string };
-
-  const validTransitions: Record<string, string[]> = {
-    setup: ["individual"],
-    individual: ["group"],
-    group: ["reviewing"],
-    reviewing: ["group", "closed"], // allow reopening to group phase
-  };
+  const { status, notes } = body as { status?: string; notes?: string };
 
   const classSession = await prisma.session.findUnique({ where: { id } });
   if (!classSession) {
@@ -83,6 +76,26 @@ export async function PATCH(
   if (classSession.teacherId !== session.user.id) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
+
+  // Notes-only update (no phase transition)
+  if (notes !== undefined && !status) {
+    const updated = await prisma.session.update({
+      where: { id },
+      data: { notes },
+    });
+    return NextResponse.json(updated);
+  }
+
+  if (!status) {
+    return NextResponse.json({ error: "status or notes required" }, { status: 400 });
+  }
+
+  const validTransitions: Record<string, string[]> = {
+    setup: ["individual"],
+    individual: ["group"],
+    group: ["reviewing"],
+    reviewing: ["group", "closed"], // allow reopening to group phase
+  };
 
   const allowed = validTransitions[classSession.status] || [];
   if (!allowed.includes(status)) {
@@ -111,4 +124,49 @@ export async function PATCH(
   });
 
   return NextResponse.json(updated);
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await auth();
+  if (!session?.user || session.user.role !== "teacher") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const { id } = await params;
+
+  const classSession = await prisma.session.findUnique({ where: { id } });
+  if (!classSession) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+  if (classSession.teacherId !== session.user.id) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  if (!["setup", "closed"].includes(classSession.status)) {
+    return NextResponse.json(
+      { error: "Can only delete sessions in setup or closed status" },
+      { status: 400 }
+    );
+  }
+
+  // Cascading delete: events, scaffolds, annotations, group members, groups, then session
+  await prisma.sessionEvent.deleteMany({ where: { sessionId: id } });
+  await prisma.scaffold.deleteMany({ where: { sessionId: id } });
+
+  const groupIds = (await prisma.group.findMany({
+    where: { sessionId: id },
+    select: { id: true },
+  })).map((g) => g.id);
+
+  if (groupIds.length > 0) {
+    await prisma.annotation.deleteMany({ where: { groupId: { in: groupIds } } });
+    await prisma.groupMember.deleteMany({ where: { groupId: { in: groupIds } } });
+  }
+  await prisma.group.deleteMany({ where: { sessionId: id } });
+  await prisma.session.delete({ where: { id } });
+
+  return NextResponse.json({ success: true });
 }

@@ -93,6 +93,7 @@ model Session {
   activityId String        @map("activity_id") @db.Uuid
   status     SessionStatus @default(setup)
   config     Json          @default("{}") // {difficulty_mode, phase_timer, etc.}
+  notes      String?       // Teacher notes about this session
   createdAt  DateTime      @default(now()) @map("created_at")
   closedAt   DateTime?     @map("closed_at")
 

@@ -11,8 +11,10 @@ interface CreatedStudent {
 
 export default function AddStudentsPage() {
   const router = useRouter();
+  const [mode, setMode] = useState<"single" | "batch">("single");
   const [displayName, setDisplayName] = useState("");
   const [username, setUsername] = useState("");
+  const [batchNames, setBatchNames] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [created, setCreated] = useState<CreatedStudent[]>([]);
@@ -49,6 +51,38 @@ export default function AddStudentsPage() {
     setSaving(false);
   }
 
+  async function handleBatchAdd(e: React.FormEvent) {
+    e.preventDefault();
+    const names = batchNames.split("\n").map((n) => n.trim()).filter((n) => n.length > 0);
+    if (names.length === 0) return;
+
+    setSaving(true);
+    setError("");
+
+    for (const name of names) {
+      const auto = name.toLowerCase().replace(/\s+/g, ".").replace(/[^a-z0-9.]/g, "");
+      const res = await fetch("/api/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: auto, displayName: name }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setCreated((prev) => [...prev, {
+          displayName: data.displayName,
+          username: data.username,
+          password: data.password,
+        }]);
+      } else {
+        const data = await res.json();
+        setError((prev) => prev ? `${prev}\n${name}: ${data.error}` : `${name}: ${data.error}`);
+      }
+    }
+    setBatchNames("");
+    setSaving(false);
+  }
+
   // Auto-generate username from display name
   function handleNameChange(name: string) {
     setDisplayName(name);
@@ -61,8 +95,55 @@ export default function AddStudentsPage() {
       <a href="/teacher/students" className="text-sm text-blue-600 hover:text-blue-800">
         &larr; Back to students
       </a>
-      <h1 className="text-2xl font-bold text-gray-900 mt-2 mb-6">Add Students</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mt-2 mb-4">Add Students</h1>
 
+      {/* Mode toggle */}
+      <div className="flex gap-2 mb-4">
+        <button
+          onClick={() => setMode("single")}
+          className={`text-sm px-3 py-1 rounded ${mode === "single" ? "bg-blue-100 text-blue-700 font-medium" : "text-gray-500 hover:text-gray-700"}`}
+        >
+          One at a time
+        </button>
+        <button
+          onClick={() => setMode("batch")}
+          className={`text-sm px-3 py-1 rounded ${mode === "batch" ? "bg-blue-100 text-blue-700 font-medium" : "text-gray-500 hover:text-gray-700"}`}
+        >
+          Batch (multiple)
+        </button>
+      </div>
+
+      {/* Batch mode */}
+      {mode === "batch" && (
+        <form onSubmit={handleBatchAdd} className="bg-white rounded-lg border border-gray-200 p-5 mb-6">
+          {error && (
+            <div className="bg-red-50 text-red-700 p-3 rounded text-sm mb-4 whitespace-pre-wrap">{error}</div>
+          )}
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Student names (one per line)
+          </label>
+          <textarea
+            value={batchNames}
+            onChange={(e) => setBatchNames(e.target.value)}
+            placeholder={"Maya Johnson\nEthan Park\nSofia Rodriguez"}
+            rows={6}
+            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm mb-2"
+          />
+          <p className="text-xs text-gray-400 mb-3">
+            Usernames will be auto-generated from names.
+          </p>
+          <button
+            type="submit"
+            disabled={saving || !batchNames.trim()}
+            className="bg-blue-600 text-white text-sm font-medium px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
+          >
+            {saving ? "Adding..." : `Add ${batchNames.split("\n").filter((n) => n.trim()).length} Students`}
+          </button>
+        </form>
+      )}
+
+      {/* Single mode */}
+      {mode === "single" && (
       <form onSubmit={handleAdd} className="bg-white rounded-lg border border-gray-200 p-5 mb-6">
         {error && (
           <div className="bg-red-50 text-red-700 p-3 rounded text-sm mb-4">{error}</div>
@@ -104,6 +185,7 @@ export default function AddStudentsPage() {
           {saving ? "Adding..." : "Add Student"}
         </button>
       </form>
+      )}
 
       {/* Show created students with passwords */}
       {created.length > 0 && (

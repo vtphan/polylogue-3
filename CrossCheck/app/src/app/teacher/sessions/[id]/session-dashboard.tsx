@@ -5,11 +5,15 @@ import { useRouter } from "next/navigation";
 import { FLAW_TYPES } from "@/lib/types";
 import { computeMatches } from "@/lib/matching";
 import { EvaluationPanel } from "@/components/evaluation/evaluation-panel";
-import type { FlawType } from "@/lib/types";
+import { PresentationView } from "@/components/transcript/presentation-view";
+import { DiscussionView } from "@/components/transcript/discussion-view";
+import { SCAFFOLD_TEMPLATES } from "@/lib/scaffold-templates";
+import type { FlawType, Agent, Annotation, AnnotationLocation, PresentationTranscript, DiscussionTranscript } from "@/lib/types";
 
 interface SessionData {
   id: string;
   status: string;
+  notes: string | null;
   activity: {
     id: string;
     topic: string;
@@ -65,6 +69,8 @@ export function SessionDashboard({ session: initialSession }: { session: Session
   const [scaffoldGroupId, setScaffoldGroupId] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [showEvaluation, setShowEvaluation] = useState(false);
+  const [notes, setNotes] = useState(initialSession.notes || "");
+  const [notesSaved, setNotesSaved] = useState(true);
   const router = useRouter();
 
   const currentStatusIndex = STATUS_FLOW.indexOf(session.status);
@@ -334,11 +340,24 @@ export function SessionDashboard({ session: initialSession }: { session: Session
               &times;
             </button>
           </div>
+          {/* Template quick-picks */}
+          <div className="flex flex-wrap gap-1 mb-2">
+            {SCAFFOLD_TEMPLATES.map((t, i) => (
+              <button
+                key={i}
+                onClick={() => setScaffoldText(t.text)}
+                className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded hover:bg-blue-200 transition-colors"
+                title={`Level ${t.level}: ${t.text}`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
           <div className="flex gap-2">
             <input
               value={scaffoldText}
               onChange={(e) => setScaffoldText(e.target.value)}
-              placeholder="Type a hint or question for this group..."
+              placeholder="Type a hint or edit a template above..."
               className="flex-1 text-sm border border-blue-200 rounded px-3 py-1.5 focus:outline-none focus:border-blue-400"
               onKeyDown={(e) => e.key === "Enter" && sendScaffold()}
             />
@@ -358,8 +377,37 @@ export function SessionDashboard({ session: initialSession }: { session: Session
         <GroupDetail
           group={session.groups.find((g) => g.id === selectedGroup)!}
           flawIndex={flawIndex}
+          transcript={session.activity.transcriptContent}
+          activityType={session.activity.type}
+          agents={session.activity.agents as Agent[]}
         />
       )}
+
+      {/* Session notes */}
+      <div className="mt-6">
+        <label className="text-sm font-medium text-gray-600 block mb-1">
+          Session Notes
+        </label>
+        <textarea
+          value={notes}
+          onChange={(e) => { setNotes(e.target.value); setNotesSaved(false); }}
+          onBlur={async () => {
+            if (notesSaved) return;
+            await fetch(`/api/sessions/${session.id}`, {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ notes }),
+            });
+            setNotesSaved(true);
+          }}
+          placeholder="Add observations, reflections, or notes about this session..."
+          rows={3}
+          className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-400 resize-y"
+        />
+        {!notesSaved && (
+          <span className="text-xs text-gray-400">Unsaved — click outside to save</span>
+        )}
+      </div>
 
       {/* Evaluation (answer key) */}
       <div className="mt-6">
@@ -379,6 +427,22 @@ export function SessionDashboard({ session: initialSession }: { session: Session
           </div>
         )}
       </div>
+
+      {/* Delete session */}
+      {["setup", "closed"].includes(session.status) && (
+        <div className="mt-6 pt-4 border-t border-gray-200">
+          <button
+            onClick={async () => {
+              if (!confirm("Delete this session? This removes all groups, annotations, and scaffolds.")) return;
+              const res = await fetch(`/api/sessions/${session.id}`, { method: "DELETE" });
+              if (res.ok) router.push("/teacher");
+            }}
+            className="text-sm text-red-500 hover:text-red-700"
+          >
+            Delete session
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -386,10 +450,18 @@ export function SessionDashboard({ session: initialSession }: { session: Session
 function GroupDetail({
   group,
   flawIndex,
+  transcript,
+  activityType,
+  agents,
 }: {
   group: GroupData;
   flawIndex: { flaw_id: string; locations: string[]; flaw_type: string }[];
+  transcript: unknown;
+  activityType: string;
+  agents: Agent[];
 }) {
+  const [showTranscript, setShowTranscript] = useState(false);
+
   // Match annotations against flaw index
   const matchedFlaws = new Set<string>();
   for (const ann of group.annotations) {
@@ -403,11 +475,50 @@ function GroupDetail({
     }
   }
 
+  // Convert annotations for the transcript viewer
+  const viewerAnnotations: Annotation[] = group.annotations.map((a) => ({
+    id: a.id,
+    location: a.location as AnnotationLocation,
+    flawType: a.flawType as Annotation["flawType"],
+    createdAt: a.createdAt,
+  }));
+
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-5">
-      <h3 className="font-semibold text-gray-900 mb-3">
-        {group.name} — Detail
-      </h3>
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="font-semibold text-gray-900">
+          {group.name} — Detail
+        </h3>
+        <button
+          onClick={() => setShowTranscript(!showTranscript)}
+          className="text-xs text-blue-600 hover:text-blue-800"
+        >
+          {showTranscript ? "Hide transcript" : "View on transcript"}
+        </button>
+      </div>
+
+      {/* Transcript with annotations overlaid */}
+      {showTranscript && (
+        <div className="mb-4 border border-gray-100 rounded-lg p-3 bg-gray-50 max-h-96 overflow-y-auto">
+          {activityType === "presentation" ? (
+            <PresentationView
+              sections={(transcript as PresentationTranscript).sections}
+              agents={agents}
+              annotations={viewerAnnotations}
+              onTextSelected={() => {}}
+              onAnnotationClick={() => {}}
+            />
+          ) : (
+            <DiscussionView
+              turns={(transcript as DiscussionTranscript).turns}
+              agents={agents}
+              annotations={viewerAnnotations}
+              onTextSelected={() => {}}
+              onAnnotationClick={() => {}}
+            />
+          )}
+        </div>
+      )}
 
       <div className="grid grid-cols-3 gap-4 mb-4 text-center">
         <div className="bg-green-50 rounded p-3">
