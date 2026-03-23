@@ -6,9 +6,7 @@ __pycache__/
 *.pyc
 
 # Runtime artifacts (managed by pipeline, not version controlled)
-registry/
 !registry/.gitkeep
-.claude/
 
 # Editor
 *.swp

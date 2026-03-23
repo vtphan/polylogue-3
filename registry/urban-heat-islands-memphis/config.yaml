@@ -1,0 +1,18 @@
+scenario_id: urban-heat-islands-memphis
+created_at: '2026-03-23T00:00:00Z'
+topic: What causes urban heat islands in Memphis, and how can green infrastructure
+  reduce their impact on local communities?
+activity: discussion
+agents:
+- agent_id: zara
+  name: Zara
+- agent_id: marcus
+  name: Marcus
+- agent_id: destiny
+  name: Destiny
+- agent_id: jaylen
+  name: Jaylen
+discussion_state:
+  current_stage: converging
+  total_turns: 18
+  last_speaker: marcus

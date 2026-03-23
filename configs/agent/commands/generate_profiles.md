@@ -31,12 +31,23 @@ Extract:
 - `activity`: presentation or discussion
 - `agents`: agent sketches (name, role, knowledge_focus, disposition_sketch, expected_flaws)
 
+### Step 1b: Collect Reserved Agent Names
+
+Run:
+
+```
+python configs/agent/scripts/collect_existing_agent_ids.py --exclude {scenario_id}
+```
+
+This returns a YAML list of every `agent_id` already in use by other scenarios. Pass this list to the profile-generator so it can avoid name collisions.
+
 ### Step 2: Generate Profiles
 
 Delegate to the **profile-generator** subagent.
 
 Provide the subagent with:
 - The full scenario document
+- The `reserved_agent_ids` list from Step 1b
 
 The subagent reads the reference glossaries and profile schema from `configs/` directly (see its Reference section) and produces one complete profile YAML per agent.
 
@@ -52,6 +63,12 @@ For each generated profile, validate against the schema:
 - `knowledge_profile` has at least one item in at least two categories
 
 If validation fails, fix and regenerate.
+
+### Step 3b: Cross-Scenario Name Uniqueness Check
+
+Using the `reserved_agent_ids` list from Step 1b, verify that **none** of the newly generated `agent_id` values collide with any existing one.
+
+If a collision is found, ask the profile-generator to rename the colliding agent (providing the reserved list again) and re-validate.
 
 ### Step 4: Write Output
 

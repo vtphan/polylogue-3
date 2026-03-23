@@ -50,6 +50,10 @@ scenario:                                # Full approved scenario YAML
         - flaw: string
           flaw_type: string
           mechanism: string
+
+reserved_agent_ids:                      # Agent IDs already in use by other scenarios
+  - agent_id: string
+    scenario_id: string
 ```
 
 ---
@@ -130,11 +134,15 @@ Across the set of agents:
 - At least one agent should have substantial strong understanding (not everyone is wrong)
 - Names should be diverse and age-appropriate
 
+### Cross-Scenario Name Uniqueness
+
+Agent names (and therefore `agent_id` values) must be **globally unique across all scenarios**. The orchestrator provides a `reserved_agent_ids` list in your input — do not use any `agent_id` that appears in that list. Pick different names if the scenario sketch suggests a name that collides.
+
 ---
 
 ## Constraints
 
-- `agent_id`: kebab-case, unique within scenario
+- `agent_id`: kebab-case, **globally unique across all scenarios** (must not appear in `reserved_agent_ids` input)
 - Disposition and flaw type enums: per the reference glossaries
 - `knowledge_profile`: 4-8 items total across categories recommended
 - `reactive_tendency`: 1-2 sentences, specific enough for consistent behavior
