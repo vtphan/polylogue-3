@@ -1,0 +1,196 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  student
+  teacher
+  researcher
+}
+
+enum ActivityType {
+  presentation
+  discussion
+}
+
+enum SessionStatus {
+  setup
+  active
+  individual
+  group
+  reviewing
+  closed
+}
+
+enum FlawType {
+  reasoning
+  epistemic
+  completeness
+  coherence
+}
+
+enum Severity {
+  minor
+  moderate
+  major
+}
+
+// --- Users ---
+
+model User {
+  id             String   @id @default(uuid()) @db.Uuid
+  username       String   @unique
+  passwordHash   String   @map("password_hash")
+  displayName    String   @map("display_name")
+  role           Role
+  researchConsent Boolean @default(false) @map("research_consent")
+  createdBy      String?  @map("created_by") @db.Uuid
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  creator        User?    @relation("CreatedUsers", fields: [createdBy], references: [id])
+  createdUsers   User[]   @relation("CreatedUsers")
+
+  sessions       Session[]
+  groupMembers   GroupMember[]
+  annotations    Annotation[]
+  scaffolds      Scaffold[]
+  sessionEvents  SessionEvent[]
+
+  @@map("users")
+}
+
+// --- Activities (imported from registry YAML) ---
+
+model Activity {
+  id                String       @id @default(uuid()) @db.Uuid
+  scenarioId        String       @unique @map("scenario_id")
+  type              ActivityType
+  topic             String
+  agents            Json         // [{agent_id, name, role}]
+  transcript        Json         // Full transcript with metadata
+  transcriptContent Json         @map("transcript_content") // Content only, metadata stripped
+  evaluation        Json         // Full evaluation
+  flawIndex         Json         @map("flaw_index") // [{flaw_id, locations, flaw_type, severity}]
+  metadata          Json?        // Scenario design + agent profiles (researcher only)
+  createdAt         DateTime     @default(now()) @map("created_at")
+
+  sessions          Session[]
+
+  @@map("activities")
+}
+
+// --- Sessions ---
+
+model Session {
+  id         String        @id @default(uuid()) @db.Uuid
+  teacherId  String        @map("teacher_id") @db.Uuid
+  activityId String        @map("activity_id") @db.Uuid
+  status     SessionStatus @default(setup)
+  config     Json          @default("{}") // {difficulty_mode, phase_timer, etc.}
+  createdAt  DateTime      @default(now()) @map("created_at")
+  closedAt   DateTime?     @map("closed_at")
+
+  teacher    User          @relation(fields: [teacherId], references: [id])
+  activity   Activity      @relation(fields: [activityId], references: [id])
+  groups     Group[]
+  scaffolds  Scaffold[]
+  events     SessionEvent[]
+
+  @@map("sessions")
+}
+
+// --- Groups ---
+
+model Group {
+  id        String   @id @default(uuid()) @db.Uuid
+  sessionId String   @map("session_id") @db.Uuid
+  name      String
+
+  session   Session  @relation(fields: [sessionId], references: [id])
+  members   GroupMember[]
+  annotations Annotation[]
+  scaffolds Scaffold[]
+
+  @@map("groups")
+}
+
+model GroupMember {
+  groupId String @map("group_id") @db.Uuid
+  userId  String @map("user_id") @db.Uuid
+
+  group   Group  @relation(fields: [groupId], references: [id])
+  user    User   @relation(fields: [userId], references: [id])
+
+  @@id([groupId, userId])
+  @@map("group_members")
+}
+
+// --- Annotations ---
+
+model Annotation {
+  id            String    @id @default(uuid()) @db.Uuid
+  groupId       String    @map("group_id") @db.Uuid
+  userId        String    @map("user_id") @db.Uuid
+  location      Json      // {section_id or turn_id, start_offset, end_offset, highlighted_text}
+  flawType      FlawType  @map("flaw_type")
+  severity      Severity?
+  explanation   String?
+  isGroupAnswer Boolean   @default(false) @map("is_group_answer")
+  confirmedBy   Json?     @map("confirmed_by") // [user_ids]
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  group         Group     @relation(fields: [groupId], references: [id])
+  user          User      @relation(fields: [userId], references: [id])
+
+  @@index([groupId, createdAt])
+  @@index([groupId, isGroupAnswer])
+  @@map("annotations")
+}
+
+// --- Scaffolds ---
+
+model Scaffold {
+  id             String    @id @default(uuid()) @db.Uuid
+  sessionId      String    @map("session_id") @db.Uuid
+  groupId        String    @map("group_id") @db.Uuid
+  teacherId      String    @map("teacher_id") @db.Uuid
+  level          Int       // 1-6
+  type           String    // attention_redirect, comparison_prompt, etc.
+  text           String
+  targetLocation Json?     @map("target_location") // {references: [section_ids/turn_ids]}
+  contextAtSend  Json      @map("context_at_send") // {annotations_count, sections_touched, time_in_session_minutes}
+  outcome        Json?     // Null in v1. Populated by post-session analysis in v2.
+  createdAt      DateTime  @default(now()) @map("created_at")
+  deliveredAt    DateTime? @map("delivered_at")
+  acknowledgedAt DateTime? @map("acknowledged_at")
+
+  session        Session   @relation(fields: [sessionId], references: [id])
+  group          Group     @relation(fields: [groupId], references: [id])
+  teacher        User      @relation(fields: [teacherId], references: [id])
+
+  @@index([sessionId, groupId])
+  @@map("scaffolds")
+}
+
+// --- Session Events ---
+
+model SessionEvent {
+  id        String   @id @default(uuid()) @db.Uuid
+  sessionId String   @map("session_id") @db.Uuid
+  eventType String   @map("event_type") // phase_changed, scaffold_sent, annotation_created, etc.
+  actorId   String?  @map("actor_id") @db.Uuid
+  payload   Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  session   Session  @relation(fields: [sessionId], references: [id])
+  actor     User?    @relation(fields: [actorId], references: [id])
+
+  @@index([sessionId, createdAt])
+  @@map("session_events")
+}
