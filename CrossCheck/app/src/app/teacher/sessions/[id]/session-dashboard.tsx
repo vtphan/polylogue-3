@@ -41,11 +41,16 @@ interface GroupData {
   }[];
 }
 
-const STATUS_FLOW = ["setup", "active", "individual", "group", "reviewing", "closed"];
+const STATUS_FLOW = ["setup", "individual", "group", "reviewing", "closed"];
 const STATUS_LABELS: Record<string, string> = {
   setup: "Setup",
-  active: "Start Session",
-  individual: "Individual Phase",
+  individual: "Individual",
+  group: "Group",
+  reviewing: "Reviewing",
+  closed: "Closed",
+};
+const NEXT_BUTTON_LABELS: Record<string, string> = {
+  individual: "Start Session",
   group: "Group Phase",
   reviewing: "Release Evaluation",
   closed: "Close Session",
@@ -128,7 +133,7 @@ export function SessionDashboard({ session: initialSession }: { session: Session
             onClick={advancePhase}
             className="bg-blue-600 text-white text-sm font-medium px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
           >
-            {STATUS_LABELS[nextStatus] || nextStatus}
+            {NEXT_BUTTON_LABELS[nextStatus] || nextStatus}
           </button>
         )}
       </div>
@@ -146,7 +151,7 @@ export function SessionDashboard({ session: initialSession }: { session: Session
                     : "bg-gray-100 text-gray-400"
               }`}
             >
-              {STATUS_LABELS[s]?.replace("Start ", "").replace("Release ", "").replace("Close ", "") || s}
+              {STATUS_LABELS[s] || s}
             </div>
             {i < STATUS_FLOW.length - 1 && (
               <div className={`w-4 h-px mx-0.5 ${i < currentStatusIndex ? "bg-blue-300" : "bg-gray-200"}`} />

@@ -70,8 +70,7 @@ export async function PATCH(
   const { status } = body as { status: string };
 
   const validTransitions: Record<string, string[]> = {
-    setup: ["active"],
-    active: ["individual"],
+    setup: ["individual"],
     individual: ["group"],
     group: ["reviewing"],
     reviewing: ["closed"],
