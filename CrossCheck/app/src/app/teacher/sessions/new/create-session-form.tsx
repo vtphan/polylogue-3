@@ -123,6 +123,15 @@ export function CreateSessionForm({
             </option>
           ))}
         </select>
+        {activityId && (
+          <a
+            href={`/teacher/activities/${activityId}`}
+            target="_blank"
+            className="inline-block mt-1 text-xs text-blue-600 hover:text-blue-800"
+          >
+            Preview transcript & evaluation
+          </a>
+        )}
       </div>
 
       {/* Groups */}

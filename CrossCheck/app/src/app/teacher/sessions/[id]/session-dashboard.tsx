@@ -4,6 +4,7 @@ import { useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { FLAW_TYPES } from "@/lib/types";
 import { computeMatches } from "@/lib/matching";
+import { EvaluationPanel } from "@/components/evaluation/evaluation-panel";
 import type { FlawType } from "@/lib/types";
 
 interface SessionData {
@@ -63,6 +64,7 @@ export function SessionDashboard({ session: initialSession }: { session: Session
   const [scaffoldText, setScaffoldText] = useState("");
   const [scaffoldGroupId, setScaffoldGroupId] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
+  const [showEvaluation, setShowEvaluation] = useState(false);
   const router = useRouter();
 
   const currentStatusIndex = STATUS_FLOW.indexOf(session.status);
@@ -358,6 +360,25 @@ export function SessionDashboard({ session: initialSession }: { session: Session
           flawIndex={flawIndex}
         />
       )}
+
+      {/* Evaluation (answer key) */}
+      <div className="mt-6">
+        <button
+          onClick={() => setShowEvaluation(!showEvaluation)}
+          className="text-sm font-medium text-gray-600 hover:text-gray-900 flex items-center gap-1"
+        >
+          <span>{showEvaluation ? "▾" : "▸"}</span>
+          Reference Evaluation (Answer Key)
+        </button>
+        {showEvaluation && (
+          <div className="mt-3">
+            <EvaluationPanel
+              evaluation={session.activity.evaluation as never}
+              compact
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 }

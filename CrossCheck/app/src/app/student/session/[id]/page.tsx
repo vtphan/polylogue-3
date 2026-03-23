@@ -147,6 +147,9 @@ export default async function StudentSessionPage({ params }: PageProps) {
           annotations={annotations}
           matchResult={matchResult}
           evaluation={evaluation}
+          transcript={activity.transcriptContent as unknown}
+          activityType={activity.type}
+          agents={agents}
         />
       ) : (
         <SessionActivityViewer
