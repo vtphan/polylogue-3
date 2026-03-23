@@ -34,6 +34,11 @@ export default async function StudentSessionPage({ params }: PageProps) {
           },
           annotations: {
             orderBy: { createdAt: "asc" },
+            include: {
+              comments: {
+                select: { id: true, text: true, isBonus: true },
+              },
+            },
           },
           scaffolds: {
             where: { acknowledgedAt: null },
@@ -63,6 +68,10 @@ export default async function StudentSessionPage({ params }: PageProps) {
       location: a.location as AnnotationLocation,
       flawType: a.flawType as Annotation["flawType"],
       createdAt: a.createdAt.toISOString(),
+      isGroupAnswer: a.isGroupAnswer,
+      confirmedBy: (a.confirmedBy as string[]) || [],
+      userId: a.userId,
+      comments: (a as unknown as { comments?: { id: string; text: string; isBonus: boolean }[] }).comments || [],
     }));
 
   const pendingScaffolds = group.scaffolds.map((s) => ({
@@ -86,8 +95,14 @@ export default async function StudentSessionPage({ params }: PageProps) {
       severity: string;
     }[];
 
+    // Use group answers for matching if any exist, otherwise all annotations
+    const hasGroupAnswers = annotations.some((a) => a.isGroupAnswer);
+    const matchAnnotations = hasGroupAnswers
+      ? annotations.filter((a) => a.isGroupAnswer)
+      : annotations;
+
     matchResult = computeMatches(
-      annotations.map((a) => ({
+      matchAnnotations.map((a) => ({
         id: a.id,
         location: { item_id: a.location.item_id },
         flawType: a.flawType,
@@ -167,6 +182,8 @@ export default async function StudentSessionPage({ params }: PageProps) {
           pendingScaffolds={pendingScaffolds}
           readOnly={false}
           difficultyMode={difficultyMode}
+          sessionPhase={classSession.status}
+          userId={session.user.id}
         />
       )}
     </div>

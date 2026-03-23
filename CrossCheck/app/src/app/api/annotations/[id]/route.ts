@@ -44,3 +44,70 @@ export async function DELETE(
 
   return NextResponse.json({ success: true });
 }
+
+// Confirm/unconfirm an annotation (group consensus)
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await auth();
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { id } = await params;
+  const body = await request.json();
+  const { action } = body as { action: "confirm" | "unconfirm" };
+
+  const annotation = await prisma.annotation.findUnique({
+    where: { id },
+    include: {
+      group: {
+        include: {
+          members: { select: { userId: true } },
+          session: { select: { status: true } },
+        },
+      },
+    },
+  });
+
+  if (!annotation) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  // Must be in group phase
+  if (annotation.group.session.status !== "group") {
+    return NextResponse.json({ error: "Consensus only available in group phase" }, { status: 400 });
+  }
+
+  // Must be a group member
+  const isMember = annotation.group.members.some((m) => m.userId === session.user.id);
+  if (!isMember) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const currentConfirmed = (annotation.confirmedBy as string[]) || [];
+  const memberCount = annotation.group.members.length;
+  const threshold = Math.min(2, memberCount); // 2 confirmations or all members if group < 2
+
+  let newConfirmed: string[];
+  if (action === "confirm") {
+    newConfirmed = currentConfirmed.includes(session.user.id)
+      ? currentConfirmed
+      : [...currentConfirmed, session.user.id];
+  } else {
+    newConfirmed = currentConfirmed.filter((uid) => uid !== session.user.id);
+  }
+
+  const isGroupAnswer = newConfirmed.length >= threshold;
+
+  const updated = await prisma.annotation.update({
+    where: { id },
+    data: {
+      confirmedBy: newConfirmed,
+      isGroupAnswer,
+    },
+  });
+
+  return NextResponse.json(updated);
+}

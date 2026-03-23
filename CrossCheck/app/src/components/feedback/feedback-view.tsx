@@ -206,6 +206,16 @@ export function FeedbackView({ annotations, matchResult, evaluation, transcript,
                           This is actually a <strong>{FLAW_TYPES[matchedFlaw.flaw_type as FlawType]?.label || matchedFlaw.flaw_type}</strong> flaw.
                         </p>
                       )}
+                      {/* Teacher comments */}
+                      {ann.comments && ann.comments.length > 0 && (
+                        <div className="mt-2 space-y-1">
+                          {ann.comments.map((c) => (
+                            <div key={c.id} className={`text-xs px-2 py-1 rounded ${c.isBonus ? "bg-yellow-100 text-yellow-800 font-medium" : "bg-white/60 text-gray-700 border border-gray-200"}`}>
+                              {c.isBonus && "Bonus: "}{c.text}
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   );
                 })}

@@ -77,6 +77,10 @@ export interface Annotation {
   location: AnnotationLocation;
   flawType: FlawType;
   createdAt: string;
+  isGroupAnswer?: boolean;
+  confirmedBy?: string[];
+  userId?: string;
+  comments?: { id: string; text: string; isBonus: boolean }[];
 }
 
 // Flaw type display info

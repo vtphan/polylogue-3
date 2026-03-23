@@ -33,6 +33,8 @@ interface SessionActivityViewerProps {
   pendingScaffolds: ScaffoldNotification[];
   readOnly: boolean;
   difficultyMode?: "spot" | "classify" | "full";
+  sessionPhase?: string;
+  userId?: string;
 }
 
 export function SessionActivityViewer({
@@ -46,6 +48,8 @@ export function SessionActivityViewer({
   pendingScaffolds: initialScaffolds,
   readOnly,
   difficultyMode = "classify",
+  sessionPhase = "individual",
+  userId = "",
 }: SessionActivityViewerProps) {
   const [annotations, setAnnotations] = useState<Annotation[]>(initialAnnotations);
   const [pendingLocation, setPendingLocation] = useState<AnnotationLocation | null>(null);
@@ -114,6 +118,24 @@ export function SessionActivityViewer({
       setAnnotations((prev) => prev.slice(0, -1));
     }
   }, [readOnly, annotations]);
+
+  const handleConfirm = useCallback(async (annotationId: string, action: "confirm" | "unconfirm") => {
+    const res = await fetch(`/api/annotations/${annotationId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action }),
+    });
+    if (res.ok) {
+      const updated = await res.json();
+      setAnnotations((prev) =>
+        prev.map((a) =>
+          a.id === annotationId
+            ? { ...a, isGroupAnswer: updated.isGroupAnswer, confirmedBy: updated.confirmedBy as string[] }
+            : a
+        )
+      );
+    }
+  }, []);
 
   const handleAnnotationClick = useCallback((annotation: Annotation) => {
     const el = document.getElementById(annotation.location.item_id);
@@ -187,6 +209,9 @@ export function SessionActivityViewer({
               annotations={annotations}
               onAnnotationClick={handleAnnotationClick}
               onAnnotationDelete={readOnly ? () => {} : handleAnnotationDelete}
+              onConfirm={sessionPhase === "group" ? handleConfirm : undefined}
+              sessionPhase={sessionPhase}
+              userId={userId}
             />
           </div>
         </div>

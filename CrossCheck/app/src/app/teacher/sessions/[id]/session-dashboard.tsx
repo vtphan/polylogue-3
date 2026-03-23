@@ -33,9 +33,11 @@ interface GroupData {
   annotations: {
     id: string;
     flawType: string;
-    location: { item_id: string };
+    location: { item_id: string; highlighted_text?: string };
     userId: string;
     createdAt: string;
+    isGroupAnswer: boolean;
+    comments: { id: string; text: string; isBonus: boolean }[];
   }[];
   scaffolds: {
     id: string;
@@ -543,35 +545,126 @@ function GroupDetail({
 
       {/* Annotation list */}
       <div className="space-y-2">
-        {group.annotations.map((ann) => {
-          const info = FLAW_TYPES[ann.flawType as FlawType];
-          const location = ann.location as { item_id: string; highlighted_text?: string };
-          const member = group.members.find((m) => m.user.id === ann.userId);
-          return (
-            <div
-              key={ann.id}
-              className="flex items-start gap-2 text-sm p-2 rounded bg-gray-50"
-            >
-              <span
-                className={`shrink-0 mt-1 w-2 h-2 rounded-full ${info?.bgColor || "bg-gray-200"}`}
-              />
-              <div className="flex-1 min-w-0">
-                <span className="text-xs text-gray-400">{location.item_id}</span>
-                {location.highlighted_text && (
-                  <p className="text-gray-600 text-xs line-clamp-2">
-                    &ldquo;{location.highlighted_text}&rdquo;
-                  </p>
-                )}
-              </div>
-              <span className={`text-xs px-1.5 py-0.5 rounded ${info?.bgColor || ""} ${info?.color || ""}`}>
-                {info?.label || ann.flawType}
-              </span>
-              {member && (
-                <span className="text-xs text-gray-400">{member.user.displayName}</span>
-              )}
+        {group.annotations.map((ann) => (
+          <AnnotationCard key={ann.id} ann={ann} group={group} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function AnnotationCard({
+  ann,
+  group,
+}: {
+  ann: GroupData["annotations"][number];
+  group: GroupData;
+}) {
+  const [commentText, setCommentText] = useState("");
+  const [showComment, setShowComment] = useState(false);
+  const [comments, setComments] = useState(ann.comments || []);
+  const [saving, setSaving] = useState(false);
+  const info = FLAW_TYPES[ann.flawType as FlawType];
+  const location = ann.location as { item_id: string; highlighted_text?: string };
+  const member = group.members.find((m) => m.user.id === ann.userId);
+
+  async function submitComment(isBonus = false) {
+    if (!commentText.trim() && !isBonus) return;
+    setSaving(true);
+    const res = await fetch(`/api/annotations/${ann.id}/comments`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        text: commentText.trim() || (isBonus ? "Bonus find!" : ""),
+        isBonus,
+      }),
+    });
+    if (res.ok) {
+      const comment = await res.json();
+      setComments((prev) => [...prev, comment]);
+      setCommentText("");
+      setShowComment(false);
+    }
+    setSaving(false);
+  }
+
+  return (
+    <div className={`text-sm p-3 rounded ${ann.isGroupAnswer ? "bg-green-50 border border-green-200" : "bg-gray-50"}`}>
+      <div className="flex items-start gap-2">
+        <span className={`shrink-0 mt-1 w-2 h-2 rounded-full ${info?.bgColor || "bg-gray-200"}`} />
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-0.5">
+            <span className="text-xs text-gray-400">{location.item_id}</span>
+            <span className={`text-xs px-1.5 py-0.5 rounded ${info?.bgColor || ""} ${info?.color || ""}`}>
+              {info?.label || ann.flawType}
+            </span>
+            {member && <span className="text-xs text-gray-400">{member.user.displayName}</span>}
+            {ann.isGroupAnswer && <span className="text-xs text-green-600 font-medium">Group answer</span>}
+          </div>
+          {location.highlighted_text && (
+            <p className="text-gray-600 text-xs line-clamp-2">
+              &ldquo;{location.highlighted_text}&rdquo;
+            </p>
+          )}
+
+          {/* Existing comments */}
+          {comments.length > 0 && (
+            <div className="mt-1.5 space-y-1">
+              {comments.map((c) => (
+                <div key={c.id} className={`text-xs px-2 py-1 rounded ${c.isBonus ? "bg-yellow-50 text-yellow-700" : "bg-blue-50 text-blue-700"}`}>
+                  {c.isBonus && <span className="font-medium">Bonus: </span>}
+                  {c.text}
+                </div>
+              ))}
             </div>
-          );
-        })}
+          )}
+
+          {/* Comment actions */}
+          <div className="flex items-center gap-2 mt-1.5">
+            {!showComment ? (
+              <>
+                <button
+                  onClick={() => setShowComment(true)}
+                  className="text-xs text-gray-400 hover:text-blue-600"
+                >
+                  Comment
+                </button>
+                {!comments.some((c) => c.isBonus) && (
+                  <button
+                    onClick={() => submitComment(true)}
+                    className="text-xs text-gray-400 hover:text-yellow-600"
+                  >
+                    Bonus find
+                  </button>
+                )}
+              </>
+            ) : (
+              <div className="flex gap-1 w-full">
+                <input
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  placeholder="Add feedback..."
+                  className="flex-1 text-xs border border-gray-200 rounded px-2 py-1"
+                  onKeyDown={(e) => e.key === "Enter" && submitComment()}
+                  autoFocus
+                />
+                <button
+                  onClick={() => submitComment()}
+                  disabled={!commentText.trim() || saving}
+                  className="text-xs bg-blue-500 text-white px-2 py-1 rounded disabled:opacity-50"
+                >
+                  {saving ? "..." : "Send"}
+                </button>
+                <button
+                  onClick={() => setShowComment(false)}
+                  className="text-xs text-gray-400"
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -33,6 +33,9 @@ export default async function SessionPage({ params }: PageProps) {
               userId: true,
               createdAt: true,
               isGroupAnswer: true,
+              comments: {
+                select: { id: true, text: true, isBonus: true },
+              },
             },
             orderBy: { createdAt: "asc" },
           },

@@ -61,6 +61,7 @@ model User {
   annotations    Annotation[]
   scaffolds      Scaffold[]
   sessionEvents  SessionEvent[]
+  annotationComments AnnotationComment[]
 
   @@map("users")
 }
@@ -148,10 +149,27 @@ model Annotation {
 
   group         Group     @relation(fields: [groupId], references: [id])
   user          User      @relation(fields: [userId], references: [id])
+  comments      AnnotationComment[]
 
   @@index([groupId, createdAt])
   @@index([groupId, isGroupAnswer])
   @@map("annotations")
+}
+
+// --- Annotation Comments (teacher feedback on specific annotations) ---
+
+model AnnotationComment {
+  id           String     @id @default(uuid()) @db.Uuid
+  annotationId String     @map("annotation_id") @db.Uuid
+  teacherId    String     @map("teacher_id") @db.Uuid
+  text         String
+  isBonus      Boolean    @default(false) @map("is_bonus") // Teacher flags annotation as bonus find
+  createdAt    DateTime   @default(now()) @map("created_at")
+
+  annotation   Annotation @relation(fields: [annotationId], references: [id], onDelete: Cascade)
+  teacher      User       @relation(fields: [teacherId], references: [id])
+
+  @@map("annotation_comments")
 }
 
 // --- Scaffolds ---
