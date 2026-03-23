@@ -16,6 +16,11 @@ export async function DELETE(
   // Only allow deleting own annotations
   const annotation = await prisma.annotation.findUnique({
     where: { id },
+    include: {
+      group: {
+        include: { session: { select: { status: true } } },
+      },
+    },
   });
 
   if (!annotation) {
@@ -24,6 +29,15 @@ export async function DELETE(
 
   if (annotation.userId !== session.user.id) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  // Block deletion if session is in reviewing or closed state
+  const sessionStatus = annotation.group.session.status;
+  if (["reviewing", "closed"].includes(sessionStatus)) {
+    return NextResponse.json(
+      { error: "Cannot delete annotations in reviewing/closed sessions" },
+      { status: 400 }
+    );
   }
 
   await prisma.annotation.delete({ where: { id } });

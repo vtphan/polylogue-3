@@ -2,8 +2,8 @@
 
 ## Status
 
-**Current phase:** Phase 2 — Teacher Core (in progress)
-**Next action:** Session management + live dashboard + scaffold sending
+**Current phase:** Phase 2 — Teacher Core (complete)
+**Next action:** Begin Phase 3 (Real-time) or Phase 4 (Feedback Loop)
 **Blocked by:** Nothing
 **Environment:** macOS, Node 23.11.0, npm 11.3.0, Next.js 16.2.1, Prisma 6.19.2, PostgreSQL 15.13
 
@@ -326,7 +326,84 @@ Submit button locks annotations (no further edits). For Phase 1, the feedback co
 
 ---
 
-## Phase 2-5: Not Yet Detailed
+## Phase 2: Teacher Core
+
+Goal: A teacher can create a session, assign students to groups, monitor annotation progress in real time, send scaffolds to groups, and release the reference evaluation. This replaces the Phase 1 solo-session scaffolding with real sessions.
+
+### 2a. Session Management APIs
+
+**`POST /api/sessions`** — Create session. Body: `{ activityId, groups: [{name, studentIds}] }`. Creates session + groups + group members.
+
+**`GET /api/sessions`** — List teacher's sessions with status and activity info.
+
+**`GET /api/sessions/[id]`** — Session detail: groups, members, annotation counts, status.
+
+**`PATCH /api/sessions/[id]`** — Update session status (setup → active → individual → group → reviewing → closed).
+
+### 2b. Teacher Session List Page
+
+**`/teacher`** — Shows session cards (active sessions first) and a "New Session" button. Each card: activity topic, status badge, group count, created date.
+
+### 2c. Create Session Page
+
+**`/teacher/sessions/new`** — Pick an activity from the library, create groups, assign students. Simple form: activity dropdown, group name + student multi-select for each group.
+
+### 2d. Live Dashboard
+
+**`/teacher/sessions/[id]`** — The core teacher screen during class.
+
+**Group overview grid:** Each group shows:
+- Group name
+- Annotation count (total and by flaw type)
+- Sections/turns touched (progress bar)
+- Status indicator (based on recent activity)
+
+**Group detail panel:** Click a group to see:
+- Their annotations overlaid on the transcript (read-only view reusing TranscriptRenderer)
+- What they've found vs. what they've missed (compared to flaw_index)
+
+**Session controls:**
+- Phase transition buttons (Individual → Group → Reviewing)
+- Release evaluation button
+
+### 2e. Scaffold Sending
+
+**`POST /api/scaffolds`** — Create scaffold. Body: `{ sessionId, groupId, level, type, text, targetLocation? }`.
+
+**`GET /api/scaffolds?session_id=X&group_id=Y`** — Scaffolds sent to a group.
+
+On the dashboard, each group card has a "Send scaffold" button that opens a form (free text + optional target section/turn).
+
+### 2f. Student Session Integration
+
+Update student flow to work with real sessions:
+- **`/student`** — Shows sessions the student is assigned to (not raw activities)
+- **`/student/session/[id]`** — Activity viewer within a session context, using the real group
+- Student sees scaffolds sent by teacher (notification card at top)
+- Scaffold acknowledgment (`PATCH /api/scaffolds/[id]`)
+
+### 2g. Evaluation Release
+
+When teacher sets session status to "reviewing":
+- Students see a read-only view of their annotations
+- Reference evaluation becomes available via API
+- Side-by-side comparison view (deferred to Phase 4 for full implementation, but basic reveal here)
+
+### Phase 2 Verification Checklist
+
+- [ ] Teacher can create a session with groups and assigned students
+- [ ] Teacher sees session list with status badges
+- [ ] Live dashboard shows annotation counts per group
+- [ ] Teacher can click into a group to see their annotations on the transcript
+- [ ] Teacher can send a scaffold to a group
+- [ ] Student sees sessions they're assigned to
+- [ ] Student can annotate within a session context (real group, not solo)
+- [ ] Student sees scaffolds from teacher
+- [ ] Teacher can transition session phases and release evaluation
+
+---
+
+## Phase 3-5: Not Yet Detailed
 
 Will be expanded one phase at a time. See `app-concept.md` for the high-level breakdown.
 
