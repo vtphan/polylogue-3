@@ -9,6 +9,7 @@ interface FlawBottomBarProps {
   onSelect: (flawType: FlawType) => void;
   onUndo: () => void;
   readOnly?: boolean;
+  difficultyMode?: "spot" | "classify" | "full";
 }
 
 const FLAW_BUTTON_COLORS: Record<FlawType, string> = {
@@ -31,27 +32,44 @@ export function FlawBottomBar({
   onSelect,
   onUndo,
   readOnly,
+  difficultyMode = "classify",
 }: FlawBottomBarProps) {
   if (readOnly) return null;
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 shadow-lg">
       <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-center gap-3">
-        {(Object.keys(FLAW_TYPES) as FlawType[]).map((type) => (
+        {difficultyMode === "spot" ? (
+          /* Spot mode: single "Flag" button — uses "reasoning" as placeholder type */
           <button
-            key={type}
-            onClick={() => onSelect(type)}
+            onClick={() => onSelect("reasoning")}
             disabled={!hasSelection}
-            className={`text-sm font-medium px-4 py-2 rounded-lg transition-all ${
+            className={`text-sm font-medium px-6 py-2 rounded-lg transition-all ${
               hasSelection
-                ? `${FLAW_BUTTON_COLORS[type]} text-white shadow-sm hover:ring-2`
-                : `${FLAW_INACTIVE_COLORS[type]} cursor-not-allowed`
+                ? "bg-gray-800 text-white shadow-sm hover:bg-gray-900"
+                : "bg-gray-200 text-gray-400 cursor-not-allowed"
             }`}
-            title={FLAW_TYPES[type].description}
           >
-            {FLAW_TYPES[type].label}
+            Flag This
           </button>
-        ))}
+        ) : (
+          /* Classify and Full modes: 4 flaw type buttons */
+          (Object.keys(FLAW_TYPES) as FlawType[]).map((type) => (
+            <button
+              key={type}
+              onClick={() => onSelect(type)}
+              disabled={!hasSelection}
+              className={`text-sm font-medium px-4 py-2 rounded-lg transition-all ${
+                hasSelection
+                  ? `${FLAW_BUTTON_COLORS[type]} text-white shadow-sm hover:ring-2`
+                  : `${FLAW_INACTIVE_COLORS[type]} cursor-not-allowed`
+              }`}
+              title={FLAW_TYPES[type].description}
+            >
+              {FLAW_TYPES[type].label}
+            </button>
+          ))
+        )}
 
         <div className="w-px h-6 bg-gray-200 mx-1" />
 

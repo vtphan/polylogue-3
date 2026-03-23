@@ -35,6 +35,7 @@ export function CreateSessionForm({
   const [groups, setGroups] = useState<GroupDraft[]>([
     { name: "Group A", studentIds: [] },
   ]);
+  const [difficultyMode, setDifficultyMode] = useState("classify");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -87,7 +88,7 @@ export function CreateSessionForm({
     const res = await fetch("/api/sessions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ activityId, groups }),
+      body: JSON.stringify({ activityId, groups, config: { difficulty_mode: difficultyMode } }),
     });
 
     if (res.ok) {
@@ -132,6 +133,34 @@ export function CreateSessionForm({
             Preview transcript & evaluation
           </a>
         )}
+      </div>
+
+      {/* Difficulty mode */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Difficulty
+        </label>
+        <div className="flex gap-2">
+          {[
+            { value: "spot", label: "Spot", desc: "Highlight only — no flaw type classification" },
+            { value: "classify", label: "Spot + Classify", desc: "Highlight and pick a flaw type" },
+            { value: "full", label: "Full", desc: "Highlight, classify, rate severity, and explain" },
+          ].map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => setDifficultyMode(opt.value)}
+              className={`flex-1 text-sm p-3 rounded-lg border text-left transition-colors ${
+                difficultyMode === opt.value
+                  ? "border-blue-400 bg-blue-50 text-blue-800"
+                  : "border-gray-200 text-gray-600 hover:border-gray-300"
+              }`}
+            >
+              <div className="font-medium">{opt.label}</div>
+              <div className="text-xs mt-0.5 opacity-70">{opt.desc}</div>
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Groups */}

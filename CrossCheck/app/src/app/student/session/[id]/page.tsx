@@ -72,6 +72,9 @@ export default async function StudentSessionPage({ params }: PageProps) {
     type: s.type,
   }));
 
+  const sessionConfig = classSession.config as { difficulty_mode?: string } | null;
+  const difficultyMode = (sessionConfig?.difficulty_mode || "classify") as "spot" | "classify" | "full";
+
   // Compute feedback if in reviewing mode
   let matchResult = null;
   let evaluation = null;
@@ -89,7 +92,8 @@ export default async function StudentSessionPage({ params }: PageProps) {
         location: { item_id: a.location.item_id },
         flawType: a.flawType,
       })),
-      flawIndex
+      flawIndex,
+      { spotMode: difficultyMode === "spot" }
     );
 
     evaluation = activity.evaluation as {
@@ -162,6 +166,7 @@ export default async function StudentSessionPage({ params }: PageProps) {
           initialAnnotations={annotations}
           pendingScaffolds={pendingScaffolds}
           readOnly={false}
+          difficultyMode={difficultyMode}
         />
       )}
     </div>

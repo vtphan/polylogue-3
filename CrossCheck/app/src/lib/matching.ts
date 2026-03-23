@@ -51,19 +51,21 @@ export interface MatchResult {
 
 export function computeMatches(
   annotations: AnnotationInput[],
-  flawIndex: FlawIndexEntry[]
+  flawIndex: FlawIndexEntry[],
+  options?: { spotMode?: boolean }
 ): MatchResult {
+  const spotMode = options?.spotMode || false;
   const annotationMatches: AnnotationMatch[] = [];
   const flawMatches: FlawMatch[] = [];
   const matchedFlawIds = new Set<string>();
   const matchedAnnotationIds = new Set<string>();
 
-  // Pass 1: Find green matches (correct location + correct type)
+  // Pass 1: Find green matches (correct location + correct type, or location-only in spot mode)
   for (const ann of annotations) {
     for (const flaw of flawIndex) {
       if (
         flaw.locations.includes(ann.location.item_id) &&
-        flaw.flaw_type === ann.flawType &&
+        (spotMode || flaw.flaw_type === ann.flawType) &&
         !matchedFlawIds.has(flaw.flaw_id)
       ) {
         annotationMatches.push({

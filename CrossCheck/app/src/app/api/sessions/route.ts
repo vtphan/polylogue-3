@@ -62,9 +62,10 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { activityId, groups } = body as {
+  const { activityId, groups, config } = body as {
     activityId: string;
     groups: { name: string; studentIds: string[] }[];
+    config?: Record<string, unknown>;
   };
 
   if (!activityId || !groups || groups.length === 0) {
@@ -79,7 +80,7 @@ export async function POST(request: NextRequest) {
       teacherId: session.user.id,
       activityId,
       status: "setup",
-      config: {},
+      config: config || {},
       groups: {
         create: groups.map((g) => ({
           name: g.name,

@@ -32,6 +32,7 @@ interface SessionActivityViewerProps {
   initialAnnotations: Annotation[];
   pendingScaffolds: ScaffoldNotification[];
   readOnly: boolean;
+  difficultyMode?: "spot" | "classify" | "full";
 }
 
 export function SessionActivityViewer({
@@ -44,6 +45,7 @@ export function SessionActivityViewer({
   initialAnnotations,
   pendingScaffolds: initialScaffolds,
   readOnly,
+  difficultyMode = "classify",
 }: SessionActivityViewerProps) {
   const [annotations, setAnnotations] = useState<Annotation[]>(initialAnnotations);
   const [pendingLocation, setPendingLocation] = useState<AnnotationLocation | null>(null);
@@ -197,6 +199,7 @@ export function SessionActivityViewer({
         onSelect={handleFlawTypeSelected}
         onUndo={handleUndo}
         readOnly={readOnly}
+        difficultyMode={difficultyMode}
       />
     </div>
   );
