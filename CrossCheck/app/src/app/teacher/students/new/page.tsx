@@ -1,0 +1,155 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+
+interface CreatedStudent {
+  displayName: string;
+  username: string;
+  password: string;
+}
+
+export default function AddStudentsPage() {
+  const router = useRouter();
+  const [displayName, setDisplayName] = useState("");
+  const [username, setUsername] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [created, setCreated] = useState<CreatedStudent[]>([]);
+
+  async function handleAdd(e: React.FormEvent) {
+    e.preventDefault();
+    if (!displayName.trim() || !username.trim()) return;
+
+    setSaving(true);
+    setError("");
+
+    const res = await fetch("/api/users", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: username.trim().toLowerCase(),
+        displayName: displayName.trim(),
+      }),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      setCreated((prev) => [...prev, {
+        displayName: data.displayName,
+        username: data.username,
+        password: data.password,
+      }]);
+      setDisplayName("");
+      setUsername("");
+    } else {
+      const data = await res.json();
+      setError(data.error || "Failed to create student");
+    }
+    setSaving(false);
+  }
+
+  // Auto-generate username from display name
+  function handleNameChange(name: string) {
+    setDisplayName(name);
+    const auto = name.trim().toLowerCase().replace(/\s+/g, ".").replace(/[^a-z0-9.]/g, "");
+    setUsername(auto);
+  }
+
+  return (
+    <div className="max-w-xl">
+      <a href="/teacher/students" className="text-sm text-blue-600 hover:text-blue-800">
+        &larr; Back to students
+      </a>
+      <h1 className="text-2xl font-bold text-gray-900 mt-2 mb-6">Add Students</h1>
+
+      <form onSubmit={handleAdd} className="bg-white rounded-lg border border-gray-200 p-5 mb-6">
+        {error && (
+          <div className="bg-red-50 text-red-700 p-3 rounded text-sm mb-4">{error}</div>
+        )}
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Display name
+            </label>
+            <input
+              value={displayName}
+              onChange={(e) => handleNameChange(e.target.value)}
+              placeholder="e.g., Maya Johnson"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Username
+            </label>
+            <input
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="e.g., maya.johnson"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+            />
+            <p className="text-xs text-gray-400 mt-1">
+              Students use this to log in. Auto-generated from name.
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          disabled={saving || !displayName.trim() || !username.trim()}
+          className="mt-4 bg-blue-600 text-white text-sm font-medium px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
+        >
+          {saving ? "Adding..." : "Add Student"}
+        </button>
+      </form>
+
+      {/* Show created students with passwords */}
+      {created.length > 0 && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-5">
+          <h2 className="font-semibold text-green-900 mb-1">
+            Students Created
+          </h2>
+          <p className="text-xs text-green-700 mb-3">
+            Save these credentials — passwords are only shown once.
+          </p>
+
+          <div className="bg-white rounded border border-green-200 divide-y divide-green-100">
+            {created.map((s, i) => (
+              <div key={i} className="px-4 py-3 flex items-center justify-between">
+                <span className="font-medium text-gray-900">{s.displayName}</span>
+                <div className="text-sm font-mono">
+                  <span className="text-gray-500">{s.username}</span>
+                  <span className="text-gray-300 mx-2">/</span>
+                  <span className="text-green-700 font-semibold">{s.password}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <button
+            onClick={() => {
+              const text = created
+                .map((s) => `${s.displayName}\t${s.username}\t${s.password}`)
+                .join("\n");
+              navigator.clipboard.writeText(text);
+            }}
+            className="mt-3 text-xs text-green-700 hover:text-green-900"
+          >
+            Copy all to clipboard
+          </button>
+        </div>
+      )}
+
+      {created.length > 0 && (
+        <button
+          onClick={() => router.push("/teacher/students")}
+          className="mt-4 text-sm text-blue-600 hover:text-blue-800"
+        >
+          Done — go to student list
+        </button>
+      )}
+    </div>
+  );
+}

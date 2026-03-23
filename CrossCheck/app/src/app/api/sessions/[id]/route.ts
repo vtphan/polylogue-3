@@ -73,7 +73,7 @@ export async function PATCH(
     setup: ["individual"],
     individual: ["group"],
     group: ["reviewing"],
-    reviewing: ["closed"],
+    reviewing: ["group", "closed"], // allow reopening to group phase
   };
 
   const classSession = await prisma.session.findUnique({ where: { id } });

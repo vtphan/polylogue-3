@@ -145,14 +145,46 @@ export function SessionDashboard({ session: initialSession }: { session: Session
         </div>
 
         {/* Phase control */}
-        {nextStatus && session.status !== "closed" && (
-          <button
-            onClick={advancePhase}
-            className="bg-blue-600 text-white text-sm font-medium px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
-          >
-            {NEXT_BUTTON_LABELS[nextStatus] || nextStatus}
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          {isReviewing && (
+            <>
+              <a
+                href={`/teacher/sessions/${session.id}/class-view`}
+                className="bg-purple-600 text-white text-sm font-medium px-4 py-2 rounded-md hover:bg-purple-700 transition-colors"
+              >
+                Class View
+              </a>
+              <button
+                onClick={async () => {
+                  const confirmed = window.confirm(
+                    "Students have already seen the evaluation results. Reopening will hide the feedback and let them annotate again. Continue?"
+                  );
+                  if (!confirmed) return;
+                  const res = await fetch(`/api/sessions/${session.id}`, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ status: "group" }),
+                  });
+                  if (res.ok) {
+                    setSession((prev) => ({ ...prev, status: "group" }));
+                    router.refresh();
+                  }
+                }}
+                className="border border-gray-300 text-gray-700 text-sm font-medium px-4 py-2 rounded-md hover:bg-gray-50 transition-colors"
+              >
+                Reopen
+              </button>
+            </>
+          )}
+          {nextStatus && session.status !== "closed" && (
+            <button
+              onClick={advancePhase}
+              className="bg-blue-600 text-white text-sm font-medium px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+            >
+              {NEXT_BUTTON_LABELS[nextStatus] || nextStatus}
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Phase indicator */}

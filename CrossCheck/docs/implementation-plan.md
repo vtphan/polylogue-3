@@ -2,8 +2,8 @@
 
 ## Status
 
-**Current phase:** Phase 4 — Feedback Loop (in progress, Phase 3 deferred)
-**Next action:** Annotation matching engine + side-by-side comparison view
+**Current phase:** Phase 5 — Polish (in progress)
+**Next action:** Mobile bottom bar, class projector view, difficulty modes, teacher student management
 **Blocked by:** Nothing
 **Environment:** macOS, Node 23.11.0, npm 11.3.0, Next.js 16.2.1, Prisma 6.19.2, PostgreSQL 15.13
 
@@ -471,9 +471,52 @@ On the teacher dashboard, when session is in "reviewing":
 
 ---
 
-## Phase 5: Not Yet Detailed
+## Phase 5: Polish
 
-Will be expanded when Phase 4 completes. See `app-concept.md` for the high-level breakdown.
+Goal: Make the app classroom-ready. Fix UX gaps, add teacher quality-of-life features, and support tablets.
+
+### 5a. Mobile/Tablet Bottom Bar
+
+The flaw palette sidebar is `hidden lg:block` — invisible on tablets. The bottom bar works on mobile but buttons may be cramped. Fix:
+- Bottom bar: smaller padding, responsive button sizing
+- Flaw palette: show as a collapsible panel above the bottom bar on mobile (tap to expand)
+
+### 5b. Teacher Student Management
+
+Teachers need to create student accounts (COPPA — no email signup). Add:
+- **`/teacher/students`** — list all students the teacher has created
+- **`/teacher/students/new`** — create student accounts (username + display name, auto-generate password)
+- Show generated credentials so teacher can distribute to students
+
+### 5c. Class Projector View
+
+When session is in reviewing, teacher can project aggregate results for whole-class debrief:
+- **`/teacher/sessions/[id]/class-view`** — full-screen, large text, designed for projection
+- Shows: which flaws were found by most/fewest groups, which flaw types were hardest
+- Bar chart or summary table of all groups' detection rates
+
+### 5d. Difficulty Modes
+
+Teacher-configurable per session:
+- **Spot** — highlight only, no flaw type classification
+- **Spot + Classify** — highlight + pick flaw type (current default)
+- **Full** — highlight + classify + severity + explanation
+
+Store in session.config, bottom bar adapts based on mode.
+
+### 5e. Session Cleanup
+
+- Delete session button (with confirmation)
+- Reopen session (reviewing → group) for when teacher advances too early
+- Clear all annotations for a group (teacher action)
+
+### Phase 5 Verification Checklist
+
+- [ ] Bottom bar usable on tablet-sized screens
+- [ ] Teacher can create student accounts
+- [ ] Class projector view shows aggregate results
+- [ ] Difficulty modes change the bottom bar behavior
+- [ ] Teacher can delete sessions and reopen reviewing sessions
 
 ---
 
