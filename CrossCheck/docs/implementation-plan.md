@@ -2,8 +2,8 @@
 
 ## Status
 
-**Current phase:** Phase 2 — Teacher Core (complete)
-**Next action:** Begin Phase 3 (Real-time) or Phase 4 (Feedback Loop)
+**Current phase:** Phase 4 — Feedback Loop (in progress, Phase 3 deferred)
+**Next action:** Annotation matching engine + side-by-side comparison view
 **Blocked by:** Nothing
 **Environment:** macOS, Node 23.11.0, npm 11.3.0, Next.js 16.2.1, Prisma 6.19.2, PostgreSQL 15.13
 
@@ -408,9 +408,72 @@ When teacher sets session status to "reviewing":
 
 ---
 
-## Phase 3-5: Not Yet Detailed
+## Phase 3: Real-time (Deferred)
 
-Will be expanded one phase at a time. See `app-concept.md` for the high-level breakdown.
+Socket.IO integration deferred. Teacher refreshes dashboard manually; students refresh for scaffolds. Functional without real-time — revisit when the core loop is complete.
+
+---
+
+## Phase 4: Feedback Loop
+
+Goal: When the teacher releases the evaluation (session status = "reviewing"), students see a side-by-side comparison of their annotations against the reference evaluation. This is the pedagogical payoff — where students learn what they found, missed, and misclassified.
+
+### 4a. Annotation Matching Engine
+
+Server-side function that compares group annotations against the activity's `flaw_index`.
+
+**Matching rules** (from app-concept.md Design Clarifications):
+
+| Match | Rule |
+|-------|------|
+| **Green (correct)** | Annotation in same section/turn as a reference flaw AND same flaw type |
+| **Yellow (missed)** | Reference flaw with no matching annotation |
+| **Red (false positive)** | Annotation at a location/type that doesn't match any reference flaw |
+| **Blue (partial)** | Annotation in same section/turn as a reference flaw but different type |
+
+Cross-section/cross-turn flaws: annotation matches if it tags **either** referenced location with the correct type.
+
+**API:** `GET /api/sessions/[id]/feedback` — returns match results for each group. Only available when session status is "reviewing" or "closed".
+
+### 4b. Student Feedback View
+
+**`/student/session/[id]/feedback`** — or integrated into the existing session page when status = "reviewing".
+
+Two panels:
+- **Left: Their annotations on the transcript** — colored underlines as before, but now with match indicators (green check, red X, blue ~)
+- **Right: Reference flaws** — list of all flaws from the evaluation, each showing: flaw type badge, severity, evidence quote, explanation. Matched flaws highlighted green, missed flaws highlighted yellow.
+
+Summary stats at top:
+- "Your group found X of Y flaws"
+- Detection rate by flaw type
+- Precision (correct / total annotations)
+
+### 4c. Teacher Class View
+
+On the teacher dashboard, when session is in "reviewing":
+- Per-group match stats visible on group cards (found/missed/false positives)
+- The existing group detail panel already shows flaws found vs missed — enhance with the full match breakdown
+
+### 4d. Reference Evaluation API
+
+**`GET /api/activities/[id]/evaluation`** — returns the full evaluation (flaws with descriptions, evidence, explanations). Only available to teachers and researchers, OR to students in a reviewing/closed session.
+
+### Phase 4 Verification Checklist
+
+- [ ] Matching engine correctly categorizes annotations as green/yellow/red/blue
+- [ ] Cross-section flaws match when student tags either location
+- [ ] Student sees feedback view when session is in reviewing phase
+- [ ] Feedback view shows their annotations with match indicators
+- [ ] Reference flaws listed with descriptions and evidence
+- [ ] Summary stats (found/missed/precision) displayed
+- [ ] Teacher dashboard shows match stats per group
+- [ ] Evaluation API blocked for students outside reviewing sessions
+
+---
+
+## Phase 5: Not Yet Detailed
+
+Will be expanded when Phase 4 completes. See `app-concept.md` for the high-level breakdown.
 
 ---
 

@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { FLAW_TYPES } from "@/lib/types";
+import { computeMatches } from "@/lib/matching";
 import type { FlawType } from "@/lib/types";
 
 interface SessionData {
@@ -102,8 +103,24 @@ export function SessionDashboard({ session: initialSession }: { session: Session
     setSending(false);
   }, [session.id, scaffoldGroupId, scaffoldText, sending, router]);
 
-  const flawIndex = (session.activity.flawIndex || []) as { flaw_id: string; locations: string[]; flaw_type: string }[];
+  const flawIndex = (session.activity.flawIndex || []) as { flaw_id: string; locations: string[]; flaw_type: string; severity: string }[];
   const totalFlaws = flawIndex.length;
+  const isReviewing = ["reviewing", "closed"].includes(session.status);
+
+  // Compute match results per group (for reviewing mode)
+  const groupMatchResults = useMemo(() => {
+    if (!isReviewing) return new Map();
+    const results = new Map();
+    for (const group of session.groups) {
+      const anns = group.annotations.map((a) => ({
+        id: a.id,
+        location: { item_id: a.location.item_id },
+        flawType: a.flawType,
+      }));
+      results.set(group.id, computeMatches(anns, flawIndex));
+    }
+    return results;
+  }, [isReviewing, session.groups, flawIndex]);
 
   return (
     <div className="mt-3">
@@ -221,6 +238,20 @@ export function SessionDashboard({ session: initialSession }: { session: Session
               <div className="text-xs text-gray-400 mt-2">
                 {sectionsFound} sections touched
               </div>
+
+              {/* Match stats in reviewing mode */}
+              {isReviewing && groupMatchResults.has(group.id) && (() => {
+                const mr = groupMatchResults.get(group.id)!;
+                return (
+                  <div className="flex items-center gap-2 mt-2 text-xs">
+                    <span className="text-green-600 font-medium">{mr.summary.found} found</span>
+                    <span className="text-yellow-600">{mr.summary.missed} missed</span>
+                    <span className="text-gray-400">
+                      {Math.round(mr.summary.detectionRate * 100)}%
+                    </span>
+                  </div>
+                );
+              })()}
 
               {/* Scaffold button */}
               <button

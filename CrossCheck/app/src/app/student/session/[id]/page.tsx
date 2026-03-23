@@ -2,6 +2,8 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { notFound, redirect } from "next/navigation";
 import { SessionActivityViewer } from "./session-activity-viewer";
+import { FeedbackView } from "@/components/feedback/feedback-view";
+import { computeMatches } from "@/lib/matching";
 import type { Agent, Annotation, AnnotationLocation } from "@/lib/types";
 
 interface PageProps {
@@ -48,8 +50,10 @@ export default async function StudentSessionPage({ params }: PageProps) {
 
   const group = classSession.groups[0];
   const activity = classSession.activity;
+  const agents = activity.agents as Agent[];
+  const isReviewing = ["reviewing", "closed"].includes(classSession.status);
 
-  // Filter annotations: in individual phase, show only own; in group phase, show all
+  // Filter annotations: in individual phase, show only own; in group/reviewing, show all
   const showAllAnnotations = ["group", "reviewing", "closed"].includes(classSession.status);
 
   const annotations: Annotation[] = group.annotations
@@ -68,8 +72,39 @@ export default async function StudentSessionPage({ params }: PageProps) {
     type: s.type,
   }));
 
-  const agents = activity.agents as Agent[];
-  const isReadOnly = ["reviewing", "closed"].includes(classSession.status);
+  // Compute feedback if in reviewing mode
+  let matchResult = null;
+  let evaluation = null;
+  if (isReviewing) {
+    const flawIndex = (activity.flawIndex || []) as {
+      flaw_id: string;
+      locations: string[];
+      flaw_type: string;
+      severity: string;
+    }[];
+
+    matchResult = computeMatches(
+      annotations.map((a) => ({
+        id: a.id,
+        location: { item_id: a.location.item_id },
+        flawType: a.flawType,
+      })),
+      flawIndex
+    );
+
+    evaluation = activity.evaluation as {
+      flaws: {
+        flaw_id: string;
+        flaw_type: string;
+        severity: string;
+        description: string;
+        evidence: string;
+        explanation: string;
+        location: { type: string; references: string[] };
+      }[];
+      summary: { total_flaws: number; key_patterns: string };
+    };
+  }
 
   return (
     <div>
@@ -100,19 +135,32 @@ export default async function StudentSessionPage({ params }: PageProps) {
         }`}>
           {activity.type}
         </span>
+        {isReviewing && (
+          <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded font-medium">
+            Reviewing
+          </span>
+        )}
       </div>
 
-      <SessionActivityViewer
-        sessionId={id}
-        groupId={group.id}
-        activityId={activity.id}
-        activityType={activity.type}
-        transcript={activity.transcriptContent as unknown}
-        agents={agents}
-        initialAnnotations={annotations}
-        pendingScaffolds={pendingScaffolds}
-        readOnly={isReadOnly}
-      />
+      {isReviewing && matchResult && evaluation ? (
+        <FeedbackView
+          annotations={annotations}
+          matchResult={matchResult}
+          evaluation={evaluation}
+        />
+      ) : (
+        <SessionActivityViewer
+          sessionId={id}
+          groupId={group.id}
+          activityId={activity.id}
+          activityType={activity.type}
+          transcript={activity.transcriptContent as unknown}
+          agents={agents}
+          initialAnnotations={annotations}
+          pendingScaffolds={pendingScaffolds}
+          readOnly={false}
+        />
+      )}
     </div>
   );
 }
