@@ -2,8 +2,8 @@
 
 ## Status
 
-**Current phase:** Phase 5 — Polish (in progress)
-**Next action:** Mobile bottom bar, class projector view, difficulty modes, teacher student management
+**Current phase:** Phase 6 — Researcher (in progress)
+**Next action:** Activity browser with full metadata, data export, cross-scenario comparison
 **Blocked by:** Nothing
 **Environment:** macOS, Node 23.11.0, npm 11.3.0, Next.js 16.2.1, Prisma 6.19.2, PostgreSQL 15.13
 
@@ -517,6 +517,52 @@ Store in session.config, bottom bar adapts based on mode.
 - [ ] Class projector view shows aggregate results
 - [ ] Difficulty modes change the bottom bar behavior
 - [ ] Teacher can delete sessions and reopen reviewing sessions
+
+---
+
+## Phase 6: Researcher
+
+Goal: Researchers can browse all activities with full metadata, view the pipeline (scenario → profiles → transcript → evaluation), examine session data (annotations, scaffolds, match results), and export datasets for external analysis.
+
+### 6a. Researcher Activity Browser
+
+**`/researcher`** — Browse all activities with full metadata visible:
+- Scenario design (driving question, domain, agent sketches, expected flaws)
+- Agent profiles (knowledge profiles, dispositions)
+- Flaw index with type/severity distribution
+- Link to full transcript (with metadata — knowledge areas, rationale)
+
+### 6b. Researcher Pipeline View
+
+**`/researcher/activity/[id]`** — Single activity with all layers:
+- **Scenario tab**: scenario YAML data (design intent, expected flaws)
+- **Profiles tab**: each agent's knowledge profile and disposition
+- **Transcript tab**: full transcript with metadata visible (knowledge areas engaged, rationale, reactive tendency)
+- **Evaluation tab**: all flaws with descriptions, evidence, explanations
+- Knowledge-to-flaw tracing: click a flaw → see which agent's knowledge gap produced it
+
+### 6c. Session Data Browser
+
+**`/researcher/sessions`** — Browse all sessions across all teachers:
+- Session status, activity, group count, annotation counts
+- Per-group: annotations, match results, scaffold events
+- Anonymized student IDs (display opaque IDs, not names)
+
+### 6d. Data Export
+
+**`GET /api/export/annotations?session_id=X`** — CSV/JSON export of annotations with match results
+**`GET /api/export/scaffolds?session_id=X`** — CSV/JSON export of scaffold events with context
+**`GET /api/export/sessions`** — CSV/JSON export of all session summaries
+
+All exports anonymized (opaque student IDs, no names).
+
+### Phase 6 Verification Checklist
+
+- [ ] Researcher sees all activities with full metadata
+- [ ] Pipeline view shows scenario, profiles, transcript with metadata, evaluation
+- [ ] Session browser shows all sessions with anonymized student data
+- [ ] Export endpoints return valid CSV/JSON
+- [ ] Student names never appear in researcher views or exports
 
 ---
 
