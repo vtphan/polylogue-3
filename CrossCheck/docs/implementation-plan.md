@@ -286,11 +286,16 @@ Agent avatars: colored circle with initials, consistent per agent (derived from 
 
 ### 1d. Text Selection & Annotation
 
+Fixed bottom bar always visible at the bottom of the screen with 4 flaw type buttons (color-coded) + Undo + annotation count.
+
 When student selects text in the transcript:
-1. A floating toolbar appears near the selection
-2. Toolbar shows 4 flaw type buttons (color-coded): Reasoning, Epistemic, Completeness, Coherence
-3. Student taps one → annotation is created and persisted
-4. Highlighted text remains visible with a colored underline matching the flaw type
+1. Browser highlight stays visible (selection not cleared)
+2. Bottom bar buttons activate (grayed out → colored)
+3. Student taps a flaw type button → annotation is created and persisted
+4. Annotated text renders with a colored underline matching the flaw type
+5. Undo button removes the most recent annotation
+
+**Offset calculation:** Each text `<span>` carries `data-seg-start`/`data-seg-end` attributes. On selection, the system finds the parent segment span, reads its offset, and adds the character position within the span. This avoids DOM-to-string mapping issues with TreeWalker or Range.toString().
 
 Annotation stored as: `{ section_id/turn_id, start_offset, end_offset, highlighted_text, flaw_type }`
 
@@ -420,3 +425,8 @@ Decisions made during implementation that aren't covered in `app-concept.md`.
 | 2026-03-23 | Kept existing PostgreSQL 15 instead of switching to 17 | Already had PG 15 running. Both work fine for development. |
 | 2026-03-23 | NextAuth v5 beta (Auth.js) | Latest version with App Router support. JWT strategy, credentials provider. |
 | 2026-03-23 | `params` and `searchParams` are Promises in Next.js 16 | Must `await` them in page/layout components. Used `async` server components throughout. |
+| 2026-03-23 | Text selection uses data-attribute offsets, not TreeWalker or Range.toString() | TreeWalker failed on cross-segment selections. Range.toString() had whitespace normalization mismatches. Each `<span>` gets `data-seg-start`; offset = segment start + position within span. |
+| 2026-03-23 | Fixed bottom bar replaces floating toolbar for flaw type selection | Floating toolbar had positioning bugs (off-screen, instant dismissal from event bubbling). Bottom bar is always visible, includes Undo button. |
+| 2026-03-23 | Browser selection not cleared on mouseUp | Keeps the blue highlight visible until user clicks a flaw type button. Selection clears naturally when annotation renders and replaces the text spans. |
+| 2026-03-23 | Authorization fixes on 5 API endpoints | All endpoints now check ownership/membership, not just authentication. Session status checked on annotation delete. |
+| 2026-03-23 | Dual annotation model: solo (Phase 1) vs session (Phase 2) | `/api/annotations` creates solo session/group per user. `/api/annotations/session` uses real session groups with membership validation. Solo mode preserved for independent practice. |

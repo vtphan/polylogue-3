@@ -11,8 +11,9 @@ import type {
 } from "@/lib/types";
 import { PresentationView } from "@/components/transcript/presentation-view";
 import { DiscussionView } from "@/components/transcript/discussion-view";
-import { FlawToolbar } from "@/components/annotation/flaw-toolbar";
+import { FlawBottomBar } from "@/components/annotation/flaw-toolbar";
 import { FlawPalette } from "@/components/annotation/flaw-palette";
+import { useSelectionClear } from "@/hooks/useSelectionClear";
 
 interface ActivityViewerProps {
   activityId: string;
@@ -31,20 +32,12 @@ export function ActivityViewer({
 }: ActivityViewerProps) {
   const [annotations, setAnnotations] = useState<Annotation[]>(initialAnnotations);
   const [pendingLocation, setPendingLocation] = useState<AnnotationLocation | null>(null);
-  const [toolbarPos, setToolbarPos] = useState({ x: 0, y: 0 });
   const [saving, setSaving] = useState(false);
 
+  const clearPending = useCallback(() => setPendingLocation(null), []);
+  useSelectionClear(pendingLocation !== null, clearPending);
+
   const handleTextSelected = useCallback((location: AnnotationLocation) => {
-    // Position toolbar near the selection
-    const selection = window.getSelection();
-    if (selection && selection.rangeCount > 0) {
-      const range = selection.getRangeAt(0);
-      const rect = range.getBoundingClientRect();
-      setToolbarPos({
-        x: rect.left + rect.width / 2,
-        y: rect.top + window.scrollY,
-      });
-    }
     setPendingLocation(location);
   }, []);
 
@@ -94,6 +87,15 @@ export function ActivityViewer({
     }
   }, []);
 
+  const handleUndo = useCallback(async () => {
+    if (annotations.length === 0) return;
+    const last = annotations[annotations.length - 1];
+    const res = await fetch(`/api/annotations/${last.id}`, { method: "DELETE" });
+    if (res.ok) {
+      setAnnotations((prev) => prev.slice(0, -1));
+    }
+  }, [annotations]);
+
   const handleAnnotationClick = useCallback((annotation: Annotation) => {
     const el = document.getElementById(annotation.location.item_id);
     if (el) {
@@ -101,50 +103,48 @@ export function ActivityViewer({
     }
   }, []);
 
-  const handleToolbarDismiss = useCallback(() => {
-    setPendingLocation(null);
-  }, []);
-
   return (
-    <div className="flex gap-6">
-      {/* Transcript */}
-      <div className="flex-1 min-w-0">
-        {activityType === "presentation" ? (
-          <PresentationView
-            sections={(transcript as PresentationTranscript).sections}
-            agents={agents}
-            annotations={annotations}
-            onTextSelected={handleTextSelected}
-            onAnnotationClick={handleAnnotationClick}
-          />
-        ) : (
-          <DiscussionView
-            turns={(transcript as DiscussionTranscript).turns}
-            agents={agents}
-            annotations={annotations}
-            onTextSelected={handleTextSelected}
-            onAnnotationClick={handleAnnotationClick}
-          />
-        )}
-      </div>
+    <div className="pb-20"> {/* Bottom padding for the fixed bar */}
+      <div className="flex gap-6">
+        {/* Transcript */}
+        <div className="flex-1 min-w-0">
+          {activityType === "presentation" ? (
+            <PresentationView
+              sections={(transcript as PresentationTranscript).sections}
+              agents={agents}
+              annotations={annotations}
+              onTextSelected={handleTextSelected}
+              onAnnotationClick={handleAnnotationClick}
+            />
+          ) : (
+            <DiscussionView
+              turns={(transcript as DiscussionTranscript).turns}
+              agents={agents}
+              annotations={annotations}
+              onTextSelected={handleTextSelected}
+              onAnnotationClick={handleAnnotationClick}
+            />
+          )}
+        </div>
 
-      {/* Sidebar */}
-      <div className="w-64 shrink-0 hidden lg:block">
-        <div className="sticky top-20">
-          <FlawPalette
-            annotations={annotations}
-            onAnnotationClick={handleAnnotationClick}
-            onAnnotationDelete={handleAnnotationDelete}
-          />
+        {/* Sidebar */}
+        <div className="w-64 shrink-0 hidden lg:block">
+          <div className="sticky top-20">
+            <FlawPalette
+              annotations={annotations}
+              onAnnotationClick={handleAnnotationClick}
+              onAnnotationDelete={handleAnnotationDelete}
+            />
+          </div>
         </div>
       </div>
 
-      {/* Floating toolbar */}
-      <FlawToolbar
-        visible={pendingLocation !== null}
-        position={toolbarPos}
+      {/* Fixed bottom bar */}
+      <FlawBottomBar
+        hasSelection={pendingLocation !== null}
+        annotations={annotations}
         onSelect={handleFlawTypeSelected}
-        onDismiss={handleToolbarDismiss}
+        onUndo={handleUndo}
       />
     </div>
   );

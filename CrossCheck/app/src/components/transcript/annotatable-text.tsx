@@ -83,6 +83,49 @@ function buildSegments(content: string, annotations: Annotation[], itemId: strin
   return segments;
 }
 
+/**
+ * Find the span with a data-seg-start attribute that contains the given DOM node.
+ * Stops walking at the container (the div with the ref). Returns the span element or null.
+ */
+function findSegmentSpan(node: Node, container: HTMLElement): HTMLElement | null {
+  let current: Node | null = node;
+  while (current && current !== container) {
+    if (current instanceof HTMLElement && current.hasAttribute("data-seg-start")) {
+      return current;
+    }
+    current = current.parentNode;
+  }
+  // If the node is a direct text child of the container (shouldn't happen with segments,
+  // but handle defensively), find the segment span that is the node's parent
+  return null;
+}
+
+/**
+ * Compute the character offset within a span's text content where the given
+ * DOM position (container, offset) falls.
+ */
+function offsetWithinSpan(span: HTMLElement, container: Node, offset: number): number {
+  // If the container is the span itself, offset is a child index
+  if (container === span) {
+    let chars = 0;
+    for (let i = 0; i < offset && i < span.childNodes.length; i++) {
+      chars += span.childNodes[i].textContent?.length || 0;
+    }
+    return chars;
+  }
+
+  // Walk text nodes within the span until we find the container
+  const walker = document.createTreeWalker(span, NodeFilter.SHOW_TEXT);
+  let chars = 0;
+  while (walker.nextNode()) {
+    if (walker.currentNode === container) {
+      return chars + offset;
+    }
+    chars += walker.currentNode.textContent?.length || 0;
+  }
+  return chars;
+}
+
 export function AnnotatableText({
   itemId,
   content,
@@ -96,47 +139,73 @@ export function AnnotatableText({
     const selection = window.getSelection();
     if (!selection || selection.isCollapsed || !containerRef.current) return;
 
+    const container = containerRef.current;
     const range = selection.getRangeAt(0);
 
-    // Find the text content relative to the container
-    const container = containerRef.current;
-
-    // Walk through text nodes to compute offsets
-    const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
-    let charCount = 0;
-    let startOffset = -1;
-    let endOffset = -1;
-
-    while (walker.nextNode()) {
-      const node = walker.currentNode;
-      const nodeLength = node.textContent?.length || 0;
-
-      if (node === range.startContainer) {
-        startOffset = charCount + range.startOffset;
-      }
-      if (node === range.endContainer) {
-        endOffset = charCount + range.endOffset;
-        break;
-      }
-
-      charCount += nodeLength;
+    // Ensure selection is within our container
+    if (!container.contains(range.startContainer) || !container.contains(range.endContainer)) {
+      selection.removeAllRanges();
+      return;
     }
 
-    if (startOffset >= 0 && endOffset > startOffset) {
-      const highlightedText = content.slice(startOffset, endOffset).trim();
+    // Find which segment spans the selection starts and ends in
+    const startSpan = findSegmentSpan(range.startContainer, container);
+    const endSpan = findSegmentSpan(range.endContainer, container);
+
+    if (!startSpan || !endSpan) {
+      selection.removeAllRanges();
+      return;
+    }
+
+    // Get the segment's content offset from data attributes
+    const startSegOffset = parseInt(startSpan.getAttribute("data-seg-start") || "0", 10);
+    const endSegOffset = parseInt(endSpan.getAttribute("data-seg-start") || "0", 10);
+
+    // Compute character position within each segment span
+    const startWithin = offsetWithinSpan(startSpan, range.startContainer, range.startOffset);
+    const endWithin = offsetWithinSpan(endSpan, range.endContainer, range.endOffset);
+
+    // Absolute offsets into the content string
+    let absStart = startSegOffset + startWithin;
+    let absEnd = endSegOffset + endWithin;
+
+    // Handle right-to-left selections
+    if (absStart > absEnd) {
+      [absStart, absEnd] = [absEnd, absStart];
+    }
+
+    // Clamp to content bounds
+    absStart = Math.max(0, absStart);
+    absEnd = Math.min(content.length, absEnd);
+
+    if (absEnd > absStart) {
+      const highlightedText = content.slice(absStart, absEnd).trim();
       if (highlightedText.length > 0) {
-        // Adjust offsets to trimmed text
-        const trimStart = content.indexOf(highlightedText, startOffset);
+        // Adjust for leading whitespace in the selection
+        const raw = content.slice(absStart, absEnd);
+        const trimLeading = raw.length - raw.trimStart().length;
+        const finalStart = absStart + trimLeading;
+        const finalEnd = finalStart + highlightedText.length;
+
+        // Reject if selection overlaps any existing annotation
+        const itemAnnotations = annotations.filter((a) => a.location.item_id === itemId);
+        const overlaps = itemAnnotations.some(
+          (a) => finalStart < a.location.end_offset && finalEnd > a.location.start_offset
+        );
+        if (overlaps) return;
+
         onTextSelected({
           item_id: itemId,
-          start_offset: trimStart,
-          end_offset: trimStart + highlightedText.length,
+          start_offset: finalStart,
+          end_offset: finalEnd,
           highlighted_text: highlightedText,
         });
       }
     }
 
-    selection.removeAllRanges();
+    // Don't clear selection here — keep the browser highlight visible
+    // until the user clicks a flaw type button. The selection clears
+    // naturally when the annotation renders and replaces the text spans.
   }, [content, itemId, onTextSelected]);
 
   const segments = buildSegments(content, annotations, itemId);
@@ -151,6 +220,8 @@ export function AnnotatableText({
         seg.annotation ? (
           <span
             key={i}
+            data-seg-start={seg.start}
+            data-seg-end={seg.end}
             onClick={() => onAnnotationClick(seg.annotation!)}
             className={`underline decoration-2 ${UNDERLINE_COLORS[seg.annotation.flawType]} ${BG_COLORS[seg.annotation.flawType]} cursor-pointer rounded-sm px-0.5 -mx-0.5`}
             title={`${FLAW_TYPES[seg.annotation.flawType].label} flaw`}
@@ -158,7 +229,9 @@ export function AnnotatableText({
             {seg.text}
           </span>
         ) : (
-          <span key={i}>{seg.text}</span>
+          <span key={i} data-seg-start={seg.start} data-seg-end={seg.end}>
+            {seg.text}
+          </span>
         )
       )}
     </div>

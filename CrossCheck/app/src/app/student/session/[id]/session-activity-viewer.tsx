@@ -11,8 +11,9 @@ import type {
 } from "@/lib/types";
 import { PresentationView } from "@/components/transcript/presentation-view";
 import { DiscussionView } from "@/components/transcript/discussion-view";
-import { FlawToolbar } from "@/components/annotation/flaw-toolbar";
+import { FlawBottomBar } from "@/components/annotation/flaw-toolbar";
 import { FlawPalette } from "@/components/annotation/flaw-palette";
+import { useSelectionClear } from "@/hooks/useSelectionClear";
 
 interface ScaffoldNotification {
   id: string;
@@ -46,22 +47,15 @@ export function SessionActivityViewer({
 }: SessionActivityViewerProps) {
   const [annotations, setAnnotations] = useState<Annotation[]>(initialAnnotations);
   const [pendingLocation, setPendingLocation] = useState<AnnotationLocation | null>(null);
-  const [toolbarPos, setToolbarPos] = useState({ x: 0, y: 0 });
   const [saving, setSaving] = useState(false);
   const [scaffolds, setScaffolds] = useState(initialScaffolds);
+
+  const clearPending = useCallback(() => setPendingLocation(null), []);
+  useSelectionClear(pendingLocation !== null, clearPending);
 
   const handleTextSelected = useCallback(
     (location: AnnotationLocation) => {
       if (readOnly) return;
-      const selection = window.getSelection();
-      if (selection && selection.rangeCount > 0) {
-        const range = selection.getRangeAt(0);
-        const rect = range.getBoundingClientRect();
-        setToolbarPos({
-          x: rect.left + rect.width / 2,
-          y: rect.top + window.scrollY,
-        });
-      }
       setPendingLocation(location);
     },
     [readOnly]
@@ -110,6 +104,15 @@ export function SessionActivityViewer({
     }
   }, [readOnly]);
 
+  const handleUndo = useCallback(async () => {
+    if (readOnly || annotations.length === 0) return;
+    const last = annotations[annotations.length - 1];
+    const res = await fetch(`/api/annotations/${last.id}`, { method: "DELETE" });
+    if (res.ok) {
+      setAnnotations((prev) => prev.slice(0, -1));
+    }
+  }, [readOnly, annotations]);
+
   const handleAnnotationClick = useCallback((annotation: Annotation) => {
     const el = document.getElementById(annotation.location.item_id);
     if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -121,7 +124,7 @@ export function SessionActivityViewer({
   }, []);
 
   return (
-    <div>
+    <div className="pb-20"> {/* Bottom padding for the fixed bar */}
       {/* Scaffold notifications */}
       {scaffolds.length > 0 && (
         <div className="mb-4 space-y-2">
@@ -187,15 +190,14 @@ export function SessionActivityViewer({
         </div>
       </div>
 
-      {/* Floating toolbar */}
-      {!readOnly && (
-        <FlawToolbar
-          visible={pendingLocation !== null}
-          position={toolbarPos}
-          onSelect={handleFlawTypeSelected}
-          onDismiss={() => setPendingLocation(null)}
-        />
-      )}
+      {/* Fixed bottom bar */}
+      <FlawBottomBar
+        hasSelection={pendingLocation !== null}
+        annotations={annotations}
+        onSelect={handleFlawTypeSelected}
+        onUndo={handleUndo}
+        readOnly={readOnly}
+      />
     </div>
   );
 }
