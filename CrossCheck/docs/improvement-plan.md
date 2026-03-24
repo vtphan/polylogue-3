@@ -1,18 +1,34 @@
 # CrossCheck — Improvement Plan (Post-v1)
 
-This plan covers Tiers 1-3 from the comprehensive review. These improvements bring CrossCheck from "functionally complete" to "classroom-ready" and "learning-effective."
+This plan covers Tiers 1-4. Tiers 1-3 are complete. Tier 4 contains lower-priority items for future iteration.
 
 ---
 
 ## Status
 
-**Current:** Not started
-**Prerequisite:** Phases 0-6 complete. Core loop works end-to-end.
-**Goal:** Complete Tier 1 before first classroom deployment. Tiers 2-3 iteratively based on classroom feedback.
+| Tier | Status |
+|------|--------|
+| Tier 1: Before Classroom Use | **Complete** |
+| Tier 2: Quality-of-Life | **Complete** |
+| Tier 3: Learning Enhancements | **Complete** |
+| Tier 4: Future Improvements | Not started |
+
+Additionally, a comprehensive code review was conducted and all critical/high findings were fixed:
+- Auth simplified to name-only login for students (passwords removed)
+- Socket.IO room joins validated against database
+- JWT salt fixed for production HTTPS
+- Individual phase annotation leak fixed
+- Researcher pages auth checks added
+- Research consent enforced in exports
+- Cascading deletes added to schema
+- Session delete simplified (atomic)
+- Fetch error handling added to dashboard
+- Socket.IO double-delivery prevented
+- Performance optimizations (useMemo)
 
 ---
 
-## Tier 1: Before Classroom Use
+## Tier 1: Before Classroom Use (Complete)
 
 ### 1.1 Teacher Evaluation Access
 
@@ -72,24 +88,9 @@ This plan covers Tiers 1-3 from the comprehensive review. These improvements bri
 
 ---
 
-### 1.4 Password Reset
+### ~~1.4 Password Reset~~ — Superseded
 
-**Problem:** No way to reset a student's password except direct database access.
-
-**Solution:** Teacher can reset a student's password from the student management page.
-
-**Files to create:**
-- `src/app/api/users/[id]/reset-password/route.ts` — generates new password, returns it
-
-**Files to modify:**
-- `src/app/teacher/students/page.tsx` — add "Reset password" button per student
-
-**Design:**
-- Teacher clicks "Reset" next to a student's name
-- Confirmation dialog: "Reset password for Maya?"
-- API generates new 6-char password, hashes and saves it
-- New password displayed once (same pattern as account creation)
-- Only works for students the teacher created (or all students if they're the only teacher — configurable)
+Password reset was implemented then removed. Auth was simplified: students log in by name only (no password). Teachers and researchers still use passwords. The password reset API route and UI button have been deleted.
 
 ---
 
@@ -99,7 +100,7 @@ Out of scope. Research consent is handled externally (IRB process), not within t
 
 ---
 
-## Tier 2: Quality-of-Life
+## Tier 2: Quality-of-Life (Complete)
 
 ### 2.1 Teacher Sees Annotations on Transcript
 
@@ -206,7 +207,7 @@ Out of scope. Research consent is handled externally (IRB process), not within t
 
 ---
 
-## Tier 3: Learning Experience Enhancements
+## Tier 3: Learning Experience Enhancements (Complete)
 
 ### 3.1 Student Progress Across Sessions
 
@@ -372,3 +373,65 @@ Dependencies flow top-to-bottom. Items at the same level can be built in paralle
 | 3.4 Teacher Annotation Feedback | New `AnnotationComment` model (id, annotationId, teacherId, text, createdAt) |
 
 All other improvements use existing schema fields or JSONB config.
+
+---
+
+## Tier 4: Future Improvements (Not Started)
+
+Lower-priority items. None are blocking classroom deployment.
+
+### 4.1 Scenario Ingestion from UI
+
+**Problem:** Activities are imported via CLI only (`npx tsx scripts/ingest-registry.ts --all`).
+
+**Solution:** Add an admin page or "Refresh activities" button for teachers to trigger ingestion from the browser.
+
+---
+
+### 4.2 SessionEvent Analysis
+
+**Problem:** Events are logged to the `session_events` table (phase changes, scaffold sends, annotation creates) but never queried or displayed. Rich data for researchers (phase timing, scaffold patterns).
+
+**Solution:** Add event timeline to researcher session view and include in CSV export.
+
+---
+
+### 4.3 Scaffold Outcome Computation
+
+**Problem:** The `outcome` field on scaffolds is nullable and never populated. Designed for post-session analysis correlating scaffold timestamps with subsequent annotation timestamps.
+
+**Solution:** Post-session batch script to compute `annotations_after_5min`, `target_section_annotated`, `flaw_found_at_target`. Add to researcher scaffold export.
+
+---
+
+### 4.4 Mobile/Tablet Flaw Palette
+
+**Problem:** The FlawPalette sidebar is `hidden lg:block`. Tablet users only have the bottom bar — no way to see the annotation list or delete annotations. No touch event handling for text selection.
+
+**Solution:** Collapsible panel above the bottom bar on smaller screens. Add `onTouchEnd` handling for mobile text selection.
+
+---
+
+### 4.5 "Full" Difficulty Mode Completion
+
+**Problem:** The schema has `severity` and `explanation` fields on annotations. The UI shows 3 difficulty modes but "Full" (severity + explanation) isn't fully wired.
+
+**Solution:** Add severity dropdown and explanation textarea to the bottom bar in Full mode. Include severity accuracy in feedback comparison.
+
+---
+
+### 4.6 IndexedDB Offline Annotation Queue
+
+**Problem:** If WiFi drops, annotations made during disconnection are lost (HTTP fetch fails). Socket.IO auto-reconnects but doesn't replay failed HTTP requests.
+
+**Solution:** Store annotations in IndexedDB when fetch fails. Drain queue on reconnect. Server deduplicates by (groupId, userId, location, flawType).
+
+**Status:** Deferred — Socket.IO auto-reconnection handles brief drops. Classroom WiFi is reliable enough for now.
+
+---
+
+### 4.7 Idle Detection on Teacher Dashboard
+
+**Problem:** Connection status shows only active (connected) vs disconnected. No "connected but idle for N minutes" state.
+
+**Solution:** Server tracks `lastActivity` timestamps. Dashboard polls or receives periodic updates. Show yellow dot for idle groups (connected but no events in N minutes).

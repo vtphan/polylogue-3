@@ -2,9 +2,23 @@
 
 ## Status
 
-**Current phase:** All phases complete. Phase 3 (Real-time) implemented — was previously deferred.
-**Next action:** Manual testing of live Socket.IO features, then Tier 4 improvements.
-**Blocked by:** Nothing
+**All phases complete. All improvement tiers (1-3) complete. Code review fixes applied.**
+
+| Phase | Status |
+|-------|--------|
+| Phase 0: Foundation | Complete |
+| Phase 1: Student Core | Complete |
+| Phase 2: Teacher Core | Complete |
+| Phase 3: Real-time (Socket.IO) | Complete |
+| Phase 4: Feedback Loop | Complete |
+| Phase 5: Teacher Tools | Complete |
+| Phase 6: Researcher | Complete |
+| Tier 1: Classroom Readiness | Complete |
+| Tier 2: Quality-of-Life | Complete |
+| Tier 3: Learning Enhancements | Complete |
+| Code Review Fixes | Complete (auth simplification, security fixes, data integrity, client fixes) |
+
+**Next action:** Manual classroom testing, then Tier 4 improvements (see improvement-plan.md).
 **Environment:** macOS, Node 23.11.0, npm 11.3.0, Next.js 16.2.1, Prisma 6.19.2, PostgreSQL 15.13
 
 ---
@@ -648,3 +662,9 @@ Decisions made during implementation that aren't covered in `app-concept.md`.
 | 2026-03-24 | In-memory connection tracking, not database | 30 concurrent users max. Map<socketId, ConnectedUser> is negligible memory. No persistence needed — connection state is ephemeral. |
 | 2026-03-24 | Deferred IndexedDB offline queue | Socket.IO auto-reconnection handles brief drops. HTTP fetch for annotations still works when WebSocket is down. Classroom WiFi is reliable enough. |
 | 2026-03-24 | Multiple teachers supported via session rooms | Teachers join `session:{id}` room. Each teacher sees all groups in sessions they own. Multiple teachers can monitor different sessions simultaneously. |
+| 2026-03-24 | Name-only login for students, passwords removed | Classroom context: students in the same room with a teacher. No eavesdropping incentive. Students enter their name; teachers/researchers still use passwords. Password reset feature deleted. |
+| 2026-03-24 | `onDelete: Cascade` on all child relations | Simplifies session delete to a single `prisma.session.delete()`. Database enforces referential integrity automatically. |
+| 2026-03-24 | Socket.IO room joins validated against DB | Prevents unauthorized room access. Teacher ownership and student group membership checked before `socket.join()`. Old rooms cleared on navigation. |
+| 2026-03-24 | JWT salt set dynamically from cookie name | Cookie name differs between dev (`authjs.session-token`) and production HTTPS (`__Secure-authjs.session-token`). Salt must match for decode to work. |
+| 2026-03-24 | Research consent enforced in exports | `researchConsent` field on User checked in export queries. Non-consenting students excluded from researcher CSV exports (IRB/COPPA requirement). |
+| 2026-03-24 | Socket.IO `.except()` prevents double-delivery | Events emitted to `group:` room, then to `session:` room with `.except(group:)`. Students in both rooms receive once. Teachers in session room receive once. |
