@@ -52,16 +52,6 @@ export interface Activity {
   transcript: Transcript;
 }
 
-// Activity list item (from API)
-export interface ActivityListItem {
-  id: string;
-  scenarioId: string;
-  type: "presentation" | "discussion";
-  topic: string;
-  agents: Agent[];
-  createdAt: string;
-}
-
 // Annotation types
 export type FlawType = "reasoning" | "epistemic" | "completeness" | "coherence";
 
