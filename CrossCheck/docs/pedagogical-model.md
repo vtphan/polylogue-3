@@ -1,6 +1,6 @@
-# CrossCheck — Pedagogical Model and Extension Plan
+# CrossCheck — Pedagogical Model, Gap Analysis, and Implementation Plan
 
-CrossCheck teaches middle school students to identify critical thinking flaws in AI-generated discourse. This document describes the pedagogical model that underpins the app's difficulty progression, scaffolding system, and UI design — integrating Bloom's Revised Taxonomy, Vygotsky's Zone of Proximal Development (ZPD), and Cognitive Load Theory (CLT) into a unified framework for productive struggle.
+CrossCheck teaches middle school students to identify critical thinking flaws in AI-generated discourse. This document describes the pedagogical model (Bloom's × ZPD with CLT governance), audits the current codebase against the model, identifies every gap, and provides a detailed implementation plan for a coding agent.
 
 ---
 
@@ -8,7 +8,7 @@ CrossCheck teaches middle school students to identify critical thinking flaws in
 
 ### 1.1 Bloom's Revised Taxonomy — The Task Dimension
 
-Bloom's Revised Taxonomy (Anderson & Krathwohl, 2001) describes six levels of cognitive processing, from simple recall to complex creation:
+Bloom's Revised Taxonomy (Anderson & Krathwohl, 2001) describes six levels of cognitive processing:
 
 | Level | Cognitive Process | In CrossCheck |
 |-------|------------------|---------------|
@@ -17,47 +17,34 @@ Bloom's Revised Taxonomy (Anderson & Krathwohl, 2001) describes six levels of co
 | **Apply** | Use knowledge in a bounded, guided context | Find a flaw given its type and location area |
 | **Analyze** | Break material into parts, examine relationships | Read a transcript and independently identify flaws |
 | **Evaluate** | Make judgments, justify decisions | Classify flaws by type and severity, explain reasoning |
-| **Create** | Produce new work, synthesize | Write corrections, evaluate peers' work, design flaws |
+| **Create** | Produce new work, synthesize | Write corrections, evaluate peers' work (future) |
 
-Each level requires the cognitive skills of all levels below it. A student cannot Analyze (find flaws independently) without first being able to Remember (what flaw types exist), Understand (why something counts as a flaw), and Apply (use that knowledge to locate an instance).
-
-**Role in CrossCheck:** Bloom's levels map to difficulty modes. The mode determines what cognitive work the task demands — what the student must do with the transcript.
+**Role in CrossCheck:** Bloom's levels map to difficulty modes. The mode determines what cognitive work the task demands.
 
 ### 1.2 Zone of Proximal Development — The Support Dimension
 
-Vygotsky's ZPD (1978) defines three zones for any learner:
+Vygotsky's ZPD (1978) defines three zones:
 
-- **Zone of Actual Development:** What the learner can do independently, without help. Tasks here are too easy — no learning occurs.
-- **Zone of Proximal Development:** What the learner can do with appropriate support from a More Knowledgeable Other (MKO — teacher, peer, or structured tool). This is where learning happens.
-- **Beyond ZPD:** What the learner cannot do even with help. Tasks here cause frustration, not learning.
+- **Zone of Actual Development:** What the learner can do independently. Too easy — no learning.
+- **Zone of Proximal Development:** What the learner can do with support. Where learning happens.
+- **Beyond ZPD:** What the learner cannot do even with help. Frustration, not learning.
 
-**Scaffolding** (Wood, Bruner, & Ross, 1976) is the process of providing temporary support within the ZPD that is gradually removed (faded) as the learner gains competence. Effective scaffolding has three properties:
+Scaffolding (Wood, Bruner, & Ross, 1976) is temporary support that is contingent, fading, and transfers responsibility to the learner.
 
-1. **Contingent** — Calibrated to the student's current state, not one-size-fits-all
-2. **Fading** — Gradually withdrawn as competence develops
-3. **Transfer of responsibility** — The student eventually performs independently
-
-**Role in CrossCheck:** The ZPD maps to the support dimension. Support comes from two sources:
-
-- **App-provided structure:** The difficulty mode itself provides scaffolding. Recognize mode gives the flaw location (heavy support). Spot mode gives nothing (minimal support). The mode determines the baseline scaffolding level.
-- **Teacher interventions:** The 6-level scaffold system (attention redirect → comparison prompt → category nudge → question prompt → flaw type hint → metacognitive prompt) lets the teacher add support within the current mode. The teacher is the primary MKO, reading the room and deciding when and how to intervene.
-- **Peer scaffolding:** The individual→group phase transition creates a natural MKO relationship. Students who identified a flaw explain it to students who didn't. This is ZPD's social learning mechanism operating without teacher direction.
+**Role in CrossCheck:** Support comes from three sources:
+- **App-provided structure:** The difficulty mode provides baseline scaffolding (Recognize gives locations; Spot gives nothing).
+- **Teacher interventions:** The 6-level scaffold system lets the teacher add support within any mode.
+- **Peer scaffolding:** Individual→group phase transition creates MKO relationships between students.
 
 ### 1.3 Cognitive Load Theory — The Design Constraint
 
-CLT (Sweller, 1988) posits that working memory is limited and that learning requires managing three types of cognitive load:
+CLT (Sweller, 1988) says working memory is limited. Three types of cognitive load:
 
-- **Intrinsic load:** The inherent difficulty of the material, determined by the content's complexity and the student's prior knowledge. Intrinsic load is irreducible for a given task — but can be managed by controlling task complexity (Bloom's level).
-- **Extraneous load:** Unnecessary cognitive effort imposed by poor design — confusing interfaces, irrelevant information, split attention, redundant instructions. Extraneous load contributes nothing to learning and should be minimized.
-- **Germane load:** Productive cognitive effort spent building and automating mental schemas — the actual learning. Germane load should be maximized, within the constraint that total load (intrinsic + extraneous + germane) does not exceed working memory capacity.
+- **Intrinsic load:** Inherent task difficulty. Managed by Bloom's level selection.
+- **Extraneous load:** Unnecessary effort from poor design. Minimized by adapting the UI per mode.
+- **Germane load:** Productive schema-building effort. Maximized by ZPD-calibrated scaffolding.
 
-**Role in CrossCheck:** CLT acts as a constraint on the 2D space. At any point in the Bloom's × ZPD space:
-
-- **Intrinsic load** is determined by the Bloom's level. Recognize (Understand) has low intrinsic load — the flaw is shown; the student only needs to comprehend it. Analyze (Evaluate) has high intrinsic load — the student must find, categorize, judge, and explain.
-- **Extraneous load** is determined by the app design. The UI must adapt to the difficulty mode: in Recognize mode, hide the annotation toolbar (it's not needed). In Locate mode, visually emphasize the target section. In Classify mode, the flaw palette is essential context, not clutter.
-- **Germane load** is the productive struggle. ZPD scaffolding calibrates germane load: enough challenge to build schemas, not so much that working memory overflows.
-
-**The CLT constraint:** As Bloom's level increases (more intrinsic load), the app must compensate by reducing extraneous load and calibrating support. A student doing high-Bloom's work (Analyze/Evaluate) with a cluttered UI and no scaffolding will exceed cognitive capacity. A student doing low-Bloom's work (Remember/Understand) with a stripped-down UI and heavy scaffolding has working memory to spare.
+**Role in CrossCheck:** CLT constrains the 2D space. As Bloom's level increases (more intrinsic load), the app must reduce extraneous load (simplify UI) and calibrate support (manage germane load). Each difficulty mode should show only what's needed for that cognitive level.
 
 ### 1.4 The Integrated Model — A 2D Space with CLT Governance
 
@@ -88,430 +75,767 @@ CLT (Sweller, 1988) posits that working memory is limited and that learning requ
          Remember   Understand   Apply    Analyze    Evaluate   Create
 ```
 
-**Three frameworks, three roles:**
-
 | Framework | Determines | Axis/Role |
 |-----------|-----------|-----------|
 | Bloom's Revised Taxonomy | What cognitive work the task requires | X-axis (task complexity) |
 | Zone of Proximal Development | How much support the student receives | Y-axis (support level) |
-| Cognitive Load Theory | How the experience is designed at each point | Constraint on the space (governs UI, information visibility, scaffold calibration) |
+| Cognitive Load Theory | How the experience is designed at each point | Constraint (governs UI, information visibility, scaffold calibration) |
 
-**Learning is movement through the space:**
-
-- **Right** (increase Bloom's level): Harder tasks — from being shown flaws to finding them independently
-- **Down** (reduce support): Less scaffolding — from heavy hints to no hints
-- **Diagonal** (both simultaneously): Only when the student is clearly ready
-
-**The teacher's job:** Keep each group inside the productive struggle band. Use difficulty modes to set the Bloom's level. Use scaffolds to adjust ZPD support. The app minimizes extraneous load at every point.
-
-**Fading** is the movement down the Y-axis. Within a session, the teacher can increase or decrease scaffold intensity. Across sessions, the teacher advances the difficulty mode. The combination is how scaffolding fades: over a semester, a student moves from "Recognize + heavy scaffolds" to "Classify + no scaffolds."
+**Learning is movement through the space:** Right (harder tasks) + Down (less support). The teacher keeps each group inside the productive struggle band. The app minimizes extraneous load at every point.
 
 ---
 
-## Part 2: Existing Features Mapped to the Model
+## Part 2: Difficulty Modes — Full Specification
 
-### 2.1 Difficulty Modes (Bloom's Dimension — Existing)
+Six modes, one per Bloom's level (Analyze has two sub-levels):
 
-CrossCheck currently implements three modes, mapping to Bloom's levels 4-5:
+### Learn (Remember)
 
-| Mode | Bloom's Level | What the student does | Status |
-|------|---------------|----------------------|--------|
-| **Spot** | Analyze (beginning) | Highlight problematic passages, no classification | Implemented |
-| **Classify** | Analyze (full) | Highlight + pick flaw type from 4 categories | Implemented (default) |
-| **Full** | Evaluate | Highlight + classify + severity + explanation | Partially implemented (UI shows the mode but severity/explanation fields are not fully wired) |
+| Aspect | Specification |
+|--------|--------------|
+| **Purpose** | Build vocabulary before first transcript exposure |
+| **Student experience** | Screen shows 4 flaw types with definitions and one example each. Interactive matching: 4-6 short passages → "Which flaw type?" (4 options) → immediate feedback with explanation |
+| **Duration** | 3-5 minutes. Assigned before first session or at teacher's discretion |
+| **Transcript** | Not shown |
+| **Bottom bar** | Hidden |
+| **Sidebar** | Hidden |
+| **UI shown** | Quiz cards only — definitions, example passages, multiple-choice questions |
+| **Data source** | Static content: `FLAW_TYPES` constant + pre-written generic examples (not from the current activity) |
+| **Group phase** | Not applicable — Learn is individual only |
+| **Matching/feedback** | Immediate per question (correct/incorrect + explanation) |
+| **CLT** | Very low intrinsic load. Zero extraneous load. Germane load focused on building the flaw type schema |
 
-**Gap:** Bloom's levels 1-3 (Remember, Understand, Apply) have no corresponding modes. Students are expected to jump directly to Analyze, which requires independent identification of flaws — a high-Bloom's task with high intrinsic load. For students encountering critical thinking flaws for the first time, this is above their ZPD.
+### Recognize (Understand)
 
-### 2.2 Scaffolding System (ZPD Dimension — Existing)
+| Aspect | Specification |
+|--------|--------------|
+| **Purpose** | Comprehend what makes a passage a flaw, given that the flaw is already shown |
+| **Student experience** | Transcript displayed with passages pre-highlighted (from evaluation `evidence` field). For each highlighted passage, a response card asks: (1) "What type of problem is this?" — 4 options; (2) "Why is this a problem?" — 2-3 options (one correct, distractors from `explanation`). After answering, shows the evaluator's explanation |
+| **Transcript** | Shown with pre-highlighted passages (colored background on flaw evidence text) |
+| **Bottom bar** | Hidden — no text selection or annotation |
+| **Sidebar** | Hidden — response cards are inline or in a panel below each highlighted passage |
+| **UI shown** | Transcript + response cards + feedback explanations |
+| **Data source** | `activity.evaluation.flaws[].evidence` for highlights, `flaws[].flaw_type` for correct answer, `flaws[].explanation` for feedback. Distractors generated from other flaw types' explanations |
+| **Group phase** | Students answer individually, then discuss answers physically before group submission. Group submission = confirm answers together |
+| **Matching/feedback** | Per-flaw: correct type + correct reason = full credit. Shown after each response (immediate) |
+| **CLT** | Low intrinsic load (comprehension, not identification). Highlighted passages direct attention, eliminating visual search |
 
-CrossCheck implements two scaffolding channels:
+### Locate (Apply)
 
-**App-provided structure (static scaffolding):**
+| Aspect | Specification |
+|--------|--------------|
+| **Purpose** | Find a flaw given its type and general area |
+| **Student experience** | Hint card at top: "There's a **[flaw_type]** flaw in **[section/turn range]**. Can you find it?" Student reads the indicated area and highlights the passage they think contains the flaw. Other sections/turns are visually de-emphasized (dimmed) |
+| **Transcript** | Shown with target section/turns at full opacity, others dimmed (opacity-40 or similar) |
+| **Bottom bar** | Single "Flag this" button (no flaw type selection — the type is given in the hint) |
+| **Sidebar** | Hint card component showing: flaw type badge + location + reading strategy for that type. Annotation list below (what student has flagged so far) |
+| **UI shown** | Transcript (with emphasis) + hint card + simplified bottom bar + annotation list |
+| **Data source** | `activity.flawIndex[]` for hints: `flaw_type` + `locations[]`. One hint card per reference flaw, revealed sequentially or all at once (teacher's choice) |
+| **Hint progression** | Two levels: (1) flaw type + section/turn range; (2) flaw type + specific agent name. Teacher sends Level 2 as a scaffold if student is stuck |
+| **Group phase** | Same hint cards for the whole group. Students search independently, compare in group phase. Confirm/unconfirm works as in Classify |
+| **Matching** | Location-only matching (did the student highlight within the correct section/turn?). Type is given, not assessed |
+| **CLT** | Moderate intrinsic load. Dimmed sections reduce visual search (extraneous). Hint card provides cognitive frame (germane) |
 
-| Feature | ZPD Role | Status |
-|---------|---------|--------|
-| Flaw type definitions in the palette sidebar | Reference support — students can look up definitions | Implemented (4 types with one-line descriptions) |
-| Color-coded flaw types | Reduces extraneous load — visual distinction | Implemented |
-| Agent avatars and speaker labels | Reduces extraneous load — track who said what | Implemented |
-| Presentation sections / discussion stage dividers | Reduces extraneous load — structural orientation | Implemented |
+### Spot (Analyze — beginning)
 
-**Teacher interventions (dynamic scaffolding):**
+| Aspect | Specification |
+|--------|--------------|
+| **Purpose** | Independently identify problematic passages — no hints |
+| **Student experience** | Read the full transcript. Highlight any passage that seems wrong. No flaw type classification required |
+| **Transcript** | Full, no emphasis or dimming |
+| **Bottom bar** | Single "Flag this" button. Undo button. Annotation count |
+| **Sidebar** | Flaw Field Guide (definitions + reading strategies, expandable). Annotation list (click to scroll) |
+| **UI shown** | Full transcript + field guide + simplified bottom bar |
+| **Data source** | None — student works independently |
+| **Group phase** | Full individual→group flow with confirm/unconfirm |
+| **Matching** | Location-only (any annotation at a flaw's location counts as found, regardless of type) |
+| **CLT** | High intrinsic load (independent identification). Field guide provides just-in-time support. No extraneous type selection UI |
 
-| Feature | ZPD Role | Status |
-|---------|---------|--------|
-| 6-level scaffold system | Contingent support — teacher chooses intensity | Implemented |
-| 12 pre-loaded scaffold templates | Reduces teacher effort, ensures quality | Implemented |
-| Custom free-text scaffolds | Flexibility for unique situations | Implemented |
-| Real-time scaffold delivery via Socket.IO | Immediate delivery, no page refresh | Implemented |
-| Scaffold acknowledgment tracking | Teacher knows if the scaffold was received | Implemented |
+### Classify (Analyze — full)
 
-**Peer scaffolding (social ZPD):**
+| Aspect | Specification |
+|--------|--------------|
+| **Purpose** | Independently identify AND categorize flaws by type |
+| **Student experience** | Read the full transcript. Highlight passages, pick flaw type from 4 categories |
+| **Transcript** | Full, no emphasis or dimming |
+| **Bottom bar** | 4 flaw type buttons (color-coded). Undo button. Annotation count |
+| **Sidebar** | Flaw Field Guide + annotation list with flaw type badges |
+| **UI shown** | Full transcript + field guide + full bottom bar |
+| **Data source** | None — student works independently |
+| **Group phase** | Full individual→group flow with confirm/unconfirm |
+| **Matching** | Location + type matching (standard 3-pass: green exact, blue wrong-type, red false positive) |
+| **CLT** | High intrinsic load (identify + categorize). Flaw type buttons and color coding reduce decision overhead |
 
-| Feature | ZPD Role | Status |
-|---------|---------|--------|
-| Individual → Group phase transition | Think-pair-share pedagogy | Implemented |
-| Group consensus (confirm/unconfirm) | Forces verbal negotiation before committing | Implemented |
-| Annotations visible across group in group phase | Creates natural "I found this, did you?" moments | Implemented |
+**This is the current default mode. Fully implemented.**
 
-**Gap:** Scaffolding is entirely teacher-initiated and manual. The app does not suggest scaffolds based on group state, does not adapt scaffold suggestions to the difficulty mode, and does not track scaffold effectiveness. The teacher must notice struggling groups, decide the right scaffold level, craft or select the message, and send it — all while circulating among physical groups.
+### Analyze (Evaluate)
 
-### 2.3 Cognitive Load Management (CLT — Existing)
+| Aspect | Specification |
+|--------|--------------|
+| **Purpose** | Full critical analysis: find, categorize, judge severity, explain reasoning |
+| **Student experience** | Same as Classify, plus: severity dropdown (minor/moderate/major) and explanation text area for each annotation |
+| **Transcript** | Full |
+| **Bottom bar** | 4 flaw type buttons + severity dropdown + explanation field. Undo button |
+| **Sidebar** | Flaw Field Guide + annotation list with severity badges |
+| **UI shown** | Full transcript + field guide + extended bottom bar |
+| **Data source** | None — student works independently |
+| **Group phase** | Full individual→group flow with confirm/unconfirm |
+| **Matching** | Location + type + severity matching. Explanation compared qualitatively in feedback |
+| **CLT** | Highest intrinsic load (5 sub-tasks: find, read closely, categorize, judge, explain). Only for advanced students who have mastered Classify |
 
-**Extraneous load reduction:**
-
-| Feature | CLT Role | Status |
-|---------|---------|--------|
-| Students see content only (metadata hidden) | Prevents split attention — students focus on the text, not knowledge area labels | Implemented |
-| Phase-appropriate UI (annotation tools hidden in reviewing) | Removes irrelevant controls | Implemented |
-| Fixed bottom bar (not floating toolbar) | Stable, predictable interface location | Implemented |
-| Text selection with visual feedback (colored underlines) | Direct manipulation — selection maps visually to annotation | Implemented |
-
-**Intrinsic load management:**
-
-| Feature | CLT Role | Status |
-|---------|---------|--------|
-| Difficulty modes (Spot/Classify/Full) | Controls how many cognitive sub-tasks the student performs | Implemented (3 modes) |
-| Per-group difficulty | Different groups can work at different intrinsic load levels | Implemented |
-
-**Gap:** The UI does not adapt to the difficulty mode. Regardless of mode, students see the same interface — the flaw palette sidebar, the same bottom bar layout, the same transcript view. In Spot mode, the flaw type buttons are replaced with a single "Flag this" button, but the sidebar still shows flaw type categories. This is extraneous information for a student who doesn't need to classify — it adds cognitive load without benefit. CLT's "redundancy effect" applies: information that is unnecessary for the current task is harmful, not neutral.
-
-### 2.4 Feedback and Assessment (Existing)
-
-| Feature | Pedagogical Role | Status |
-|---------|-----------------|--------|
-| 3-pass matching engine (green/blue/red) | Delayed feedback with clear categories | Implemented |
-| Feedback view with transcript + annotations + reference | Side-by-side comparison for self-assessment | Implemented |
-| Teacher comments on annotations | Personalized feedback | Implemented |
-| Bonus find flags | Validates student insights beyond the reference | Implemented |
-| Student progress page (cross-session) | Long-term growth tracking | Implemented |
-| Class projector view | Whole-class debrief support | Implemented |
-
-**Gap:** Feedback is binary and delayed. Students work for 20-30 minutes, then see everything at once. There is no progressive revelation, no reflection prompts, and no connection between feedback and the next session's difficulty level.
+**Currently labeled "Full" in the UI. Partially implemented — severity dropdown and explanation textarea are not wired.**
 
 ---
 
-## Part 3: Extensions to Realize the Model
+## Part 3: Current State Audit
 
-### 3.1 New Difficulty Modes (Bloom's Levels 1-3)
+### What's Implemented
 
-**Learn Mode (Remember)**
+**Difficulty modes:** 3 of 6 (Spot, Classify, Full/Analyze partial). Stored in `group.config.difficulty_mode`.
 
-Purpose: Build vocabulary before first exposure to transcripts.
+**Scaffolding:** 6-level teacher scaffold system with 12 templates, real-time delivery via Socket.IO, acknowledgment tracking. All manual — no smart suggestions.
 
-Student experience:
-- Screen shows the 4 flaw types with definitions and one clear example each (not from the current activity — generic, pre-written examples)
-- Interactive matching: 4-6 short passages, each followed by "Which flaw type does this show?" (4 options) with immediate feedback and explanation
-- Takes 3-5 minutes. Assigned before the first session or at the teacher's discretion
+**Peer scaffolding:** Individual→group phase transition with group consensus (confirm/unconfirm, 2-vote threshold, `isGroupAnswer` field).
 
-CLT consideration: Very low intrinsic load (recall and match). The UI shows only definitions and examples — no transcript, no annotation tools, no sidebar. Extraneous load is near zero. Germane load is focused on building the flaw type schema.
+**Feedback:** 3-pass matching engine (green/blue/red/yellow). Feedback view with transcript tab + annotations/flaws tab. Teacher comments and bonus find flags. Student progress page with cross-session detection rates.
 
-**Recognize Mode (Understand)**
+**CLT compliance:** Metadata hidden from students. Phase-appropriate UI (annotation tools hidden in reviewing). Fixed bottom bar. Spot mode uses single "Flag this" button.
 
-Purpose: Comprehend what makes a passage a flaw, given that the flaw is already identified.
+**Real-time:** Socket.IO with room validation, connection tracking, live annotation feed on teacher dashboard.
 
-Student experience:
-- Transcript is displayed with specific passages pre-highlighted (drawn from the reference evaluation's `evidence` field)
-- For each highlighted passage, a card asks:
-  - "What type of problem is this?" — 4 options (flaw types)
-  - "Why is this a problem?" — 2-3 options (one correct, 1-2 plausible distractors derived from the flaw's `explanation`)
-- After answering, student sees the evaluator's explanation
-- Group phase: students discuss their answers physically before confirming
+### Gap Inventory
 
-CLT consideration: Low-to-moderate intrinsic load (comprehension, not identification). The UI shows the transcript with highlighted passages and response cards — no annotation toolbar, no flaw palette sidebar (those are extraneous at this level). The highlighted passages direct attention, reducing visual search load.
+Each gap is numbered for reference in the implementation plan.
 
-Data source: Pre-highlighted passages come from `activity.evaluation.flaws[].evidence`. Response options generated from `flaws[].explanation` and `flaws[].flaw_type`. No pipeline changes needed — all data already exists.
+**Student interface gaps:**
 
-**Locate Mode (Apply)**
+| # | Gap | Model Requirement | Current State |
+|---|-----|-------------------|---------------|
+| G1 | No Learn mode | Bloom's Remember — vocabulary primer with quiz cards | No page or component exists |
+| G2 | No Recognize mode | Bloom's Understand — pre-highlighted passages with structured responses | No component for pre-highlighted passages or response cards |
+| G3 | No Locate mode | Bloom's Apply — hint cards with section emphasis | No hint card component, no section dimming capability |
+| G4 | No Flaw Field Guide | ZPD static scaffolding — definitions, reading strategies, worked examples | FlawPalette shows one-line definitions only. No reading strategies. No worked examples. Not expandable on mobile |
+| G5 | No discussion prompts in group phase | Peer ZPD — prompts when group members disagree on flaw types | Group phase shows annotations + confirm/unconfirm buttons only. No prompts |
+| G6 | No progressive feedback | CLT — staged reveal (results first, explanations later) | Feedback view shows everything at once |
+| G7 | No reflection prompts | Metacognition — auto-generated discussion questions after feedback | Neither feedback view nor projector view has reflection prompts |
+| G8 | Progress page doesn't show mode trajectory | Cross-session narrative — which mode, what was the outcome | Shows detection rates and flaw type breakdown but not difficulty mode history |
 
-Purpose: Find a flaw given its type and general area.
+**Teacher interface gaps:**
 
-Student experience:
-- A hint card appears at the top: "There's a **reasoning flaw** in the **Findings** section. Can you find the passage where the logic breaks down?"
-- Student reads the indicated section and highlights the passage they think contains the flaw
-- The standard annotation interface is active, but only for the hinted section (other sections are visually de-emphasized)
-- Hints derived from the reference evaluation: flaw type from `flaw_type`, location from `location.references`
-- If the student is stuck, the teacher can send a more specific hint (Level 2: "Compare what Jordan says about the fish data with what Amara said in the introduction")
+| # | Gap | Model Requirement | Current State |
+|---|-----|-------------------|---------------|
+| G9 | Difficulty selector has only 3 levels | 6 modes: Learn, Recognize, Locate, Spot, Classify, Analyze | Session creation form shows Spot / Classify / Full buttons |
+| G10 | No mid-session difficulty change | ZPD fading — teacher changes group mode during session | Dashboard shows difficulty badge (read-only). No way to change |
+| G11 | No smart scaffold suggestions | ZPD adaptive support — observations + pre-drafted scaffolds | Dashboard shows annotation counts but doesn't compare against reference to generate suggestions |
+| G12 | No difficulty recommendations | Cross-session progression — suggest starting mode based on history | Session creation form has no recommendations |
+| G13 | No feedback stage control | Progressive feedback — teacher controls when explanations are revealed | Single "Release Evaluation" button. No staged reveal |
+| G14 | Projector view has no reflection prompts | Metacognition — discussion questions for class debrief | Shows group comparison stats and flaw breakdown only |
 
-CLT consideration: Moderate intrinsic load (apply knowledge to find a specific instance). The UI constrains the search space — the hinted section is visually prominent, other sections are dimmed. This reduces visual search load (extraneous) and focuses germane load on close reading within the bounded area. The hint card uses the element interactivity effect positively: it gives the student a cognitive frame (flaw type + location) that organizes their reading.
+**CLT / UI adaptation gaps:**
 
-### 3.2 Flaw Field Guide (ZPD — Static Scaffolding)
-
-An always-available expandable reference panel that replaces or augments the current FlawPalette sidebar. Content adapts to the student's experience level:
-
-**For all students (static content):**
-- Definitions with middle-school language (existing `FLAW_TYPES` constant)
-- "What to look for" reading strategies per type (one sentence each):
-  - Reasoning: "Watch for jumps from evidence to conclusion. Ask: does the proof match the claim?"
-  - Epistemic: "Notice when someone sounds very sure. Ask: how do they actually know this?"
-  - Completeness: "After reading, ask: who's missing? What could go wrong with their plan?"
-  - Coherence: "Compare what different speakers say. Do they agree with each other?"
-- One generic worked example per type
-
-**After sessions (dynamic content):**
-- Worked examples from transcripts the student has analyzed, shown after feedback
-- "You encountered this epistemic flaw in Session 2: Amara stated littering is the primary source without evidence."
-
-CLT consideration: The field guide is available on demand (click to expand) — not always visible. This prevents the "split attention effect" where students divide attention between the guide and the transcript. When expanded, it provides "just-in-time" information that supports germane load (building the flaw type schema) without adding permanent extraneous load.
-
-### 3.3 Smart Scaffold Suggestions (ZPD — Adaptive Teacher Support)
-
-The teacher dashboard surfaces observations based on comparing group annotations against the reference evaluation. Suggestions are framed as observations, not directives — the teacher decides whether and how to act.
-
-**Suggestion types:**
-
-| Observation | Based on | Example |
-|-------------|---------|---------|
-| Coverage gap | Sections/turns with 0 annotations that contain reference flaws | "Group B hasn't annotated Sections 3-5. Those sections contain 6 flaws." |
-| Type gap | Reference has flaws of a type the group hasn't found | "Group A found reasoning flaws but 0 epistemic. There are 4 epistemic flaws." |
-| Inactivity | No annotations in N minutes (group may be stuck or discussing) | "Group C has been idle for 5 minutes." |
-| High false positive rate | Many annotations not matching reference flaws | "Group D has 8 annotations but only 2 match reference flaws." |
-| Ready to advance | High detection rate at current difficulty | "Group A found 7 of 8 hinted flaws on Locate. Consider moving to Spot." |
-
-**Scaffold suggestions adapt to difficulty mode:**
-
-| Group's Mode | Suggested Scaffold Range | Rationale |
-|-------------|------------------------|-----------|
-| Learn / Recognize | Level 6 (metacognitive) | Content hints are already provided by the mode; scaffolds should focus on thinking process |
-| Locate | Level 2-3 (comparison, category nudge) | Type hints are given; scaffolds add specificity about agents or relationships |
-| Spot | Level 1-3 (redirect, comparison, nudge) | No hints provided; scaffolds narrow the search space |
-| Classify | Level 3-4 (nudge, question) | Student finds flaws but may misclassify; scaffolds guide categorization reasoning |
-| Analyze | Level 4-5 (question, hint) | Student works independently; scaffolds only when truly stuck |
-
-CLT consideration: Suggestions appear as a small, collapsible section on the dashboard — not as popups or notifications that interrupt the teacher's attention. The teacher checks suggestions when they look at the dashboard; the dashboard does not demand attention. This respects the teacher's own cognitive load during a live session.
-
-### 3.4 Progressive Feedback Revelation (Two Stages)
-
-Instead of showing the full evaluation at once, feedback is revealed in two teacher-controlled stages:
-
-**Stage 1 — Results:** Show match indicators (green/blue/red/yellow) and summary stats ("Your group found 7 of 12 flaws"). Students see what they got right and wrong, but not the detailed explanations yet. This creates a natural discussion moment — "We found 7, which 5 did we miss?"
-
-**Stage 2 — Explanations:** Show full reference evaluation with descriptions, evidence quotes, and explanations. Students can now compare their understanding with the expert analysis.
-
-Each stage is a button on the teacher dashboard. Stage 1 is released when the teacher advances to Reviewing. Stage 2 is released when the teacher is ready for the detailed debrief.
-
-CLT consideration: Revealing everything at once causes cognitive overload — 12+ flaws with descriptions, evidence, and explanations plus the student's own annotations plus match indicators. Two stages manage intrinsic load by sequencing the information. Stage 1 gives the big picture (how did we do?). Stage 2 gives the details (why did we miss those?). Each stage has lower intrinsic load than the combined whole.
-
-### 3.5 Group Discussion Prompts (Peer ZPD)
-
-During group phase, the app generates prompts based on annotation disagreements within the group. These support productive discussion by surfacing cognitive conflicts:
-
-| Trigger | Prompt |
-|---------|--------|
-| Two students annotated the same passage with different flaw types | "Maya chose reasoning and Ethan chose epistemic for this passage. Discuss: what's the difference? Which fits better?" |
-| Three students flagged a passage but one didn't | "Three of you flagged this passage. Sam, take another look — do you see what they see?" |
-| A confirmed group answer has only the minimum votes | "This is a group answer with 2 confirmations. Before moving on: is everyone convinced?" |
-
-CLT consideration: Discussion prompts appear as subtle inline cards near the relevant annotation — not as modal popups. They use the students' own names and annotations, creating the "personalization effect" (Mayer, 2009) that increases engagement without adding extraneous load.
-
-### 3.6 Reflection Prompts on Class Projector View
-
-After feedback, the class projector view shows auto-generated discussion questions for whole-class debrief:
-
-- "Three groups found the coherence flaw between Section 1 and Section 4 — what tipped you off?"
-- "The most-missed flaw was an epistemic flaw in Turn 7. Let's re-read it together. What makes it hard to spot?"
-- "Two groups flagged a passage as a flaw that wasn't in the reference. Was it a real flaw? Let's discuss."
-
-These drive teacher-facilitated metacognitive discussion — Bloom's Evaluate applied to the class's own experience.
-
-CLT consideration: Reflection prompts are on the projector (shared attention), not on individual screens (split attention). The teacher facilitates, managing the class's collective cognitive load through pacing and follow-up questions.
-
-### 3.7 Mid-Session Difficulty Changes (ZPD Fading)
-
-The teacher can change a group's difficulty mode during a session — advancing a group that's ready or stepping back a group that's struggling. This enables ZPD fading within a single class period rather than only between sessions.
-
-The dashboard provides a mode indicator on each group card. The teacher clicks it to change modes. Students see a notification: "Your teacher changed your mode to Spot. You're now finding flaws on your own!"
-
-### 3.8 Difficulty Recommendations (Cross-Session Progression)
-
-Based on detection rates across sessions, the app suggests starting difficulty modes for the next session:
-
-- "Group A averaged 80% detection on Locate across 2 sessions → suggest Spot"
-- "Group B averaged 35% detection on Spot → suggest Locate or increase scaffolding"
-- "This is the class's first session → suggest Learn or Recognize"
-
-Recommendations appear when the teacher creates a new session. They are suggestions, not defaults — the teacher always chooses.
-
-### 3.9 Mode-Adaptive UI (CLT — Extraneous Load Reduction)
-
-The interface adapts to the current difficulty mode, showing only what's needed:
-
-| Mode | Transcript View | Bottom Bar | Sidebar | Extra UI |
-|------|----------------|-----------|---------|----------|
-| Learn | Hidden (not needed) | Hidden | Hidden | Quiz cards only |
-| Recognize | Shown with pre-highlighted passages | Hidden (no annotation) | Hidden | Response cards per flaw |
-| Locate | Shown with target area emphasized, other areas dimmed | Single "Flag this" button | Hint card | Progressive hint button |
-| Spot | Full transcript | Single "Flag this" button | Flaw Field Guide | — |
-| Classify | Full transcript | 4 flaw type buttons | Flaw Field Guide + annotation list | — |
-| Analyze | Full transcript | 4 flaw type buttons + severity + explanation | Flaw Field Guide + annotation list | Severity dropdown, explanation field |
-
-Each mode shows less UI than the mode below it. CLT's "redundancy effect": information that is unnecessary for the current task is removed, not just hidden.
+| # | Gap | Model Requirement | Current State |
+|---|-----|-------------------|---------------|
+| G15 | UI doesn't adapt to difficulty mode | Each mode should show only what's needed | Same interface for all modes: same sidebar, same transcript view. Only bottom bar changes (Spot: single button vs. 4 buttons) |
+| G16 | Sidebar shows flaw type categories in Spot mode | Redundancy effect — type info is extraneous when student doesn't classify | FlawPalette always shows 4 flaw types with descriptions |
+| G17 | No mobile annotation support | CLT — accessible on tablets (common in classrooms) | FlawPalette is `hidden lg:block`. No drawer/modal alternative. No touch selection handling |
 
 ---
 
 ## Part 4: Implementation Plan
 
-### Phase A: Difficulty Level Infrastructure + Mode-Adaptive UI
+### Architecture Note for the Coding Agent
 
-**Priority: Highest.** This creates the Bloom's progression that makes the app usable for first-time students.
+The CrossCheck app is at `CrossCheck/app/`. Key paths:
 
-**Schema changes:**
-- Expand difficulty values to include `learn`, `recognize`, `locate` (in addition to existing `spot`, `classify`, `full`)
-- Add `student_responses` JSONB on Annotation model (for Recognize mode structured responses) — or create a new `FlawResponse` model tied to reference flaws
+```
+src/app/student/session/[id]/
+  page.tsx                    — Server component (fetches data, determines which viewer to render)
+  session-activity-viewer.tsx — Client component (annotation interface for Spot/Classify/Analyze)
 
-**New components:**
-- `<LearnMode>` — Quiz cards with flaw type definitions and matching exercises
-- `<RecognizeMode>` — Transcript with pre-highlighted passages + response cards
-- `<LocateMode>` — Transcript with hint cards + section emphasis
-- `<HintCard>` — Displays progressive hints (type → location → agent)
+src/app/student/activity/[id]/
+  page.tsx                    — Server component (solo practice)
+  activity-viewer.tsx         — Client component (simplified annotation interface)
 
-**Modified components:**
-- Session creation form — expand difficulty selector to 6 levels
-- `SessionActivityViewer` — branch on difficulty mode to render the appropriate component
-- `FlawBottomBar` — adapt per mode (hidden in Learn/Recognize, single button in Locate/Spot, full in Classify/Analyze)
-- `FlawPalette` — replace with `FlawFieldGuide` that adapts per mode
+src/components/annotation/
+  flaw-toolbar.tsx            — FlawBottomBar (fixed bar at bottom)
+  flaw-palette.tsx            — FlawPalette (sidebar with flaw types + annotation list)
 
-**Data flow:** Learn mode uses static content. Recognize and Locate modes read from `activity.evaluation` and `activity.flawIndex` — data that already exists in the database. No pipeline changes needed.
+src/components/transcript/
+  presentation-view.tsx       — Renders presentation sections
+  discussion-view.tsx         — Renders discussion turns
+  annotatable-text.tsx        — Text spans with selection handling
+
+src/components/feedback/
+  feedback-view.tsx           — Reviewing phase feedback display
+
+src/app/teacher/sessions/[id]/
+  session-dashboard.tsx       — Teacher live dashboard (933 lines)
+
+src/app/teacher/sessions/[id]/class-view/
+  page.tsx                    — Projector view for class debrief
+
+src/app/teacher/sessions/new/
+  create-session-form.tsx     — Session creation with per-group difficulty
+
+src/lib/
+  types.ts                    — FlawType, Annotation, etc.
+  matching.ts                 — 3-pass annotation matching engine
+  scaffold-templates.ts       — 12 pre-loaded scaffold templates
+
+src/hooks/
+  useSessionSocket.ts         — Socket.IO event handlers
+```
+
+**Data already available in the database (no pipeline changes needed):**
+- `activity.evaluation.flaws[]` — Each flaw has: `flaw_id`, `flaw_type`, `severity`, `location.references[]`, `description`, `evidence` (quoted text), `explanation`
+- `activity.flawIndex[]` — Denormalized: `[{flaw_id, locations[], flaw_type, severity}]`
+- `group.config` — JSONB, currently stores `{difficulty_mode: "spot"|"classify"|"full"}`
+
+**Current difficulty mode values:** `"spot"`, `"classify"`, `"full"` (stored in `group.config.difficulty_mode`). New modes will add: `"learn"`, `"recognize"`, `"locate"`. The `"full"` value maps to the "Analyze" mode described in this document.
+
+---
+
+### Phase A: New Difficulty Modes + Mode-Adaptive UI
+
+**Fixes gaps:** G1, G2, G3, G9, G15, G16
+
+**Priority: Highest.** Without Learn/Recognize/Locate, the app is only usable by students who can already independently identify flaws.
+
+#### A1. Schema + Data Changes
+
+**No Prisma migration needed.** Difficulty mode is stored in `group.config` JSONB — adding new string values requires no schema change. But update validation:
+
+File: `src/app/api/sessions/route.ts`
+- The POST handler accepts `difficultyMode` per group. Currently no validation on the value. Add validation:
+  ```typescript
+  const VALID_MODES = ["learn", "recognize", "locate", "spot", "classify", "full"];
+  ```
+
+File: `src/app/student/session/[id]/page.tsx`
+- Update the type cast: `as "learn" | "recognize" | "locate" | "spot" | "classify" | "full"`
+
+**New model for Recognize mode responses:**
+
+Recognize mode produces structured responses (not text-selection annotations). Create a new Prisma model:
+
+```prisma
+model FlawResponse {
+  id         String   @id @default(uuid()) @db.Uuid
+  groupId    String   @map("group_id") @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  flawId     String   @map("flaw_id")       // Reference flaw ID from evaluation
+  typeAnswer String   @map("type_answer")    // Student's flaw type choice
+  typeCorrect Boolean @map("type_correct")   // Was the type choice correct?
+  reasonAnswer String? @map("reason_answer") // Student's reason choice (optional)
+  reasonCorrect Boolean? @map("reason_correct")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  group      Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@map("flaw_responses")
+}
+```
+
+Add `flawResponses FlawResponse[]` to Group and User models. Run migration.
+
+**New API route:** `POST /api/flaw-responses` — Create a flaw response (for Recognize mode). Validate group membership and session phase.
+
+#### A2. Session Creation Form — 6 Difficulty Levels
+
+File: `src/app/teacher/sessions/new/create-session-form.tsx`
+
+Replace the 3-button difficulty selector in each group card with 6 options. Use a compact layout to avoid overwhelming the form:
+
+```tsx
+{[
+  { value: "learn", label: "Learn", desc: "Vocabulary primer" },
+  { value: "recognize", label: "Recognize", desc: "Explain shown flaws" },
+  { value: "locate", label: "Locate", desc: "Find hinted flaws" },
+  { value: "spot", label: "Spot", desc: "Find on your own" },
+  { value: "classify", label: "Classify", desc: "Find + categorize" },
+  { value: "full", label: "Analyze", desc: "Full analysis" },
+].map((opt) => (
+  <button ... />
+))}
+```
+
+Each button is a small pill: `text-xs px-2 py-1 rounded-full`. Selected = blue border + bg. Unselected = gray border.
+
+#### A3. Student Session Page — Mode Branching
+
+File: `src/app/student/session/[id]/page.tsx`
+
+The server component currently renders either `<FeedbackView>` (reviewing) or `<SessionActivityViewer>` (annotating). Add mode branching:
+
+```tsx
+if (isReviewing) {
+  return <FeedbackView ... />;
+}
+
+switch (difficultyMode) {
+  case "learn":
+    return <LearnMode activityId={activity.id} groupId={group.id} sessionId={id} userId={session.user.id} />;
+  case "recognize":
+    return <RecognizeMode ... flaws={evaluationFlaws} transcript={...} agents={...} />;
+  case "locate":
+    return <LocateMode ... flawIndex={...} transcript={...} agents={...} />;
+  default:
+    return <SessionActivityViewer ... />;  // spot, classify, full
+}
+```
+
+Pass the evaluation flaws and flaw index from the server component (already available as `activity.evaluation` and `activity.flawIndex`).
+
+#### A4. New Component: LearnMode
+
+File: `src/components/modes/learn-mode.tsx` (new)
+
+A self-contained component with no transcript. Shows:
+
+1. **Definitions section:** 4 cards, one per flaw type. Each card: colored badge + name + middle-school definition (from `FLAW_TYPES` constant) + one generic example passage.
+
+2. **Quiz section:** 4-6 short passages (hardcoded generic examples, not from the current activity). Each passage is followed by:
+   - "What type of flaw is this?" — 4 radio buttons
+   - Submit button → shows correct/incorrect + explanation
+   - "Next" button to advance
+
+3. **Completion:** After all questions, show score and "Ready to start!" message. POST to `/api/flaw-responses` to record completion (or store locally).
+
+**Static content needed:** Create `src/lib/learn-mode-content.ts` with 6-8 generic flaw examples. Each example:
+```typescript
+{ passage: string, flawType: FlawType, explanation: string }
+```
+
+Write these at a middle-school reading level. Examples:
+- Reasoning: "Everyone in our neighborhood recycles, so recycling must be the best way to help the environment." (overgeneralization)
+- Epistemic: "Scientists proved that eating chocolate every day makes you smarter." (overstating evidence)
+- Completeness: "Our plan is to plant 100 trees in the school yard. This will solve the air quality problem." (no feasibility analysis)
+- Coherence: Speaker A says "We need to use solar energy" but Speaker B's solution only uses wind power, and neither addresses the disagreement. (team inconsistency)
+
+#### A5. New Component: RecognizeMode
+
+File: `src/components/modes/recognize-mode.tsx` (new)
+
+Props: `{ sessionId, groupId, userId, transcript, agents, activityType, flaws }` where `flaws` is the evaluation flaws array.
+
+Layout:
+- Full transcript rendered via `<PresentationView>` or `<DiscussionView>` (read-only, `onTextSelected` is a no-op)
+- Pre-highlighted passages: for each flaw, find the text matching `flaw.evidence` in the corresponding section/turn content and render it with a colored background (e.g., `bg-yellow-100 border-l-4 border-yellow-400`)
+- Below each highlighted passage, a `<ResponseCard>` component
+
+**ResponseCard component** (`src/components/modes/response-card.tsx`, new):
+- "What type of problem is this?" — 4 buttons (flaw type pills), one correct
+- After selection: green highlight on correct answer, red on wrong. Show the evaluator's `explanation`
+- "Why is this a problem?" — 2-3 text options (correct reason from `flaw.explanation`, distractors from other flaws' explanations). This part is optional and can be deferred.
+- POST to `/api/flaw-responses` with `{ groupId, flawId, typeAnswer, typeCorrect }`
+
+**Pre-highlighting implementation:** The transcript components (`PresentationView`, `DiscussionView`) render content via `<AnnotatableText>`. Add a `highlights` prop (array of `{start, end, flawId}`) that renders highlighted spans with a distinct style (background color, not underline — different from annotation underlines). The `AnnotatableText` component's `buildSegments` function can be extended to handle highlight ranges in addition to annotation ranges.
+
+Alternative (simpler): Don't modify `AnnotatableText`. Instead, render the transcript as plain text (no selection handling) and insert highlighted `<mark>` elements around the evidence text. Since Recognize mode doesn't support text selection, the `AnnotatableText` component isn't needed — use a simpler read-only renderer.
+
+**Group phase in Recognize:** After individual responses, group phase reveals all members' answers. Students discuss disagreements physically. A group submission confirms answers together.
+
+#### A6. New Component: LocateMode
+
+File: `src/components/modes/locate-mode.tsx` (new)
+
+Props: `{ sessionId, groupId, userId, transcript, agents, activityType, flawIndex, readOnly, sessionPhase }`
+
+Layout:
+- **Hint card** at top (new component `src/components/modes/hint-card.tsx`):
+  ```
+  ┌──────────────────────────────────────────┐
+  │ 🔍 Find the reasoning flaw               │
+  │ Look in the Findings section.            │
+  │                                          │
+  │ Reasoning: "Watch for jumps from         │
+  │ evidence to conclusion."                 │
+  └──────────────────────────────────────────┘
+  ```
+  - Shows one flaw at a time (or all, configurable by teacher)
+  - Flaw type badge + location reference + reading strategy for that type (from the field guide content)
+  - Progress indicator: "Hint 1 of 5"
+
+- **Transcript** rendered via `<PresentationView>` or `<DiscussionView>`, but with section emphasis:
+  - Target section/turn: normal opacity
+  - Other sections/turns: `opacity-40` (CSS class applied via prop)
+  - To implement: add an `emphasizedItems` prop to `PresentationView` and `DiscussionView` — an array of `section_id` or `turn_id` strings. Sections/turns not in the array get `opacity-40`.
+
+- **Bottom bar:** Single "Flag this" button (same as Spot mode). The flaw type is recorded automatically from the hint card's type.
+
+- **Sidebar:** Hint card + annotation list (what the student has flagged so far). No flaw type legend (extraneous — type is given).
+
+**Matching:** Location-only. The student's highlighted passage is matched against the hinted flaw's `locations[]`. If the annotation is within the correct section/turn, it's a match.
+
+#### A7. Mode-Adaptive UI
+
+Each mode must show only what's needed (CLT compliance).
+
+File: `src/app/student/session/[id]/session-activity-viewer.tsx`
+- Currently always renders: transcript + FlawPalette sidebar + FlawBottomBar
+- For `spot` and `classify` and `full`: keep current behavior but replace FlawPalette with FlawFieldGuide (Phase B)
+- For `learn`, `recognize`, `locate`: these use their own components (A4-A6), so `SessionActivityViewer` is not rendered for those modes. The branching in the server component (A3) handles this.
+
+File: `src/components/annotation/flaw-toolbar.tsx`
+- Already adapts for Spot mode (single button). Ensure it also works for Locate mode (single button, records type from hint).
+- For `learn` and `recognize`: not rendered (handled by mode branching).
+
+File: `src/components/annotation/flaw-palette.tsx`
+- For `spot`: replace with FlawFieldGuide (no flaw type counts, just definitions + strategies + annotation list)
+- For `classify`/`full`: show FlawFieldGuide + annotation list with flaw type badges (current behavior enhanced)
+- For `learn`/`recognize`/`locate`: not rendered (handled by mode branching)
+
+---
 
 ### Phase B: Flaw Field Guide
 
-**Priority: High.** Low effort, high impact. Supports all modes.
+**Fixes gaps:** G4, G17
 
-**New component:**
-- `<FlawFieldGuide>` — Expandable panel with definitions, reading strategies, and worked examples
-- Static content for definitions and strategies
-- Dynamic content populated from previous session feedback (worked examples)
-- Mobile-friendly: expandable drawer above the bottom bar on small screens (also addresses the Tier 4.4 mobile palette gap)
+**Priority: High.** Supports all annotation modes (Spot, Classify, Analyze) and addresses mobile.
 
-**No schema changes.** Content derived from `FLAW_TYPES` constant + evaluation data.
+#### B1. New Component: FlawFieldGuide
+
+File: `src/components/annotation/flaw-field-guide.tsx` (new)
+
+Replaces `FlawPalette` in the sidebar for Spot/Classify/Analyze modes.
+
+Two sections:
+
+**1. Reference section (always available, collapsible):**
+- 4 flaw type cards with:
+  - Name + colored badge
+  - Middle-school definition (from `FLAW_TYPES`)
+  - "What to look for" reading strategy (one sentence):
+    - Reasoning: "Watch for jumps from evidence to conclusion. Ask: does the proof match the claim?"
+    - Epistemic: "Notice when someone sounds very sure. Ask: how do they actually know this?"
+    - Completeness: "After reading, ask: who's missing? What could go wrong?"
+    - Coherence: "Compare what different speakers say. Do they contradict each other?"
+
+**2. Annotation list (below reference):**
+- Same as current FlawPalette annotation list: click to scroll, hover to delete, confirm/unconfirm in group phase
+- Shows flaw type badge per annotation
+
+**Mobile drawer (addresses G17):**
+- On screens < 1024px (`lg:` breakpoint), add a floating button above the bottom bar: "📖 Guide" or a book icon
+- Tapping opens a slide-up drawer (fixed position, max-height 60vh, scrollable) showing the field guide content
+- Close button at top of drawer
+- This replaces the `hidden lg:block` sidebar with an accessible alternative
+
+#### B2. Modify Existing Components
+
+File: `src/app/student/session/[id]/session-activity-viewer.tsx`
+- Replace `<FlawPalette ... />` with `<FlawFieldGuide ... />` for `spot`, `classify`, `full` modes
+- FlawFieldGuide accepts same props as FlawPalette (`annotations`, `onAnnotationClick`, `onAnnotationDelete`, `onConfirm`, `sessionPhase`, `userId`) plus an `expanded` prop for mobile drawer state
+
+File: `src/app/student/activity/[id]/activity-viewer.tsx`
+- Same replacement for solo practice mode
+
+---
 
 ### Phase C: Smart Scaffold Suggestions
 
-**Priority: High.** Makes the teacher more effective during live sessions.
+**Fixes gaps:** G11
 
-**New component:**
-- `<ScaffoldSuggestions>` — Collapsible section on teacher dashboard
-- Suggestion engine: client-side function comparing group annotations against flaw_index
-- Each suggestion includes a pre-drafted scaffold adapted to the group's current difficulty mode
-- Teacher taps to send (editable) or dismisses
+**Priority: High.** Makes teachers more effective during live sessions.
 
-**No schema changes.** Logic runs client-side using session data already on the dashboard.
+#### C1. Suggestion Engine
+
+File: `src/lib/scaffold-suggestions.ts` (new)
+
+A pure function: `generateSuggestions(groups, flawIndex, difficultyMode) → Suggestion[]`
+
+Input: groups with their annotations + the reference flaw index + each group's difficulty mode.
+Output: array of suggestions, each with:
+```typescript
+interface ScaffoldSuggestion {
+  groupId: string;
+  groupName: string;
+  type: "coverage_gap" | "type_gap" | "inactivity" | "high_false_positives" | "ready_to_advance";
+  message: string;           // Human-readable observation
+  suggestedScaffold: string; // Pre-drafted scaffold text
+  suggestedLevel: number;    // Scaffold level (1-6) adapted to group's mode
+}
+```
+
+Logic per suggestion type:
+- **Coverage gap:** For each reference flaw, check if any group annotation matches its location. If N+ flaws in a section/turn range have no annotations, suggest: "Group X hasn't looked at Section 3 (3 flaws there)."
+- **Type gap:** Count group annotations by flaw type vs. reference flaw types. If reference has 4 epistemic flaws and group has 0 epistemic annotations, suggest: "Group X found reasoning flaws but 0 epistemic."
+- **Ready to advance:** If group has found 70%+ of flaws at current mode, suggest: "Group X found 6 of 8 flaws on Locate. Consider Spot."
+
+#### C2. Dashboard Integration
+
+File: `src/app/teacher/sessions/[id]/session-dashboard.tsx`
+
+Add a `<ScaffoldSuggestions>` section after the group grid and before the scaffold form:
+
+```tsx
+{suggestions.length > 0 && (
+  <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+    <h3 className="text-sm font-medium text-amber-800 mb-2">Suggestions</h3>
+    {suggestions.map((s) => (
+      <div key={s.groupId + s.type} className="text-sm text-amber-700 mb-2 flex items-center justify-between">
+        <span>{s.message}</span>
+        <button onClick={() => { setScaffoldGroupId(s.groupId); setScaffoldText(s.suggestedScaffold); }}>
+          Send
+        </button>
+      </div>
+    ))}
+  </div>
+)}
+```
+
+Recompute suggestions via `useMemo` whenever `session.groups` changes (which updates via Socket.IO). No API call needed — all data is already on the dashboard.
+
+---
 
 ### Phase D: Progressive Feedback + Reflection Prompts
 
-**Priority: Medium.** Turns feedback from passive to active.
+**Fixes gaps:** G6, G7, G13, G14
 
-**Schema change:**
-- Add `feedback_stage` integer to group config JSONB (1 = results only, 2 = full explanations)
+**Priority: Medium.** Turns feedback from passive to active learning.
 
-**Modified components:**
-- Teacher dashboard: "Reveal Explanations" button in reviewing phase (advances feedback_stage from 1 to 2)
-- Student feedback view: filters what's shown based on feedback_stage
-- Class projector view: add auto-generated reflection prompts based on match results
+#### D1. Feedback Stage Control
+
+Add `feedback_stage` to group config JSONB. Values: `1` (results only) or `2` (full explanations). Default: `1` when entering reviewing phase.
+
+File: `src/app/api/sessions/[id]/route.ts`
+- In the PATCH handler, when `status` transitions to `"reviewing"`, set `feedback_stage: 1` in all groups' config.
+- Add a new action: `{ action: "reveal_explanations" }` that sets `feedback_stage: 2` for all groups. Emit Socket.IO event `session:feedback_revealed`.
+
+File: `src/app/teacher/sessions/[id]/session-dashboard.tsx`
+- In reviewing phase, show "Reveal Explanations" button (next to "Class View" and "Reopen"). When clicked, PATCH the session with `{ action: "reveal_explanations" }`.
+
+File: `src/components/feedback/feedback-view.tsx`
+- Accept a `feedbackStage` prop (1 or 2).
+- Stage 1: Show match indicators (green/blue/red/yellow) and summary stats. Show "Your Annotations" with match badges. **Hide** the "Reference Evaluation" column and the explanation text on each annotation card.
+- Stage 2: Show everything (current behavior).
+
+File: `src/app/student/session/[id]/page.tsx`
+- Read `feedbackStage` from group config and pass to `<FeedbackView>`.
+
+#### D2. Reflection Prompts on Projector View
+
+File: `src/app/teacher/sessions/[id]/class-view/page.tsx`
+
+Add a "Discussion Questions" section at the bottom, auto-generated from match results:
+
+```typescript
+function generateReflectionPrompts(groups, flawIndex, evaluation): string[] {
+  const prompts: string[] = [];
+
+  // Most-found flaw
+  const flawFoundCounts = new Map<string, number>();
+  // ... count how many groups found each flaw
+  const mostFound = // flaw found by most groups
+  prompts.push(`${mostFoundCount} groups found the ${mostFound.flaw_type} flaw in ${mostFound.location}. What made it easy to spot?`);
+
+  // Most-missed flaw
+  const mostMissed = // flaw found by fewest groups
+  prompts.push(`The most-missed flaw was a ${mostMissed.flaw_type} flaw (${mostMissed.severity}). Let's re-read it together.`);
+
+  // Flaw type difficulty
+  // ... which type had the lowest detection rate
+  prompts.push(`${hardestType} flaws were the hardest — only ${rate}% found. What makes them tricky?`);
+
+  // Bonus finds
+  // ... any annotations flagged as bonus
+  if (bonusCount > 0) {
+    prompts.push(`${bonusCount} bonus finds — flaws students spotted that weren't in the reference. Were they real flaws?`);
+  }
+
+  return prompts;
+}
+```
+
+Render as a list of cards with large text (designed for projection).
+
+---
 
 ### Phase E: Group Discussion Prompts
 
-**Priority: Medium.** Supports peer ZPD during group phase.
+**Fixes gaps:** G5
 
-**New component:**
-- `<DiscussionPrompt>` — Inline card shown near annotations where group members disagree
-- Trigger logic: computed from annotation state during group phase (different types on same passage, uneven confirmation counts)
+**Priority: Medium.** Enhances peer ZPD during group phase.
 
-**No schema changes.** Prompts are computed client-side from annotation state.
+#### E1. New Component: DiscussionPrompt
+
+File: `src/components/annotation/discussion-prompt.tsx` (new)
+
+A small inline card rendered in the FlawFieldGuide or sidebar during group phase. Props: `{ annotations, members }`
+
+Logic (computed client-side from annotation state):
+
+```typescript
+function generateDiscussionPrompts(annotations, members): DiscussionPrompt[] {
+  const prompts = [];
+
+  // Find annotations at the same location with different flaw types
+  const byLocation = groupBy(annotations, a => a.location.item_id);
+  for (const [itemId, anns] of byLocation) {
+    const types = new Set(anns.map(a => a.flawType));
+    if (types.size > 1) {
+      const names = anns.map(a => members.find(m => m.user.id === a.userId)?.user.displayName).filter(Boolean);
+      prompts.push({
+        text: `${names[0]} and ${names[1]} chose different types for a passage in ${itemId}. Discuss: which fits better?`,
+        location: itemId,
+      });
+    }
+  }
+
+  // Find passages where most but not all members annotated
+  // ... similar logic
+
+  return prompts;
+}
+```
+
+Render as subtle cards in the sidebar:
+```tsx
+<div className="bg-purple-50 border border-purple-200 rounded p-2 text-xs text-purple-800">
+  {prompt.text}
+</div>
+```
+
+Only shown during group phase. Computed from local state (no API call).
+
+---
 
 ### Phase F: Mid-Session Difficulty Changes + Recommendations
 
+**Fixes gaps:** G10, G12, G8
+
 **Priority: Medium.** Enables ZPD fading within and across sessions.
 
-**Modified components:**
-- Teacher dashboard: group card mode indicator becomes a clickable selector
-- API: PATCH endpoint for group config (update difficulty_mode mid-session)
-- Socket.IO: emit `group:difficulty_changed` event so student UI adapts immediately
-- Session creation form: show difficulty recommendations based on past performance data
+#### F1. Mid-Session Mode Change
 
-**Schema:** Group config already supports `difficulty_mode` (implemented). API endpoint for mid-session changes is new.
+File: `src/app/teacher/sessions/[id]/session-dashboard.tsx`
+- The difficulty badge on each group card (currently read-only) becomes a clickable dropdown.
+- On change: PATCH `/api/groups/[id]` with `{ config: { difficulty_mode: newMode } }`.
 
-### Dependency Map
+File: `src/app/api/groups/[id]/route.ts` (new)
+- PATCH handler: validate teacher owns the session, update group config.
+- Emit Socket.IO event: `io.to(\`group:${groupId}\`).emit("group:config_changed", { groupId, config })`.
+
+File: `src/app/student/session/[id]/session-activity-viewer.tsx`
+- Listen for `group:config_changed` event. On receive: show notification ("Your teacher changed your mode to Spot") and `router.refresh()` so the server component re-renders with the new mode.
+
+File: `src/hooks/useSessionSocket.ts`
+- Add `onGroupConfigChanged` handler type.
+
+#### F2. Difficulty Recommendations
+
+File: `src/app/teacher/sessions/new/create-session-form.tsx`
+
+When the teacher selects an activity and creates groups, show a recommendation next to each group's difficulty selector:
+
+- Fetch past session data for these students (query: sessions where these students participated, with match results).
+- If data exists: "Based on past sessions, suggest: Locate" (small text below the selector).
+- If no data: "First session — suggest: Learn or Recognize".
+
+This requires a lightweight API endpoint or the session creation page can fetch past sessions server-side.
+
+#### F3. Progress Page Mode Trajectory
+
+File: `src/app/student/progress/page.tsx`
+- Include the difficulty mode in each session's display.
+- Show as a label next to the date: "Oct 3 — Locate mode — 62% detection".
+- This helps students understand their own progression.
+
+The data is available: join sessions → groups (where student is member) → group.config.difficulty_mode.
+
+---
+
+### Dependency Map and Implementation Order
 
 ```
-Phase A (difficulty modes) ←── foundational, must come first
-    ↓
-Phase B (field guide) ←── independent, can parallel with A
-    ↓
-Phase C (scaffold suggestions) ←── benefits from A (mode-aware suggestions)
-    ↓
+Phase A (new modes + adaptive UI)
+  ├── A1: Schema (FlawResponse model) + validation
+  ├── A2: Session creation form (6 levels)
+  ├── A3: Student page mode branching
+  ├── A4: LearnMode component
+  ├── A5: RecognizeMode + ResponseCard components
+  ├── A6: LocateMode + HintCard components
+  └── A7: Mode-adaptive UI cleanup
+         │
+Phase B (field guide) ←── can start in parallel with A
+  ├── B1: FlawFieldGuide component + mobile drawer
+  └── B2: Replace FlawPalette in viewers
+         │
+Phase C (scaffold suggestions) ←── after A (uses difficulty mode in suggestions)
+  ├── C1: Suggestion engine (pure function)
+  └── C2: Dashboard integration
+         │
 Phase D (progressive feedback) ←── independent of A-C
-    ↓
-Phase E (discussion prompts) ←── independent, benefits from group consensus feature
-    ↓
-Phase F (mid-session changes + recommendations) ←── requires A (more modes to switch between)
-                                                  ←── requires cross-session data (for recommendations)
+  ├── D1: Feedback stage control (API + dashboard + feedback view)
+  └── D2: Reflection prompts on projector view
+         │
+Phase E (discussion prompts) ←── after B (renders in field guide sidebar)
+  └── E1: DiscussionPrompt component
+         │
+Phase F (mid-session changes + recs) ←── after A (more modes to switch between)
+  ├── F1: Mid-session mode change (API + dashboard + socket event)
+  ├── F2: Difficulty recommendations on session creation
+  └── F3: Progress page mode trajectory
 ```
 
-### Estimated Scope
+### Summary Table
 
-| Phase | New Components | Modified Components | Schema Changes | Effort |
-|-------|---------------|-------------------|---------------|--------|
-| A | 4 | 4 | 1 migration | Large |
-| B | 1 | 1 | None | Small |
-| C | 1 | 1 | None | Medium |
-| D | 0 | 3 | 1 field | Medium |
-| E | 1 | 1 | None | Small |
-| F | 0 | 3 | 1 endpoint | Medium |
+| Phase | Gaps Fixed | New Files | Modified Files | Schema | Effort |
+|-------|-----------|-----------|---------------|--------|--------|
+| A | G1, G2, G3, G9, G15, G16 | 6 components + 1 content file + 1 API route | 3 pages + 2 components | 1 model + migration | Large |
+| B | G4, G17 | 1 component | 2 viewers | None | Small-Medium |
+| C | G11 | 1 lib module | 1 dashboard | None | Medium |
+| D | G6, G7, G13, G14 | 0 | 4 files (API, dashboard, feedback, projector) | 1 JSONB field | Medium |
+| E | G5 | 1 component | 1 sidebar | None | Small |
+| F | G10, G12, G8 | 1 API route | 3 files (dashboard, form, progress) | None | Medium |
 
 ---
 
 ## Part 5: The Student Journey (Semester View)
 
-To illustrate how the model works in practice across a semester at UMS:
-
 **Weeks 1-2: Learn + Recognize**
-- Session 1: Learn mode (vocabulary primer, 5 minutes) → Recognize mode on a presentation
-- Students see highlighted flaws, practice identifying types and explaining why
-- Teacher sends Level 6 scaffolds (metacognitive: "Why do you think this is a problem?")
-- Feedback: immediate (within Recognize mode) — students build the flaw type schema
-- Students leave knowing: what the 4 flaw types are, what they look like in context
+- Session 1: Learn mode (vocabulary, 5 min) → Recognize mode on a presentation
+- Students see highlighted flaws, identify types, discuss why in groups
+- Teacher sends metacognitive scaffolds ("Why is this a problem?")
+- Feedback: immediate within Recognize mode
+- Outcome: students know the 4 flaw types and what they look like
 
 **Weeks 3-4: Locate**
 - Sessions 2-3: Locate mode on presentations and discussions
-- Students receive hint cards (type + section), search for specific flaws
-- Teacher sends Level 2-3 scaffolds (comparison prompts, category nudges)
-- Groups discuss their findings physically, compare what they highlighted
-- Feedback: delayed, 2-stage reveal. Students see what they found, then explanations
-- Students leave knowing: how to find flaws when given guidance, close reading skills
+- Hint cards give type + section; students search within bounded area
+- Teacher sends Level 2-3 scaffolds (comparison prompts, nudges)
+- Groups compare findings, confirm/reject in group phase
+- Feedback: 2-stage reveal (results → explanations)
+- Outcome: close reading skills, guided flaw identification
 
 **Weeks 5-8: Spot + Classify**
-- Sessions 4-7: Spot mode first (just find), then Classify (find + categorize)
-- Teacher fades scaffolding: starts at Level 2-3, drops to Level 1 as groups improve
-- Group consensus becomes central — students confirm/reject each other's annotations
-- App suggests difficulty advancement: "Group A is ready for Classify"
-- Teacher may run mixed modes: Group A on Classify, Group B still on Spot
-- Students leave knowing: how to independently identify and categorize flaws
+- Sessions 4-7: Spot (find independently), then Classify (find + categorize)
+- Teacher fades scaffolding: Level 2-3 → Level 1 as groups improve
+- Group consensus central — students confirm/reject annotations
+- Smart suggestions: "Group A is ready for Classify"
+- Mixed modes: Group A on Classify, Group B on Spot
+- Outcome: independent identification and categorization
 
 **Weeks 9-12: Classify + Analyze**
-- Sessions 8-11: Classify for most groups, Analyze for advanced groups
-- Teacher sends minimal scaffolds (Level 1 redirects only)
-- Student progress page shows improvement trends
-- Class projector view drives metacognitive discussion: "Why are epistemic flaws harder to spot?"
-- Students leave knowing: how to evaluate critically, judge severity, explain reasoning
-
-**STRIPES Showcase (end of semester):**
-- Students apply their critical thinking skills to evaluate real PBL presentations
-- The journey from "I can't see any problems" to "I can identify, classify, and explain why this reasoning is flawed" is the arc
+- Sessions 8-11: Classify for most, Analyze for advanced groups
+- Minimal scaffolding (Level 1 redirects only)
+- Projector view reflection: "Why are epistemic flaws harder to spot?"
+- Progress page shows trajectory: Learn → Recognize → Locate → Spot → Classify
+- Outcome: full critical analysis with severity judgments and explanations
 
 ---
 
-## Part 6: Design Principles for Implementation
+## Part 6: Design Principles
 
-These principles should guide every implementation decision:
+1. **The teacher is the pedagogical decision-maker.** The app surfaces information and suggests actions. It never sends scaffolds automatically or changes difficulty modes without the teacher.
 
-1. **The teacher is the pedagogical decision-maker, not the app.** The app surfaces information, suggests actions, and provides tools. It never sends scaffolds automatically, never changes difficulty modes without the teacher, and never makes pedagogical judgments. The teacher reads the room — physically and digitally — and decides.
+2. **Less UI is more learning.** Every element on screen that isn't needed for the current task is extraneous load. Each mode shows only what that cognitive level requires.
 
-2. **Less UI is more learning.** Every element on screen that isn't needed for the current task is extraneous load. Adapt the interface to the mode. When in doubt, hide it.
+3. **Scaffolding is temporary by design.** Every support feature has a path to removal. Hint cards disappear at Spot. The field guide is expandable, not permanent. Discussion prompts fade as groups develop habits.
 
-3. **Scaffolding is temporary by design.** Every support feature should have a path to removal. Hint cards go away when the student advances to Spot. The field guide is expandable, not permanent. Discussion prompts fade as groups develop their own discussion habits.
+4. **Physical discussion is the learning.** The app creates conditions for productive discussion and gets out of the way. Each mode generates different discussion triggers: Recognize ("Why is this a flaw?"), Locate ("Is it this passage or that one?"), Group consensus ("What type is this?").
 
-4. **Physical discussion is the learning.** The app creates conditions for productive discussion and then gets out of the way. Recognize mode creates "Why is this a flaw?" discussions. Locate mode creates "Is it this passage or that one?" discussions. Group consensus creates "What type is this?" discussions. The app structures; the learning happens verbally.
+5. **Productive struggle requires time.** A group idle for 3 minutes might be having a valuable discussion. Suggestions say "Group C has been idle" — not "Group C is stuck." The teacher decides.
 
-5. **Productive struggle requires time.** A group being idle for 3 minutes might be having a valuable discussion. Auto-scaffolding suggestions use language like "Group C has been idle" — not "Group C is stuck." The teacher decides whether to intervene.
-
-6. **Feedback drives the next session, not just this one.** Detection rates, type breakdowns, and progression trajectories inform the teacher's difficulty mode choice for the next session. The app suggests but doesn't prescribe.
+6. **Feedback drives the next session.** Detection rates, type breakdowns, and mode trajectories inform the teacher's choices. The app suggests difficulty levels but doesn't prescribe them.
