@@ -150,7 +150,7 @@ export async function POST(request: NextRequest) {
       sessionId,
     };
     io.to(`group:${groupId}`).emit("scaffold:sent", event);
-    io.to(`session:${sessionId}`).emit("scaffold:sent", event);
+    io.to(`session:${sessionId}`).except(`group:${groupId}`).emit("scaffold:sent", event);
   }
 
   return NextResponse.json(scaffold, { status: 201 });

@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import type { DiscussionTurn, Agent, Annotation, AnnotationLocation } from "@/lib/types";
 import { AgentAvatar } from "./agent-avatar";
 import { AnnotatableText } from "./annotatable-text";
@@ -25,7 +26,7 @@ export function DiscussionView({
   onTextSelected,
   onAnnotationClick,
 }: DiscussionViewProps) {
-  const agentMap = Object.fromEntries(agents.map((a) => [a.agent_id, a]));
+  const agentMap = useMemo(() => Object.fromEntries(agents.map((a) => [a.agent_id, a])), [agents]);
 
   // Group turns by stage for stage dividers
   let currentStage = "";

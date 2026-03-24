@@ -267,38 +267,52 @@ export function SessionDashboard({ session: initialSession }: { session: Session
     return statuses;
   }, [session.groups, connectedUsers]);
 
+  const [actionError, setActionError] = useState<string | null>(null);
+
   const advancePhase = useCallback(async () => {
     if (!nextStatus) return;
-    const res = await fetch(`/api/sessions/${session.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: nextStatus }),
-    });
-    if (res.ok) {
-      // Socket.IO event will update the status via onPhaseChanged,
-      // but also set it optimistically here for immediate feedback
-      setSession((prev) => ({ ...prev, status: nextStatus }));
+    try {
+      setActionError(null);
+      const res = await fetch(`/api/sessions/${session.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: nextStatus }),
+      });
+      if (res.ok) {
+        setSession((prev) => ({ ...prev, status: nextStatus }));
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setActionError(data.error || "Failed to advance phase");
+      }
+    } catch {
+      setActionError("Network error — please try again");
     }
   }, [session.id, nextStatus]);
 
   const sendScaffold = useCallback(async () => {
     if (!scaffoldGroupId || !scaffoldText.trim() || sending) return;
     setSending(true);
-    const res = await fetch("/api/scaffolds", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        sessionId: session.id,
-        groupId: scaffoldGroupId,
-        text: scaffoldText.trim(),
-        level: 1,
-        type: "general",
-      }),
-    });
-    if (res.ok) {
-      setScaffoldText("");
-      setScaffoldGroupId(null);
-      // Socket.IO event will add the scaffold to the group's scaffolds list
+    setActionError(null);
+    try {
+      const res = await fetch("/api/scaffolds", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sessionId: session.id,
+          groupId: scaffoldGroupId,
+          text: scaffoldText.trim(),
+          level: 1,
+          type: "general",
+        }),
+      });
+      if (res.ok) {
+        setScaffoldText("");
+        setScaffoldGroupId(null);
+      } else {
+        setActionError("Failed to send scaffold");
+      }
+    } catch {
+      setActionError("Network error — please try again");
     }
     setSending(false);
   }, [session.id, scaffoldGroupId, scaffoldText, sending]);
@@ -390,6 +404,14 @@ export function SessionDashboard({ session: initialSession }: { session: Session
       {!isConnected && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg px-3 py-2 mb-4 text-xs text-yellow-700">
           Reconnecting to live updates...
+        </div>
+      )}
+
+      {/* Action error */}
+      {actionError && (
+        <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2 mb-4 text-sm text-red-700 flex items-center justify-between">
+          <span>{actionError}</span>
+          <button onClick={() => setActionError(null)} className="text-red-400 hover:text-red-600 ml-2">&times;</button>
         </div>
       )}
 

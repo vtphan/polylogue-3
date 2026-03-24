@@ -1,5 +1,6 @@
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { PipelineView } from "./pipeline-view";
 
 interface PageProps {
@@ -7,6 +8,11 @@ interface PageProps {
 }
 
 export default async function ResearcherActivityPage({ params }: PageProps) {
+  const session = await auth();
+  if (!session?.user || session.user.role !== "researcher") {
+    redirect("/auth/login");
+  }
+
   const { id } = await params;
 
   const activity = await prisma.activity.findUnique({

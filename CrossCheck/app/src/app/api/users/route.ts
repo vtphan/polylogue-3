@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import bcrypt from "bcryptjs";
 
 // List students created by this teacher
 export async function GET() {
@@ -45,30 +44,15 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Generate a simple password
-  const password = generatePassword();
-  const passwordHash = await bcrypt.hash(password, 10);
-
   const student = await prisma.user.create({
     data: {
       username,
       displayName,
       role: "student",
-      passwordHash,
       createdBy: session.user.id,
     },
     select: { id: true, username: true, displayName: true },
   });
 
-  // Return the password so teacher can share it (only time it's visible)
-  return NextResponse.json({ ...student, password }, { status: 201 });
-}
-
-function generatePassword(): string {
-  const chars = "abcdefghjkmnpqrstuvwxyz23456789";
-  let result = "";
-  for (let i = 0; i < 6; i++) {
-    result += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return result;
+  return NextResponse.json(student, { status: 201 });
 }

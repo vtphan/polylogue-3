@@ -15,8 +15,12 @@ export async function GET() {
       groups: {
         where: { name: { not: { startsWith: "solo_" } } },
         include: {
-          members: { select: { userId: true } },
+          members: {
+            where: { user: { researchConsent: true } },
+            select: { userId: true },
+          },
           annotations: {
+            where: { user: { researchConsent: true } },
             select: { id: true, flawType: true, location: true, userId: true, createdAt: true },
           },
           scaffolds: {

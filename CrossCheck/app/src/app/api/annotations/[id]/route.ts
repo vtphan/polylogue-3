@@ -50,7 +50,7 @@ export async function DELETE(
     const sessionId = annotation.group.session.id;
     const event = { annotationId: id, groupId, sessionId };
     io.to(`group:${groupId}`).emit("annotation:deleted", event);
-    io.to(`session:${sessionId}`).emit("annotation:deleted", event);
+    io.to(`session:${sessionId}`).except(`group:${groupId}`).emit("annotation:deleted", event);
   }
 
   return NextResponse.json({ success: true });
@@ -127,7 +127,7 @@ export async function PATCH(
     const sessionId = annotation.group.session.id;
     const event = { annotationId: id, groupId, confirmedBy: newConfirmed, isGroupAnswer, sessionId };
     io.to(`group:${groupId}`).emit("annotation:confirmed", event);
-    io.to(`session:${sessionId}`).emit("annotation:confirmed", event);
+    io.to(`session:${sessionId}`).except(`group:${groupId}`).emit("annotation:confirmed", event);
   }
 
   return NextResponse.json(updated);

@@ -1,4 +1,6 @@
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { redirect } from "next/navigation";
 import { computeMatches } from "@/lib/matching";
 import { FLAW_TYPES } from "@/lib/types";
 import type { FlawType } from "@/lib/types";
@@ -12,6 +14,11 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export default async function ResearcherSessionsPage() {
+  const session = await auth();
+  if (!session?.user || session.user.role !== "researcher") {
+    redirect("/auth/login");
+  }
+
   const sessions = await prisma.session.findMany({
     include: {
       teacher: { select: { displayName: true } },

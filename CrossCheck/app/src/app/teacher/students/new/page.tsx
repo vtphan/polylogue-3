@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 interface CreatedStudent {
   displayName: string;
   username: string;
-  password: string;
 }
 
 export default function AddStudentsPage() {
@@ -40,7 +39,6 @@ export default function AddStudentsPage() {
       setCreated((prev) => [...prev, {
         displayName: data.displayName,
         username: data.username,
-        password: data.password,
       }]);
       setDisplayName("");
       setUsername("");
@@ -72,7 +70,6 @@ export default function AddStudentsPage() {
         setCreated((prev) => [...prev, {
           displayName: data.displayName,
           username: data.username,
-          password: data.password,
         }]);
       } else {
         const data = await res.json();
@@ -194,33 +191,17 @@ export default function AddStudentsPage() {
             Students Created
           </h2>
           <p className="text-xs text-green-700 mb-3">
-            Save these credentials — passwords are only shown once.
+            Students log in by entering their name — no password needed.
           </p>
 
           <div className="bg-white rounded border border-green-200 divide-y divide-green-100">
             {created.map((s, i) => (
               <div key={i} className="px-4 py-3 flex items-center justify-between">
                 <span className="font-medium text-gray-900">{s.displayName}</span>
-                <div className="text-sm font-mono">
-                  <span className="text-gray-500">{s.username}</span>
-                  <span className="text-gray-300 mx-2">/</span>
-                  <span className="text-green-700 font-semibold">{s.password}</span>
-                </div>
+                <span className="text-sm text-gray-500">{s.username}</span>
               </div>
             ))}
           </div>
-
-          <button
-            onClick={() => {
-              const text = created
-                .map((s) => `${s.displayName}\t${s.username}\t${s.password}`)
-                .join("\n");
-              navigator.clipboard.writeText(text);
-            }}
-            className="mt-3 text-xs text-green-700 hover:text-green-900"
-          >
-            Copy all to clipboard
-          </button>
         </div>
       )}
 

@@ -52,6 +52,17 @@ export async function GET(
     if (!isMember) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
+
+    // During individual phase, students only see their own annotations
+    if (classSession.status === "individual") {
+      return NextResponse.json({
+        ...classSession,
+        groups: classSession.groups.map((g) => ({
+          ...g,
+          annotations: g.annotations.filter((a) => a.userId === session.user.id),
+        })),
+      });
+    }
   }
 
   return NextResponse.json(classSession);
@@ -163,20 +174,8 @@ export async function DELETE(
     );
   }
 
-  // Cascading delete: events, scaffolds, annotations, group members, groups, then session
-  await prisma.sessionEvent.deleteMany({ where: { sessionId: id } });
-  await prisma.scaffold.deleteMany({ where: { sessionId: id } });
-
-  const groupIds = (await prisma.group.findMany({
-    where: { sessionId: id },
-    select: { id: true },
-  })).map((g) => g.id);
-
-  if (groupIds.length > 0) {
-    await prisma.annotation.deleteMany({ where: { groupId: { in: groupIds } } });
-    await prisma.groupMember.deleteMany({ where: { groupId: { in: groupIds } } });
-  }
-  await prisma.group.deleteMany({ where: { sessionId: id } });
+  // Schema has onDelete: Cascade on all child relations,
+  // so deleting the session cascades to groups, members, annotations, comments, scaffolds, events.
   await prisma.session.delete({ where: { id } });
 
   return NextResponse.json({ success: true });

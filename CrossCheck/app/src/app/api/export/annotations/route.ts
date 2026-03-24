@@ -17,6 +17,9 @@ export async function GET(request: NextRequest) {
     where.group = { name: { not: { startsWith: "solo_" } } };
   }
 
+  // Only export annotations from consenting users (IRB/COPPA requirement)
+  where.user = { researchConsent: true };
+
   const annotations = await prisma.annotation.findMany({
     where,
     include: {

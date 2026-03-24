@@ -12,7 +12,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.username || !credentials?.password) {
+        if (!credentials?.username) {
           return null;
         }
 
@@ -21,6 +21,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         });
 
         if (!user) {
+          return null;
+        }
+
+        // Students log in by name only — no password required
+        if (user.role === "student") {
+          return { id: user.id, name: user.displayName, role: user.role };
+        }
+
+        // Teachers and researchers require a password
+        if (!credentials?.password) {
+          return null;
+        }
+        if (!user.passwordHash) {
           return null;
         }
 

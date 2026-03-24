@@ -56,10 +56,11 @@ app.prepare().then(async () => {
       }
 
       const cookies = parse(cookieHeader);
-      // NextAuth v5 beta cookie names
-      const token =
-        cookies["authjs.session-token"] ||
-        cookies["__Secure-authjs.session-token"];
+      // NextAuth v5 beta cookie names — salt must match the cookie name
+      const cookieName = cookies["__Secure-authjs.session-token"]
+        ? "__Secure-authjs.session-token"
+        : "authjs.session-token";
+      const token = cookies[cookieName];
 
       if (!token) {
         return nextMiddleware(new Error("No session token"));
@@ -72,9 +73,14 @@ app.prepare().then(async () => {
         return nextMiddleware(new Error("Auth secret not configured"));
       }
 
-      const decoded = await decode({ token, secret, salt: "authjs.session-token" });
+      const decoded = await decode({ token, secret, salt: cookieName });
       if (!decoded || !decoded.id) {
         return nextMiddleware(new Error("Invalid token"));
+      }
+
+      // Validate role is present
+      if (!decoded.role) {
+        return nextMiddleware(new Error("Token missing role"));
       }
 
       // Attach user info to the socket
@@ -93,46 +99,78 @@ app.prepare().then(async () => {
     const { userId, role, name } = socket.data;
     console.log(`[Socket.IO] Connected: ${name} (${role}) [${socket.id}]`);
 
-    // Join a session room. Teachers join the session room to see all groups.
-    // Students join their group room + the session room.
-    socket.on("join:session", (data: { sessionId: string; groupId?: string }) => {
+    // Join a session room with authorization.
+    // Teachers must own the session. Students must be a member of the group.
+    socket.on("join:session", async (data: { sessionId: string; groupId?: string }) => {
       const { sessionId, groupId } = data;
 
-      socket.join(`session:${sessionId}`);
-      if (groupId) {
-        socket.join(`group:${groupId}`);
-      }
+      try {
+        const { prisma } = await import("./src/lib/db");
 
-      // Track this connection
-      connections.set(socket.id, {
-        userId,
-        role,
-        sessionId,
-        groupId: groupId || null,
-        lastActivity: new Date(),
-      });
+        // Validate session exists
+        const session = await prisma.session.findUnique({
+          where: { id: sessionId },
+          select: { id: true, teacherId: true },
+        });
+        if (!session) return;
 
-      // Notify the session room about the connection
-      io.to(`session:${sessionId}`).emit("user:connected", {
-        userId,
-        role,
-        groupId: groupId || null,
-        socketId: socket.id,
-      });
+        // Teachers must own the session
+        if (role === "teacher" && session.teacherId !== userId) return;
 
-      // Send current connection roster to the newly joined socket (for teachers)
-      if (role === "teacher") {
-        const roster: { userId: string; groupId: string | null; role: string }[] = [];
-        for (const [, conn] of connections) {
-          if (conn.sessionId === sessionId) {
-            roster.push({
-              userId: conn.userId,
-              groupId: conn.groupId,
-              role: conn.role,
-            });
+        // Students must be a member of the specified group
+        if (role === "student") {
+          if (!groupId) return;
+          const membership = await prisma.groupMember.findUnique({
+            where: { groupId_userId: { groupId, userId } },
+          });
+          if (!membership) return;
+        }
+
+        // Leave old rooms before joining new ones
+        for (const room of socket.rooms) {
+          if (room !== socket.id && (room.startsWith("session:") || room.startsWith("group:"))) {
+            socket.leave(room);
           }
         }
-        socket.emit("connection:roster", roster);
+
+        socket.join(`session:${sessionId}`);
+        if (groupId) {
+          socket.join(`group:${groupId}`);
+        }
+
+        // Track this connection
+        connections.set(socket.id, {
+          userId,
+          role,
+          sessionId,
+          groupId: groupId || null,
+          lastActivity: new Date(),
+        });
+
+        // Notify the session room about the connection
+        io.to(`session:${sessionId}`).emit("user:connected", {
+          userId,
+          role,
+          groupId: groupId || null,
+          socketId: socket.id,
+        });
+
+        // Send current connection roster to the newly joined socket (for teachers)
+        if (role === "teacher") {
+          const roster: { userId: string; groupId: string | null; role: string }[] = [];
+          for (const [, conn] of connections) {
+            if (conn.sessionId === sessionId) {
+              roster.push({
+                userId: conn.userId,
+                groupId: conn.groupId,
+                role: conn.role,
+              });
+            }
+          }
+          socket.emit("connection:roster", roster);
+        }
+      } catch (err) {
+        console.error("[Socket.IO] join:session error:", err);
       }
     });
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import type { PresentationSection, Agent, Annotation, AnnotationLocation } from "@/lib/types";
 import { AgentAvatar } from "./agent-avatar";
 import { AnnotatableText } from "./annotatable-text";
@@ -27,7 +28,7 @@ export function PresentationView({
   onTextSelected,
   onAnnotationClick,
 }: PresentationViewProps) {
-  const agentMap = Object.fromEntries(agents.map((a) => [a.agent_id, a]));
+  const agentMap = useMemo(() => Object.fromEntries(agents.map((a) => [a.agent_id, a])), [agents]);
 
   return (
     <div className="space-y-4">

@@ -59,6 +59,7 @@ export function SessionActivityViewer({
   const [saving, setSaving] = useState(false);
   const [scaffolds, setScaffolds] = useState(initialScaffolds);
   const [phaseNotice, setPhaseNotice] = useState<string | null>(null);
+  const [currentPhase, setCurrentPhase] = useState(sessionPhase);
   const router = useRouter();
 
   const clearPending = useCallback(() => setPendingLocation(null), []);
@@ -69,7 +70,7 @@ export function SessionActivityViewer({
     // Skip own annotations — already added optimistically
     if (event.annotation.userId === userId) return;
     // In individual phase, don't show others' annotations
-    if (sessionPhase === "individual") return;
+    if (currentPhase === "individual") return;
     setAnnotations((prev) => {
       if (prev.some((a) => a.id === event.annotation.id)) return prev;
       return [...prev, {
@@ -82,7 +83,7 @@ export function SessionActivityViewer({
         userId: event.annotation.userId,
       }];
     });
-  }, [userId, sessionPhase]);
+  }, [userId, currentPhase]);
 
   const onAnnotationDeleted = useCallback((event: AnnotationDeletedEvent) => {
     setAnnotations((prev) => prev.filter((a) => a.id !== event.annotationId));
@@ -111,6 +112,7 @@ export function SessionActivityViewer({
   }, []);
 
   const onPhaseChanged = useCallback((event: PhaseChangedEvent) => {
+    setCurrentPhase(event.to);
     const labels: Record<string, string> = {
       individual: "Individual Phase",
       group: "Group Phase — discuss with your team!",
@@ -300,8 +302,8 @@ export function SessionActivityViewer({
               annotations={annotations}
               onAnnotationClick={handleAnnotationClick}
               onAnnotationDelete={readOnly ? () => {} : handleAnnotationDelete}
-              onConfirm={sessionPhase === "group" ? handleConfirm : undefined}
-              sessionPhase={sessionPhase}
+              onConfirm={currentPhase === "group" ? handleConfirm : undefined}
+              sessionPhase={currentPhase}
               userId={userId}
             />
           </div>

@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
   if (io) {
     const event = { annotation, sessionId };
     io.to(`group:${groupId}`).emit("annotation:created", event);
-    io.to(`session:${sessionId}`).emit("annotation:created", event);
+    io.to(`session:${sessionId}`).except(`group:${groupId}`).emit("annotation:created", event);
   }
 
   return NextResponse.json(annotation, { status: 201 });

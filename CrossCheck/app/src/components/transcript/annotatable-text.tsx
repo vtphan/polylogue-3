@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import type { Annotation, FlawType, AnnotationLocation } from "@/lib/types";
 import { FLAW_TYPES } from "@/lib/types";
 
@@ -208,7 +208,7 @@ export function AnnotatableText({
     // naturally when the annotation renders and replaces the text spans.
   }, [content, itemId, onTextSelected]);
 
-  const segments = buildSegments(content, annotations, itemId);
+  const segments = useMemo(() => buildSegments(content, annotations, itemId), [content, annotations, itemId]);
 
   return (
     <div

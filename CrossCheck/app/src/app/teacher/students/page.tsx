@@ -1,7 +1,6 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import Link from "next/link";
-import { ResetPasswordButton } from "@/components/reset-password-button";
 
 export default async function StudentsPage() {
   const session = await auth();
@@ -45,7 +44,6 @@ export default async function StudentsPage() {
                   <span className="font-medium text-gray-900">{s.displayName}</span>
                   <span className="text-sm text-gray-400 ml-2">{s.username}</span>
                 </div>
-                <ResetPasswordButton studentId={s.id} studentName={s.displayName} />
               </div>
             ))}
           </div>
@@ -62,7 +60,6 @@ export default async function StudentsPage() {
                   <span className="font-medium text-gray-900">{s.displayName}</span>
                   <span className="text-sm text-gray-400 ml-2">{s.username}</span>
                 </div>
-                <ResetPasswordButton studentId={s.id} studentName={s.displayName} />
               </div>
             ))}
           </div>

@@ -10,6 +10,7 @@ export default function LoginPage() {
   const callbackUrl = searchParams.get("callbackUrl") || "/";
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [needsPassword, setNeedsPassword] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -18,7 +19,7 @@ export default function LoginPage() {
 
     const formData = new FormData(e.currentTarget);
     const username = formData.get("username") as string;
-    const password = formData.get("password") as string;
+    const password = (formData.get("password") as string) || "";
 
     const result = await signIn("credentials", {
       username,
@@ -27,7 +28,13 @@ export default function LoginPage() {
     });
 
     if (result?.error) {
-      setError("Invalid username or password");
+      if (!needsPassword && !password) {
+        // First attempt with no password failed — likely a teacher/researcher
+        setNeedsPassword(true);
+        setError("Please enter your password");
+      } else {
+        setError("Invalid name or password");
+      }
       setLoading(false);
     } else {
       router.push(callbackUrl);
@@ -57,7 +64,7 @@ export default function LoginPage() {
           <div className="space-y-4">
             <div>
               <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                Username
+                Name
               </label>
               <input
                 id="username"
@@ -66,22 +73,25 @@ export default function LoginPage() {
                 required
                 autoComplete="username"
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Enter your name"
               />
             </div>
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                autoComplete="current-password"
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
+            {needsPassword && (
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                  Password
+                </label>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autoComplete="current-password"
+                  autoFocus
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+            )}
           </div>
 
           <button
