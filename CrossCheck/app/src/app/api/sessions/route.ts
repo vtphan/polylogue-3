@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
   const body = await request.json();
   const { activityId, groups, config } = body as {
     activityId: string;
-    groups: { name: string; studentIds: string[] }[];
+    groups: { name: string; studentIds: string[]; difficultyMode?: string }[];
     config?: Record<string, unknown>;
   };
 
@@ -84,6 +84,7 @@ export async function POST(request: NextRequest) {
       groups: {
         create: groups.map((g) => ({
           name: g.name,
+          config: { difficulty_mode: g.difficultyMode || (config as Record<string, unknown>)?.difficulty_mode || "classify" },
           members: {
             create: g.studentIds.map((sid) => ({ userId: sid })),
           },

@@ -81,8 +81,10 @@ export default async function StudentSessionPage({ params }: PageProps) {
     type: s.type,
   }));
 
+  // Difficulty mode: per-group first, fall back to session-level for backward compatibility
+  const groupConfig = group.config as { difficulty_mode?: string } | null;
   const sessionConfig = classSession.config as { difficulty_mode?: string } | null;
-  const difficultyMode = (sessionConfig?.difficulty_mode || "classify") as "spot" | "classify" | "full";
+  const difficultyMode = (groupConfig?.difficulty_mode || sessionConfig?.difficulty_mode || "classify") as "spot" | "classify" | "full";
 
   // Compute feedback if in reviewing mode
   let matchResult = null;

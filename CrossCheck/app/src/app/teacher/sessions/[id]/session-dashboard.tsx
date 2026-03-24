@@ -40,6 +40,7 @@ interface SessionData {
 interface GroupData {
   id: string;
   name: string;
+  config: { difficulty_mode?: string } | null;
   members: { user: { id: string; displayName: string } }[];
   annotations: {
     id: string;
@@ -478,9 +479,16 @@ export function SessionDashboard({ session: initialSession }: { session: Session
                     return <span className={`w-2 h-2 rounded-full ${dot}`} title={label} />;
                   })()}
                 </div>
-                <span className="text-xs text-gray-400">
-                  {totalAnnotations} annotations
-                </span>
+                <div className="flex items-center gap-2">
+                  {group.config?.difficulty_mode && group.config.difficulty_mode !== "classify" && (
+                    <span className="text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">
+                      {group.config.difficulty_mode === "spot" ? "Spot" : "Full"}
+                    </span>
+                  )}
+                  <span className="text-xs text-gray-400">
+                    {totalAnnotations} annotations
+                  </span>
+                </div>
               </div>
 
               {/* Members */}
