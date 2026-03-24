@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { getIO } from "@/lib/socket-server";
 
 export async function DELETE(
   request: NextRequest,
@@ -18,7 +19,7 @@ export async function DELETE(
     where: { id },
     include: {
       group: {
-        include: { session: { select: { status: true } } },
+        include: { session: { select: { id: true, status: true } } },
       },
     },
   });
@@ -41,6 +42,16 @@ export async function DELETE(
   }
 
   await prisma.annotation.delete({ where: { id } });
+
+  // Emit real-time event
+  const io = getIO();
+  if (io) {
+    const groupId = annotation.groupId;
+    const sessionId = annotation.group.session.id;
+    const event = { annotationId: id, groupId, sessionId };
+    io.to(`group:${groupId}`).emit("annotation:deleted", event);
+    io.to(`session:${sessionId}`).emit("annotation:deleted", event);
+  }
 
   return NextResponse.json({ success: true });
 }
@@ -65,7 +76,7 @@ export async function PATCH(
       group: {
         include: {
           members: { select: { userId: true } },
-          session: { select: { status: true } },
+          session: { select: { id: true, status: true } },
         },
       },
     },
@@ -108,6 +119,16 @@ export async function PATCH(
       isGroupAnswer,
     },
   });
+
+  // Emit real-time event
+  const io = getIO();
+  if (io) {
+    const groupId = annotation.groupId;
+    const sessionId = annotation.group.session.id;
+    const event = { annotationId: id, groupId, confirmedBy: newConfirmed, isGroupAnswer, sessionId };
+    io.to(`group:${groupId}`).emit("annotation:confirmed", event);
+    io.to(`session:${sessionId}`).emit("annotation:confirmed", event);
+  }
 
   return NextResponse.json(updated);
 }

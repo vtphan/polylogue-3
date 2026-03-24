@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { getIO } from "@/lib/socket-server";
 
 // Student acknowledges a scaffold
 export async function PATCH(
@@ -37,6 +38,13 @@ export async function PATCH(
     where: { id },
     data: { acknowledgedAt: new Date() },
   });
+
+  // Emit real-time event
+  const io = getIO();
+  if (io) {
+    const event = { scaffoldId: id, groupId: scaffold.groupId, sessionId: scaffold.sessionId };
+    io.to(`session:${scaffold.sessionId}`).emit("scaffold:acknowledged", event);
+  }
 
   return NextResponse.json(updated);
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import type {
   Agent,
   Annotation,
@@ -14,6 +15,8 @@ import { DiscussionView } from "@/components/transcript/discussion-view";
 import { FlawBottomBar } from "@/components/annotation/flaw-toolbar";
 import { FlawPalette } from "@/components/annotation/flaw-palette";
 import { useSelectionClear } from "@/hooks/useSelectionClear";
+import { useSessionSocket } from "@/hooks/useSessionSocket";
+import type { AnnotationCreatedEvent, AnnotationDeletedEvent, AnnotationConfirmedEvent, ScaffoldSentEvent, PhaseChangedEvent } from "@/hooks/useSessionSocket";
 
 interface ScaffoldNotification {
   id: string;
@@ -55,9 +58,77 @@ export function SessionActivityViewer({
   const [pendingLocation, setPendingLocation] = useState<AnnotationLocation | null>(null);
   const [saving, setSaving] = useState(false);
   const [scaffolds, setScaffolds] = useState(initialScaffolds);
+  const [phaseNotice, setPhaseNotice] = useState<string | null>(null);
+  const router = useRouter();
 
   const clearPending = useCallback(() => setPendingLocation(null), []);
   useSelectionClear(pendingLocation !== null, clearPending);
+
+  // ---- Socket.IO: live updates ----
+  const onAnnotationCreated = useCallback((event: AnnotationCreatedEvent) => {
+    // Skip own annotations — already added optimistically
+    if (event.annotation.userId === userId) return;
+    // In individual phase, don't show others' annotations
+    if (sessionPhase === "individual") return;
+    setAnnotations((prev) => {
+      if (prev.some((a) => a.id === event.annotation.id)) return prev;
+      return [...prev, {
+        id: event.annotation.id,
+        location: event.annotation.location as AnnotationLocation,
+        flawType: event.annotation.flawType as Annotation["flawType"],
+        createdAt: event.annotation.createdAt,
+        isGroupAnswer: event.annotation.isGroupAnswer,
+        confirmedBy: event.annotation.confirmedBy,
+        userId: event.annotation.userId,
+      }];
+    });
+  }, [userId, sessionPhase]);
+
+  const onAnnotationDeleted = useCallback((event: AnnotationDeletedEvent) => {
+    setAnnotations((prev) => prev.filter((a) => a.id !== event.annotationId));
+  }, []);
+
+  const onAnnotationConfirmed = useCallback((event: AnnotationConfirmedEvent) => {
+    setAnnotations((prev) =>
+      prev.map((a) =>
+        a.id === event.annotationId
+          ? { ...a, isGroupAnswer: event.isGroupAnswer, confirmedBy: event.confirmedBy }
+          : a
+      )
+    );
+  }, []);
+
+  const onScaffoldSent = useCallback((event: ScaffoldSentEvent) => {
+    setScaffolds((prev) => {
+      if (prev.some((s) => s.id === event.scaffold.id)) return prev;
+      return [...prev, {
+        id: event.scaffold.id,
+        text: event.scaffold.text,
+        level: event.scaffold.level,
+        type: event.scaffold.type,
+      }];
+    });
+  }, []);
+
+  const onPhaseChanged = useCallback((event: PhaseChangedEvent) => {
+    const labels: Record<string, string> = {
+      individual: "Individual Phase",
+      group: "Group Phase — discuss with your team!",
+      reviewing: "Review Phase — see how you did!",
+      closed: "Session closed",
+    };
+    setPhaseNotice(labels[event.to] || `Phase: ${event.to}`);
+    // Refresh to get the correct server-rendered view for the new phase
+    setTimeout(() => router.refresh(), 1500);
+  }, [router]);
+
+  const { isConnected } = useSessionSocket(sessionId, groupId, {
+    onAnnotationCreated,
+    onAnnotationDeleted,
+    onAnnotationConfirmed,
+    onScaffoldSent,
+    onPhaseChanged,
+  });
 
   const handleTextSelected = useCallback(
     (location: AnnotationLocation) => {
@@ -149,6 +220,26 @@ export function SessionActivityViewer({
 
   return (
     <div className="pb-20"> {/* Bottom padding for the fixed bar */}
+      {/* Connection indicator */}
+      {!isConnected && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg px-3 py-2 mb-4 text-xs text-yellow-700">
+          Reconnecting to live updates...
+        </div>
+      )}
+
+      {/* Phase transition notification */}
+      {phaseNotice && (
+        <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-3 mb-4 flex items-center justify-between">
+          <p className="text-sm font-medium text-indigo-800">{phaseNotice}</p>
+          <button
+            onClick={() => setPhaseNotice(null)}
+            className="text-indigo-400 hover:text-indigo-600 text-xs"
+          >
+            &times;
+          </button>
+        </div>
+      )}
+
       {/* Scaffold notifications */}
       {scaffolds.length > 0 && (
         <div className="mb-4 space-y-2">

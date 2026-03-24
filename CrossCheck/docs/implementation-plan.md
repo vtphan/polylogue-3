@@ -2,8 +2,8 @@
 
 ## Status
 
-**Current phase:** Phase 6 — Researcher (in progress)
-**Next action:** Activity browser with full metadata, data export, cross-scenario comparison
+**Current phase:** All phases complete. Phase 3 (Real-time) implemented — was previously deferred.
+**Next action:** Manual testing of live Socket.IO features, then Tier 4 improvements.
 **Blocked by:** Nothing
 **Environment:** macOS, Node 23.11.0, npm 11.3.0, Next.js 16.2.1, Prisma 6.19.2, PostgreSQL 15.13
 
@@ -408,9 +408,70 @@ When teacher sets session status to "reviewing":
 
 ---
 
-## Phase 3: Real-time (Deferred)
+## Phase 3: Real-time
 
-Socket.IO integration deferred. Teacher refreshes dashboard manually; students refresh for scaffolds. Functional without real-time — revisit when the core loop is complete.
+Goal: Live updates via Socket.IO so teachers see student activity in real time and students receive scaffolds and phase transitions instantly.
+
+### 3a. Custom Server + Socket.IO
+
+**`server.ts`** — Custom Node.js server wrapping Next.js + Socket.IO on the same port (3000). Socket.IO auth middleware decodes the NextAuth JWT from httpOnly cookies. Room structure: `session:{id}` (teachers) + `group:{id}` (students).
+
+**`src/lib/socket-server.ts`** — Singleton `getIO()` accessor using `globalThis` (survives hot-reloads). API routes call this to emit events after DB writes.
+
+**`src/lib/socket-client.ts`** — Client-side singleton Socket.IO connection with auto-reconnection.
+
+### 3b. Hooks
+
+**`src/hooks/useSocket.ts`** — Base hook: connects, joins rooms, sends heartbeat every 30s.
+
+**`src/hooks/useSessionSocket.ts`** — Higher-level hook with typed event handlers for all session events.
+
+### 3c. Events
+
+| Event | Emitted by | Rooms |
+|-------|-----------|-------|
+| `annotation:created` | `POST /api/annotations/session` | group + session |
+| `annotation:deleted` | `DELETE /api/annotations/[id]` | group + session |
+| `annotation:confirmed` | `PATCH /api/annotations/[id]` | group + session |
+| `scaffold:sent` | `POST /api/scaffolds` | group + session |
+| `scaffold:acknowledged` | `PATCH /api/scaffolds/[id]` | session |
+| `session:phase_changed` | `PATCH /api/sessions/[id]` | session |
+| `user:connected` / `user:disconnected` | Socket.IO connect/disconnect | session |
+| `connection:roster` | On teacher join | Direct to socket |
+
+### 3d. Teacher Dashboard Integration
+
+- Live annotation feed (last 20 events with timestamp, group, flaw type, text)
+- Group cards show connection status dots (green/orange/gray)
+- Scaffold acknowledgments update in real time
+- `router.refresh()` removed — Socket.IO events update local state directly
+
+### 3e. Student View Integration
+
+- Scaffolds appear immediately when teacher sends them
+- Phase transition notifications with auto-refresh
+- Other group members' annotations appear live in group phase
+- Connection status indicator when disconnected
+
+### 3f. Connection Tracking
+
+In-memory `Map<socketId, ConnectedUser>` on the server. Teacher receives a roster on join, then incremental connect/disconnect events. Per-group status derived on the client: active (all connected) / partial (some) / disconnected (none).
+
+### Phase 3 Verification Checklist
+
+- [x] Custom server starts with Socket.IO attached
+- [x] Auth middleware verifies NextAuth JWT from cookies
+- [x] Room join/leave works for teachers and students
+- [ ] Teacher sends scaffold → student sees it without refresh
+- [ ] Student creates annotation → teacher dashboard updates live
+- [ ] Teacher advances phase → students see notification
+- [ ] Connection status dots reflect student connectivity
+- [ ] Scaffold acknowledgment updates teacher dashboard
+
+### Deferred (Phase 3b)
+
+- **Offline annotation queue (IndexedDB):** Socket.IO handles brief drops automatically. HTTP fetch still works when WebSocket is down. Full IndexedDB queue deferred until classroom WiFi proves unreliable.
+- **Idle detection:** Currently only active vs. disconnected. Adding idle (connected but no events in N minutes) requires polling `lastActivity` timestamps — low priority.
 
 ---
 
@@ -582,3 +643,8 @@ Decisions made during implementation that aren't covered in `app-concept.md`.
 | 2026-03-23 | Browser selection not cleared on mouseUp | Keeps the blue highlight visible until user clicks a flaw type button. Selection clears naturally when annotation renders and replaces the text spans. |
 | 2026-03-23 | Authorization fixes on 5 API endpoints | All endpoints now check ownership/membership, not just authentication. Session status checked on annotation delete. |
 | 2026-03-23 | Dual annotation model: solo (Phase 1) vs session (Phase 2) | `/api/annotations` creates solo session/group per user. `/api/annotations/session` uses real session groups with membership validation. Solo mode preserved for independent practice. |
+| 2026-03-24 | Socket.IO auth via httpOnly cookie parsing, not separate token endpoint | Browser sends cookies automatically during WebSocket handshake. Server parses `authjs.session-token` cookie and decodes with `@auth/core/jwt`. No extra API route needed. |
+| 2026-03-24 | Custom server (`server.ts`) with `tsx watch` for dev | `tsx` was already a devDependency. `tsx watch` gives hot-reload on server changes. Next.js HMR still works because `next({ dev: true })`. |
+| 2026-03-24 | In-memory connection tracking, not database | 30 concurrent users max. Map<socketId, ConnectedUser> is negligible memory. No persistence needed — connection state is ephemeral. |
+| 2026-03-24 | Deferred IndexedDB offline queue | Socket.IO auto-reconnection handles brief drops. HTTP fetch for annotations still works when WebSocket is down. Classroom WiFi is reliable enough. |
+| 2026-03-24 | Multiple teachers supported via session rooms | Teachers join `session:{id}` room. Each teacher sees all groups in sessions they own. Multiple teachers can monitor different sessions simultaneously. |

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { getIO } from "@/lib/socket-server";
 
 export async function GET(request: NextRequest) {
   const session = await auth();
@@ -132,6 +133,25 @@ export async function POST(request: NextRequest) {
       },
     },
   });
+
+  // Emit real-time event
+  const io = getIO();
+  if (io) {
+    const event = {
+      scaffold: {
+        id: scaffold.id,
+        groupId: scaffold.groupId,
+        text: scaffold.text,
+        level: scaffold.level,
+        type: scaffold.type,
+        createdAt: scaffold.createdAt,
+        acknowledgedAt: scaffold.acknowledgedAt,
+      },
+      sessionId,
+    };
+    io.to(`group:${groupId}`).emit("scaffold:sent", event);
+    io.to(`session:${sessionId}`).emit("scaffold:sent", event);
+  }
 
   return NextResponse.json(scaffold, { status: 201 });
 }

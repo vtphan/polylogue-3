@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { FLAW_TYPES } from "@/lib/types";
 import { computeMatches } from "@/lib/matching";
@@ -8,6 +8,17 @@ import { EvaluationPanel } from "@/components/evaluation/evaluation-panel";
 import { PresentationView } from "@/components/transcript/presentation-view";
 import { DiscussionView } from "@/components/transcript/discussion-view";
 import { SCAFFOLD_TEMPLATES } from "@/lib/scaffold-templates";
+import { useSessionSocket } from "@/hooks/useSessionSocket";
+import type {
+  AnnotationCreatedEvent,
+  AnnotationDeletedEvent,
+  AnnotationConfirmedEvent,
+  ScaffoldSentEvent,
+  ScaffoldAcknowledgedEvent,
+  PhaseChangedEvent,
+  UserConnectionEvent,
+  ConnectionRosterEntry,
+} from "@/hooks/useSessionSocket";
 import type { FlawType, Agent, Annotation, AnnotationLocation, PresentationTranscript, DiscussionTranscript } from "@/lib/types";
 
 interface SessionData {
@@ -64,6 +75,15 @@ const NEXT_BUTTON_LABELS: Record<string, string> = {
   closed: "Close Session",
 };
 
+interface FeedItem {
+  id: string;
+  type: "annotation" | "scaffold_ack";
+  groupName: string;
+  text: string;
+  flawType?: string;
+  timestamp: Date;
+}
+
 export function SessionDashboard({ session: initialSession }: { session: SessionData }) {
   const [session, setSession] = useState(initialSession);
   const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
@@ -73,10 +93,179 @@ export function SessionDashboard({ session: initialSession }: { session: Session
   const [showEvaluation, setShowEvaluation] = useState(false);
   const [notes, setNotes] = useState(initialSession.notes || "");
   const [notesSaved, setNotesSaved] = useState(true);
+  const [activityFeed, setActivityFeed] = useState<FeedItem[]>([]);
   const router = useRouter();
+
+  // Connection tracking: userId → groupId
+  const [connectedUsers, setConnectedUsers] = useState<Map<string, string | null>>(new Map());
+  const connectedSocketsRef = useRef<Map<string, { userId: string; groupId: string | null }>>(new Map());
 
   const currentStatusIndex = STATUS_FLOW.indexOf(session.status);
   const nextStatus = STATUS_FLOW[currentStatusIndex + 1];
+
+  // ---- Socket.IO: live updates for the teacher dashboard ----
+  const getGroupName = useCallback((groupId: string) => {
+    return session.groups.find((g) => g.id === groupId)?.name || "Unknown";
+  }, [session.groups]);
+
+  const onAnnotationCreated = useCallback((event: AnnotationCreatedEvent) => {
+    const ann = event.annotation;
+    setSession((prev) => ({
+      ...prev,
+      groups: prev.groups.map((g) =>
+        g.id === ann.groupId
+          ? {
+              ...g,
+              annotations: g.annotations.some((a) => a.id === ann.id)
+                ? g.annotations
+                : [...g.annotations, {
+                    id: ann.id,
+                    flawType: ann.flawType,
+                    location: ann.location,
+                    userId: ann.userId,
+                    createdAt: ann.createdAt,
+                    isGroupAnswer: ann.isGroupAnswer,
+                    comments: [],
+                  }],
+            }
+          : g
+      ),
+    }));
+    setActivityFeed((prev) => [{
+      id: ann.id,
+      type: "annotation" as const,
+      groupName: getGroupName(ann.groupId),
+      text: ann.location.highlighted_text?.slice(0, 60) || ann.location.item_id,
+      flawType: ann.flawType,
+      timestamp: new Date(),
+    }, ...prev].slice(0, 20));
+  }, [getGroupName]);
+
+  const onAnnotationDeleted = useCallback((event: AnnotationDeletedEvent) => {
+    setSession((prev) => ({
+      ...prev,
+      groups: prev.groups.map((g) =>
+        g.id === event.groupId
+          ? { ...g, annotations: g.annotations.filter((a) => a.id !== event.annotationId) }
+          : g
+      ),
+    }));
+  }, []);
+
+  const onAnnotationConfirmed = useCallback((event: AnnotationConfirmedEvent) => {
+    setSession((prev) => ({
+      ...prev,
+      groups: prev.groups.map((g) =>
+        g.id === event.groupId
+          ? {
+              ...g,
+              annotations: g.annotations.map((a) =>
+                a.id === event.annotationId
+                  ? { ...a, isGroupAnswer: event.isGroupAnswer }
+                  : a
+              ),
+            }
+          : g
+      ),
+    }));
+  }, []);
+
+  const onScaffoldSent = useCallback((event: ScaffoldSentEvent) => {
+    const s = event.scaffold;
+    setSession((prev) => ({
+      ...prev,
+      groups: prev.groups.map((g) =>
+        g.id === s.groupId
+          ? {
+              ...g,
+              scaffolds: g.scaffolds.some((sc) => sc.id === s.id)
+                ? g.scaffolds
+                : [{ id: s.id, level: s.level, type: s.type, text: s.text, createdAt: s.createdAt, acknowledgedAt: s.acknowledgedAt }, ...g.scaffolds],
+            }
+          : g
+      ),
+    }));
+  }, []);
+
+  const onScaffoldAcknowledged = useCallback((event: ScaffoldAcknowledgedEvent) => {
+    setSession((prev) => ({
+      ...prev,
+      groups: prev.groups.map((g) =>
+        g.id === event.groupId
+          ? {
+              ...g,
+              scaffolds: g.scaffolds.map((s) =>
+                s.id === event.scaffoldId ? { ...s, acknowledgedAt: new Date().toISOString() } : s
+              ),
+            }
+          : g
+      ),
+    }));
+    setActivityFeed((prev) => [{
+      id: event.scaffoldId,
+      type: "scaffold_ack" as const,
+      groupName: getGroupName(event.groupId),
+      text: "Scaffold acknowledged",
+      timestamp: new Date(),
+    }, ...prev].slice(0, 20));
+  }, [getGroupName]);
+
+  const onPhaseChanged = useCallback((event: PhaseChangedEvent) => {
+    setSession((prev) => ({ ...prev, status: event.to }));
+  }, []);
+
+  const onUserConnected = useCallback((event: UserConnectionEvent) => {
+    connectedSocketsRef.current.set(event.socketId, { userId: event.userId, groupId: event.groupId });
+    setConnectedUsers((prev) => {
+      const next = new Map(prev);
+      next.set(event.userId, event.groupId);
+      return next;
+    });
+  }, []);
+
+  const onUserDisconnected = useCallback((event: UserConnectionEvent) => {
+    connectedSocketsRef.current.delete(event.socketId);
+    // Check if user has other sockets
+    const hasOther = Array.from(connectedSocketsRef.current.values()).some(
+      (c) => c.userId === event.userId
+    );
+    if (!hasOther) {
+      setConnectedUsers((prev) => {
+        const next = new Map(prev);
+        next.delete(event.userId);
+        return next;
+      });
+    }
+  }, []);
+
+  const onConnectionRoster = useCallback((roster: ConnectionRosterEntry[]) => {
+    setConnectedUsers(new Map(roster.map((r) => [r.userId, r.groupId])));
+  }, []);
+
+  const { isConnected } = useSessionSocket(session.id, null, {
+    onAnnotationCreated,
+    onAnnotationDeleted,
+    onAnnotationConfirmed,
+    onScaffoldSent,
+    onScaffoldAcknowledged,
+    onPhaseChanged,
+    onUserConnected,
+    onUserDisconnected,
+    onConnectionRoster,
+  });
+
+  // Derive connection status per group
+  const groupConnectionStatus = useMemo(() => {
+    const statuses = new Map<string, "active" | "partial" | "disconnected">();
+    for (const group of session.groups) {
+      const memberIds = group.members.map((m) => m.user.id);
+      const connectedCount = memberIds.filter((id) => connectedUsers.has(id)).length;
+      if (connectedCount === 0) statuses.set(group.id, "disconnected");
+      else if (connectedCount === memberIds.length) statuses.set(group.id, "active");
+      else statuses.set(group.id, "partial");
+    }
+    return statuses;
+  }, [session.groups, connectedUsers]);
 
   const advancePhase = useCallback(async () => {
     if (!nextStatus) return;
@@ -86,10 +275,11 @@ export function SessionDashboard({ session: initialSession }: { session: Session
       body: JSON.stringify({ status: nextStatus }),
     });
     if (res.ok) {
+      // Socket.IO event will update the status via onPhaseChanged,
+      // but also set it optimistically here for immediate feedback
       setSession((prev) => ({ ...prev, status: nextStatus }));
-      router.refresh();
     }
-  }, [session.id, nextStatus, router]);
+  }, [session.id, nextStatus]);
 
   const sendScaffold = useCallback(async () => {
     if (!scaffoldGroupId || !scaffoldText.trim() || sending) return;
@@ -108,10 +298,10 @@ export function SessionDashboard({ session: initialSession }: { session: Session
     if (res.ok) {
       setScaffoldText("");
       setScaffoldGroupId(null);
-      router.refresh();
+      // Socket.IO event will add the scaffold to the group's scaffolds list
     }
     setSending(false);
-  }, [session.id, scaffoldGroupId, scaffoldText, sending, router]);
+  }, [session.id, scaffoldGroupId, scaffoldText, sending]);
 
   const flawIndex = (session.activity.flawIndex || []) as { flaw_id: string; locations: string[]; flaw_type: string; severity: string }[];
   const totalFlaws = flawIndex.length;
@@ -177,7 +367,6 @@ export function SessionDashboard({ session: initialSession }: { session: Session
                   });
                   if (res.ok) {
                     setSession((prev) => ({ ...prev, status: "group" }));
-                    router.refresh();
                   }
                 }}
                 className="border border-gray-300 text-gray-700 text-sm font-medium px-4 py-2 rounded-md hover:bg-gray-50 transition-colors"
@@ -196,6 +385,13 @@ export function SessionDashboard({ session: initialSession }: { session: Session
           )}
         </div>
       </div>
+
+      {/* Connection status */}
+      {!isConnected && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg px-3 py-2 mb-4 text-xs text-yellow-700">
+          Reconnecting to live updates...
+        </div>
+      )}
 
       {/* Phase indicator */}
       <div className="flex items-center gap-1 mb-6">
@@ -246,7 +442,20 @@ export function SessionDashboard({ session: initialSession }: { session: Session
               }`}
             >
               <div className="flex items-center justify-between mb-2">
-                <h3 className="font-semibold text-gray-900">{group.name}</h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-semibold text-gray-900">{group.name}</h3>
+                  {/* Connection status dot */}
+                  {(() => {
+                    const status = groupConnectionStatus.get(group.id) || "disconnected";
+                    const dot = status === "active"
+                      ? "bg-green-400" : status === "partial"
+                      ? "bg-orange-400" : "bg-gray-300";
+                    const label = status === "active"
+                      ? "All connected" : status === "partial"
+                      ? "Some connected" : "Disconnected";
+                    return <span className={`w-2 h-2 rounded-full ${dot}`} title={label} />;
+                  })()}
+                </div>
                 <span className="text-xs text-gray-400">
                   {totalAnnotations} annotations
                 </span>
@@ -326,6 +535,29 @@ export function SessionDashboard({ session: initialSession }: { session: Session
           );
         })}
       </div>
+
+      {/* Live activity feed */}
+      {activityFeed.length > 0 && (
+        <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6">
+          <h3 className="text-sm font-medium text-gray-700 mb-2">Live Activity</h3>
+          <div className="space-y-1.5 max-h-40 overflow-y-auto">
+            {activityFeed.map((item) => (
+              <div key={`${item.id}-${item.timestamp.getTime()}`} className="flex items-center gap-2 text-xs">
+                <span className="text-gray-400 shrink-0">
+                  {item.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                </span>
+                <span className="font-medium text-gray-600">{item.groupName}</span>
+                {item.type === "annotation" && item.flawType && (
+                  <span className={`px-1 py-0.5 rounded ${FLAW_TYPES[item.flawType as FlawType]?.bgColor || ""} ${FLAW_TYPES[item.flawType as FlawType]?.color || ""}`}>
+                    {FLAW_TYPES[item.flawType as FlawType]?.label || item.flawType}
+                  </span>
+                )}
+                <span className="text-gray-500 truncate">{item.text}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Scaffold sending form */}
       {scaffoldGroupId && (

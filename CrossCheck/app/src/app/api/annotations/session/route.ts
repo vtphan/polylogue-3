@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { getIO } from "@/lib/socket-server";
 
 // Create annotation within a real session (Phase 2)
 export async function POST(request: NextRequest) {
@@ -47,6 +48,14 @@ export async function POST(request: NextRequest) {
       flawType,
     },
   });
+
+  // Emit real-time event
+  const io = getIO();
+  if (io) {
+    const event = { annotation, sessionId };
+    io.to(`group:${groupId}`).emit("annotation:created", event);
+    io.to(`session:${sessionId}`).emit("annotation:created", event);
+  }
 
   return NextResponse.json(annotation, { status: 201 });
 }

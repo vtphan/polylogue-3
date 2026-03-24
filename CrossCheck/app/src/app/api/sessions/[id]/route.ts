@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { getIO } from "@/lib/socket-server";
 
 export async function GET(
   request: NextRequest,
@@ -122,6 +123,16 @@ export async function PATCH(
       payload: { from: classSession.status, to: status },
     },
   });
+
+  // Emit real-time event to all participants in this session
+  const io = getIO();
+  if (io) {
+    io.to(`session:${id}`).emit("session:phase_changed", {
+      sessionId: id,
+      from: classSession.status,
+      to: status,
+    });
+  }
 
   return NextResponse.json(updated);
 }
