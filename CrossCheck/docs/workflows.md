@@ -27,10 +27,15 @@ How students, teachers, and researchers use CrossCheck in practice. Each workflo
 
 1. From **New Session**, select the activity.
 2. Create groups (e.g., "Group A", "Group B"). Assign students to each group.
-3. Optionally set the difficulty mode:
-   - **Spot** — Students just highlight problematic text (no flaw type selection). Good for first exposure.
-   - **Classify** — Students highlight + pick a flaw type (reasoning, epistemic, completeness, coherence). The default.
-   - **Full** — Highlight + type + severity + explanation. For advanced groups.
+3. Set the practice mode per group. Modes are ordered by cognitive demand (Bloom's level):
+   - **Learn** — Vocabulary primer. Students read flaw type definitions and take a quiz. No transcript. Good for absolute first exposure.
+   - **Recognize** — Pre-highlighted transcript with inline quizzes. Students identify the flaw type of each highlighted passage. Read-only — no annotation. The default for new groups.
+   - **Locate** — Hint cards tell students the flaw type and which section to look in. Students flag the exact text. Reduced search space.
+   - **Spot** — Students highlight problematic text freely (no flaw type selection). Full transcript, no hints.
+   - **Classify** — Students highlight + pick a flaw type (reasoning, epistemic, completeness, coherence).
+   - **Evaluate** — Full analysis: highlight + type + severity + explanation. For advanced groups.
+
+   The selected mode's description appears below the pills. Different groups in the same session can use different modes — useful for differentiated instruction.
 4. Click **Create Session**. Session starts in **Setup** phase.
 
 ---
@@ -48,16 +53,48 @@ How students, teachers, and researchers use CrossCheck in practice. Each workflo
 
 1. Log in by entering their name.
 2. The home page shows assigned sessions. Click the active session.
-3. Read the AI-generated transcript:
-   - **Presentations**: sections displayed as cards (Introduction, Approach, Findings, Solution, Conclusion). Each section has a speaker name, role, and avatar.
-   - **Discussions**: turns displayed as chat bubbles grouped by stage (Opening Up, Working Through, Converging).
-4. To annotate a flaw:
-   - Select (highlight) the problematic text in the transcript.
-   - The bottom bar activates. Click a flaw type button (or just "Flag this" in Spot mode).
-   - The annotation appears as a colored underline on the transcript.
-5. The sidebar (desktop) shows all annotations with flaw type counts. Click an annotation to scroll to it. Click the X to delete it.
-6. The **Undo** button on the bottom bar removes the most recent annotation.
-7. During Individual phase, students see only their own annotations — not their group members'.
+3. What the student sees depends on their group's practice mode:
+
+**Learn mode:**
+- No transcript. Instead, a self-contained vocabulary primer.
+- Phase 1: Read definitions and examples of the 4 flaw types (reasoning, epistemic, completeness, coherence).
+- Phase 2: 8-question quiz — read a passage, pick the flaw type.
+- Immediate feedback on each answer with explanation.
+- Completion is saved locally so students don't re-do the quiz if they navigate away.
+- When the teacher advances to Reviewing, students see the feedback view.
+
+**Recognize mode:**
+- Read-only transcript with pre-highlighted passages (yellow marks with a left border).
+- After each highlighted passage, a response card asks: "What type of problem is this?" with 4 buttons.
+- Immediate feedback: correct type highlighted green, wrong choice in red, plus an explanation.
+- Score tracker at the top. Responses are saved to the server.
+- Scaffolds from the teacher appear as blue notification cards at the top.
+- When the teacher advances to Reviewing, the page refreshes to show the feedback view.
+
+**Locate mode:**
+- Full transcript, but with hint cards at the top.
+- Each hint card shows: the flaw type (color-coded), which section/turn to look in, and a reading strategy tip.
+- Navigate between hints with Previous/Next buttons.
+- The hinted section is at full opacity; other sections are dimmed (40% opacity).
+- To annotate: select text in the hinted section, click "Flag This" (single button, like Spot).
+- The flaw type is recorded automatically from the hint — students just find the location.
+- Sidebar shows a list of flags. Undo button available.
+- Full socket integration: phase transitions, scaffolds, live updates in group phase.
+
+**Spot, Classify, and Evaluate modes:**
+- Read the full AI-generated transcript:
+  - **Presentations**: sections displayed as cards (Introduction, Approach, Findings, Solution, Conclusion). Each section has a speaker name, role, and avatar.
+  - **Discussions**: turns displayed as chat bubbles grouped by stage (Opening Up, Working Through, Converging).
+- To annotate a flaw:
+  - Select (highlight) the problematic text in the transcript.
+  - The bottom bar activates:
+    - **Spot**: Single "Flag This" button.
+    - **Classify**: 4 flaw type buttons (Reasoning, Epistemic, Completeness, Coherence).
+    - **Evaluate**: 4 flaw type buttons + severity and explanation fields.
+  - The annotation appears as a colored underline on the transcript.
+- The sidebar (desktop) shows all annotations with flaw type counts. Click an annotation to scroll to it. Click the X to delete it.
+- The **Undo** button on the bottom bar removes the most recent annotation.
+- During Individual phase, students see only their own annotations — not their group members'.
 
 ### Teacher: Monitor Individual Phase
 

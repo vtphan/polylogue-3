@@ -73,6 +73,21 @@ export interface Annotation {
   comments?: { id: string; text: string; isBonus: boolean }[];
 }
 
+// Difficulty modes — ordered by Bloom's level
+export type DifficultyMode = "learn" | "recognize" | "locate" | "spot" | "classify" | "full";
+
+export const VALID_DIFFICULTY_MODES: DifficultyMode[] = ["learn", "recognize", "locate", "spot", "classify", "full"];
+
+// User-facing label is "Practice Mode". Internal name kept for DB compatibility.
+export const DIFFICULTY_MODE_INFO: Record<DifficultyMode, { label: string; desc: string }> = {
+  learn:     { label: "Learn",     desc: "Vocabulary primer" },
+  recognize: { label: "Recognize", desc: "Explain shown flaws" },
+  locate:    { label: "Locate",    desc: "Find hinted flaws" },
+  spot:      { label: "Spot",      desc: "Find on your own" },
+  classify:  { label: "Classify",  desc: "Find + categorize" },
+  full:      { label: "Evaluate",  desc: "Full analysis with severity" },
+};
+
 // Flaw type display info
 export const FLAW_TYPES: Record<FlawType, { label: string; color: string; bgColor: string; description: string }> = {
   reasoning: {

@@ -59,6 +59,7 @@ model User {
   sessions       Session[]
   groupMembers   GroupMember[]
   annotations    Annotation[]
+  flawResponses  FlawResponse[]
   scaffolds      Scaffold[]
   sessionEvents  SessionEvent[]
   annotationComments AnnotationComment[]
@@ -113,11 +114,12 @@ model Group {
   id        String   @id @default(uuid()) @db.Uuid
   sessionId String   @map("session_id") @db.Uuid
   name      String
-  config    Json     @default("{}") // {difficulty_mode: "spot" | "classify" | "full"}
+  config    Json     @default("{}") // {difficulty_mode: "learn" | "recognize" | "locate" | "spot" | "classify" | "full"}
 
   session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   members   GroupMember[]
   annotations Annotation[]
+  flawResponses FlawResponse[]
   scaffolds Scaffold[]
 
   @@map("groups")
@@ -171,6 +173,26 @@ model AnnotationComment {
   teacher      User       @relation(fields: [teacherId], references: [id])
 
   @@map("annotation_comments")
+}
+
+// --- Flaw Responses (Recognize mode structured answers) ---
+
+model FlawResponse {
+  id            String   @id @default(uuid()) @db.Uuid
+  groupId       String   @map("group_id") @db.Uuid
+  userId        String   @map("user_id") @db.Uuid
+  flawId        String   @map("flaw_id")
+  typeAnswer    String   @map("type_answer")
+  typeCorrect   Boolean  @map("type_correct")
+  reasonAnswer  String?  @map("reason_answer")
+  reasonCorrect Boolean? @map("reason_correct")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  group         Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user          User     @relation(fields: [userId], references: [id])
+
+  @@index([groupId, flawId])
+  @@map("flaw_responses")
 }
 
 // --- Scaffolds ---

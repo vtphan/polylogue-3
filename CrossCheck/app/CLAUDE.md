@@ -25,7 +25,7 @@ npm run dev:next     # Plain Next.js without Socket.IO (fallback)
 
 - **Custom server** (`server.ts`): Wraps Next.js + Socket.IO on same port. `getIO()` singleton in `src/lib/socket-server.ts` lets API routes emit events.
 - **Text selection**: `data-seg-start`/`data-seg-end` attributes on spans. Overlap rejection in `annotatable-text.tsx`. `useSelectionClear` hook clears stale pending state.
-- **Matching engine** (`src/lib/matching.ts`): 3-pass algorithm (green exact → blue wrong-type → red unmatched). Supports `{ spotMode: true }` for Spot difficulty.
+- **Matching engine** (`src/lib/matching.ts`): 3-pass algorithm (green exact → blue wrong-type → red unmatched). Supports `{ spotMode: true }` for Spot practice mode.
 - **Dual annotation model**: `/api/annotations` creates solo session/group per user (Phase 1 individual practice). `/api/annotations/session` uses real session groups with membership + phase validation.
 - **Group consensus**: `PATCH /api/annotations/[id]` with `{ action: "confirm" | "unconfirm" }`. Threshold: 2 confirmations. `isGroupAnswer` and `confirmedBy` fields.
 - **Cascading deletes**: All child relations have `onDelete: Cascade`. Session delete is a single `prisma.session.delete()`.

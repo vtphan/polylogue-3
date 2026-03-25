@@ -13,6 +13,7 @@ import { PresentationView } from "@/components/transcript/presentation-view";
 import { DiscussionView } from "@/components/transcript/discussion-view";
 import { FlawBottomBar } from "@/components/annotation/flaw-toolbar";
 import { FlawPalette } from "@/components/annotation/flaw-palette";
+import { FlawFieldGuide, FlawFieldGuideDrawer } from "@/components/annotation/flaw-field-guide";
 import { useSelectionClear } from "@/hooks/useSelectionClear";
 
 interface ActivityViewerProps {
@@ -130,6 +131,7 @@ export function ActivityViewer({
         {/* Sidebar */}
         <div className="w-64 shrink-0 hidden lg:block">
           <div className="sticky top-20">
+            <FlawFieldGuide />
             <FlawPalette
               annotations={annotations}
               onAnnotationClick={handleAnnotationClick}
@@ -138,6 +140,9 @@ export function ActivityViewer({
           </div>
         </div>
       </div>
+
+      {/* Mobile field guide drawer */}
+      <FlawFieldGuideDrawer />
 
       {/* Fixed bottom bar */}
       <FlawBottomBar

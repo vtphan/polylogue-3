@@ -1,0 +1,377 @@
+"use client";
+
+import { useState, useMemo, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import type { FlawType, Agent, PresentationSection, DiscussionTurn } from "@/lib/types";
+import { ResponseCard } from "./response-card";
+import { useSessionSocket } from "@/hooks/useSessionSocket";
+import type { PhaseChangedEvent, ScaffoldSentEvent } from "@/hooks/useSessionSocket";
+
+interface EvaluationFlaw {
+  flaw_id: string;
+  flaw_type: string;
+  severity: string;
+  description: string;
+  evidence: string;
+  explanation: string;
+  location: { type: string; references: string[] };
+}
+
+interface RecognizeModeProps {
+  sessionId: string;
+  groupId: string;
+  userId: string;
+  activityType: "presentation" | "discussion";
+  transcript: {
+    sections?: PresentationSection[];
+    turns?: DiscussionTurn[];
+  };
+  agents: Agent[];
+  flaws: EvaluationFlaw[];
+  sessionPhase: string;
+  pendingScaffolds: { id: string; text: string; level: number; type: string }[];
+}
+
+/** Normalize whitespace for fuzzy matching. */
+function normalize(s: string) {
+  return s.replace(/\s+/g, " ").trim().toLowerCase();
+}
+
+/** Try to find evidence in content. Returns { startIdx, matchLen } or null. */
+function findEvidence(content: string, evidence: string): { startIdx: number; matchLen: number } | null {
+  const lowerContent = content.toLowerCase();
+  const trimmed = evidence.trim();
+
+  // Exact match
+  const exact = lowerContent.indexOf(trimmed.toLowerCase());
+  if (exact !== -1) return { startIdx: exact, matchLen: trimmed.length };
+
+  // Normalized match (collapse whitespace)
+  const normContent = normalize(content);
+  const normEvidence = normalize(trimmed);
+  const normIdx = normContent.indexOf(normEvidence);
+  if (normIdx !== -1) {
+    // Map normalized index back to original content approximately
+    // Walk original content to find the position that maps to normIdx
+    let origIdx = 0;
+    let normPos = 0;
+    while (normPos < normIdx && origIdx < content.length) {
+      if (/\s/.test(content[origIdx])) {
+        while (origIdx < content.length && /\s/.test(content[origIdx])) origIdx++;
+        normPos++; // normalized collapses to single space
+      } else {
+        origIdx++;
+        normPos++;
+      }
+    }
+    return { startIdx: origIdx, matchLen: trimmed.length };
+  }
+
+  // Prefix match (first 50 chars)
+  const prefix = trimmed.slice(0, 50).toLowerCase();
+  if (prefix.length >= 20) {
+    const prefixIdx = lowerContent.indexOf(prefix);
+    if (prefixIdx !== -1) return { startIdx: prefixIdx, matchLen: trimmed.length };
+  }
+
+  return null;
+}
+
+interface FlawPosition {
+  flaw: EvaluationFlaw;
+  startIdx: number;
+  endIdx: number;
+}
+
+/** Pre-compute flaw positions in content with fuzzy fallback. Returns matched and unmatched flaws. */
+function computeFlawPositions(content: string, flaws: EvaluationFlaw[]) {
+  const matched: FlawPosition[] = [];
+  const unmatched: EvaluationFlaw[] = [];
+
+  for (const flaw of flaws) {
+    const result = findEvidence(content, flaw.evidence);
+    if (result) {
+      matched.push({
+        flaw,
+        startIdx: result.startIdx,
+        endIdx: Math.min(result.startIdx + result.matchLen, content.length),
+      });
+    } else {
+      unmatched.push(flaw);
+    }
+  }
+
+  matched.sort((a, b) => a.startIdx - b.startIdx);
+  return { matched, unmatched };
+}
+
+/** Render content with highlighted evidence and response cards inline. */
+function HighlightedContent({
+  content,
+  flaws,
+  groupId,
+  userId,
+  onResponse,
+}: {
+  content: string;
+  flaws: EvaluationFlaw[];
+  groupId: string;
+  userId: string;
+  onResponse: (flawId: string, typeAnswer: FlawType, typeCorrect: boolean) => void;
+}) {
+  const { matched, unmatched } = useMemo(() => computeFlawPositions(content, flaws), [content, flaws]);
+
+  if (matched.length === 0 && unmatched.length === 0) {
+    return <p className="text-sm text-gray-800 leading-relaxed">{content}</p>;
+  }
+
+  let lastIdx = 0;
+  const elements: React.ReactNode[] = [];
+
+  for (const { flaw, startIdx, endIdx } of matched) {
+    // Skip if this flaw overlaps with a previous one
+    if (startIdx < lastIdx) continue;
+
+    if (startIdx > lastIdx) {
+      elements.push(
+        <span key={`text-${lastIdx}`} className="text-sm text-gray-800 leading-relaxed">
+          {content.slice(lastIdx, startIdx)}
+        </span>
+      );
+    }
+
+    elements.push(
+      <mark key={`hl-${flaw.flaw_id}`} className="bg-yellow-100 border-l-4 border-yellow-400 px-1 rounded">
+        {content.slice(startIdx, endIdx)}
+      </mark>
+    );
+
+    elements.push(
+      <ResponseCard
+        key={`rc-${flaw.flaw_id}`}
+        flawId={flaw.flaw_id}
+        correctType={flaw.flaw_type as FlawType}
+        explanation={flaw.explanation}
+        groupId={groupId}
+        userId={userId}
+        onResponse={onResponse}
+      />
+    );
+
+    lastIdx = endIdx;
+  }
+
+  if (lastIdx < content.length) {
+    elements.push(
+      <span key="text-end" className="text-sm text-gray-800 leading-relaxed">
+        {content.slice(lastIdx)}
+      </span>
+    );
+  }
+
+  // Append unmatched flaws as ResponseCards at the end (no highlight, but student still gets the question)
+  for (const flaw of unmatched) {
+    elements.push(
+      <div key={`unmatched-${flaw.flaw_id}`} className="mt-3 bg-gray-50 border border-gray-200 rounded-lg p-3">
+        <p className="text-xs text-gray-500 mb-1 italic">A flaw was identified in this section.</p>
+        <ResponseCard
+          flawId={flaw.flaw_id}
+          correctType={flaw.flaw_type as FlawType}
+          explanation={flaw.explanation}
+          groupId={groupId}
+          userId={userId}
+          onResponse={onResponse}
+        />
+      </div>
+    );
+  }
+
+  return <div>{elements}</div>;
+}
+
+export function RecognizeMode({
+  sessionId,
+  groupId,
+  userId,
+  activityType,
+  transcript,
+  agents,
+  flaws,
+  sessionPhase,
+  pendingScaffolds: initialScaffolds,
+}: RecognizeModeProps) {
+  const [score, setScore] = useState({ correct: 0, total: 0 });
+  const [scaffolds, setScaffolds] = useState(initialScaffolds);
+  const [phaseNotice, setPhaseNotice] = useState<string | null>(null);
+  const router = useRouter();
+
+  const agentMap = useMemo(
+    () => Object.fromEntries(agents.map((a) => [a.agent_id, a])),
+    [agents]
+  );
+
+  const flawsByItem = useMemo(() => {
+    const map = new Map<string, EvaluationFlaw[]>();
+    for (const flaw of flaws) {
+      for (const ref of flaw.location.references) {
+        const list = map.get(ref) || [];
+        list.push(flaw);
+        map.set(ref, list);
+      }
+    }
+    return map;
+  }, [flaws]);
+
+  // --- Socket.IO: phase changes + scaffolds ---
+  const onPhaseChanged = useCallback((event: PhaseChangedEvent) => {
+    const labels: Record<string, string> = {
+      individual: "Individual Phase",
+      group: "Group Phase — discuss with your team!",
+      reviewing: "Review Phase — see how you did!",
+      closed: "Session closed",
+    };
+    setPhaseNotice(labels[event.to] || `Phase: ${event.to}`);
+    // Refresh so server component re-evaluates (switches to FeedbackView if reviewing)
+    setTimeout(() => router.refresh(), 1500);
+  }, [router]);
+
+  const onScaffoldSent = useCallback((event: ScaffoldSentEvent) => {
+    setScaffolds((prev) => {
+      if (prev.some((s) => s.id === event.scaffold.id)) return prev;
+      return [...prev, {
+        id: event.scaffold.id,
+        text: event.scaffold.text,
+        level: event.scaffold.level,
+        type: event.scaffold.type,
+      }];
+    });
+  }, []);
+
+  const { isConnected } = useSessionSocket(sessionId, groupId, {
+    onPhaseChanged,
+    onScaffoldSent,
+  });
+
+  const acknowledgeScaffold = useCallback(async (scaffoldId: string) => {
+    await fetch(`/api/scaffolds/${scaffoldId}`, { method: "PATCH" });
+    setScaffolds((prev) => prev.filter((s) => s.id !== scaffoldId));
+  }, []);
+
+  function handleResponse(_flawId: string, _typeAnswer: FlawType, typeCorrect: boolean) {
+    setScore((s) => ({
+      correct: s.correct + (typeCorrect ? 1 : 0),
+      total: s.total + 1,
+    }));
+  }
+
+  // Determine items (sections or turns)
+  const items: { id: string; content: string; speaker: string; label: string; sublabel?: string }[] = useMemo(() => {
+    if (activityType === "presentation" && transcript.sections) {
+      return transcript.sections.map((s) => ({
+        id: s.section_id,
+        content: s.content,
+        speaker: s.speaker,
+        label: s.section,
+        sublabel: s.role,
+      }));
+    }
+    if (activityType === "discussion" && transcript.turns) {
+      return transcript.turns.map((t) => ({
+        id: t.turn_id,
+        content: t.content,
+        speaker: t.speaker,
+        label: "",
+        sublabel: t.role,
+      }));
+    }
+    return [];
+  }, [activityType, transcript]);
+
+  if (items.length === 0) {
+    return <div className="text-sm text-gray-500">No transcript data available.</div>;
+  }
+
+  return (
+    <div className="max-w-3xl mx-auto">
+      {!isConnected && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg px-3 py-2 mb-4 text-xs text-yellow-700">
+          Reconnecting to live updates...
+        </div>
+      )}
+
+      {phaseNotice && (
+        <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-3 mb-4 flex items-center justify-between">
+          <p className="text-sm font-medium text-indigo-800">{phaseNotice}</p>
+          <button onClick={() => setPhaseNotice(null)} className="text-indigo-400 hover:text-indigo-600 text-xs">&times;</button>
+        </div>
+      )}
+
+      {scaffolds.length > 0 && (
+        <div className="mb-4 space-y-2">
+          {scaffolds.map((s) => (
+            <div key={s.id} className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start justify-between">
+              <div>
+                <span className="text-xs font-medium text-blue-700">From your teacher:</span>
+                <p className="text-sm text-blue-900 mt-0.5">{s.text}</p>
+              </div>
+              <button onClick={() => acknowledgeScaffold(s.id)} className="text-xs text-blue-500 hover:text-blue-700 shrink-0 ml-3">
+                Dismiss
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="mb-6">
+        <h2 className="text-lg font-bold text-gray-900">Recognize Mode</h2>
+        <p className="text-sm text-gray-500 mt-1">
+          Highlighted passages contain flaws. For each one, identify the flaw type.
+        </p>
+        {score.total > 0 && (
+          <p className="text-xs text-gray-400 mt-1">
+            Score: {score.correct}/{score.total}
+          </p>
+        )}
+      </div>
+
+      <div className={activityType === "presentation" ? "space-y-4" : "space-y-3"}>
+        {items.map((item) => {
+          const agent = agentMap[item.speaker];
+          const itemFlaws = flawsByItem.get(item.id) || [];
+
+          return (
+            <div
+              key={item.id}
+              id={item.id}
+              className={`bg-white border border-gray-200 rounded-lg ${activityType === "presentation" ? "p-5" : "p-4"}`}
+            >
+              <div className="flex items-center gap-2 mb-2">
+                {activityType === "presentation" ? (
+                  <>
+                    <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                      {item.label}
+                    </span>
+                    {agent && <span className="text-xs text-gray-400">&mdash; {agent.name}</span>}
+                  </>
+                ) : (
+                  <>
+                    {agent && <span className="text-sm font-medium text-gray-900">{agent.name}</span>}
+                    {item.sublabel && <span className="text-xs text-gray-400">{item.sublabel}</span>}
+                  </>
+                )}
+              </div>
+
+              <HighlightedContent
+                content={item.content}
+                flaws={itemFlaws}
+                groupId={groupId}
+                userId={userId}
+                onResponse={handleResponse}
+              />
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import type { FlawType, Annotation } from "@/lib/types";
+import type { FlawType, Annotation, DifficultyMode } from "@/lib/types";
 import { FLAW_TYPES } from "@/lib/types";
 
 interface FlawBottomBarProps {
@@ -9,7 +9,7 @@ interface FlawBottomBarProps {
   onSelect: (flawType: FlawType) => void;
   onUndo: () => void;
   readOnly?: boolean;
-  difficultyMode?: "spot" | "classify" | "full";
+  difficultyMode?: DifficultyMode;
 }
 
 const FLAW_BUTTON_COLORS: Record<FlawType, string> = {
@@ -39,8 +39,8 @@ export function FlawBottomBar({
   return (
     <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 shadow-lg">
       <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-center gap-3">
-        {difficultyMode === "spot" ? (
-          /* Spot mode: single "Flag" button — uses "reasoning" as placeholder type */
+        {(difficultyMode === "spot" || difficultyMode === "locate") ? (
+          /* Spot/Locate mode: single "Flag" button — uses "reasoning" as placeholder type */
           <button
             onClick={() => onSelect("reasoning")}
             disabled={!hasSelection}

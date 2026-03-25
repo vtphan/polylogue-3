@@ -3,8 +3,12 @@ import { prisma } from "@/lib/db";
 import { notFound, redirect } from "next/navigation";
 import { SessionActivityViewer } from "./session-activity-viewer";
 import { FeedbackView } from "@/components/feedback/feedback-view";
+import { LearnMode } from "@/components/modes/learn-mode";
+import { RecognizeMode } from "@/components/modes/recognize-mode";
+import { LocateMode } from "@/components/modes/locate-mode";
+import { ModeChangeListener } from "./mode-change-listener";
 import { computeMatches } from "@/lib/matching";
-import type { Agent, Annotation, AnnotationLocation } from "@/lib/types";
+import type { Agent, Annotation, AnnotationLocation, DifficultyMode, PresentationTranscript, DiscussionTranscript } from "@/lib/types";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -84,18 +88,33 @@ export default async function StudentSessionPage({ params }: PageProps) {
   // Difficulty mode: per-group first, fall back to session-level for backward compatibility
   const groupConfig = group.config as { difficulty_mode?: string } | null;
   const sessionConfig = classSession.config as { difficulty_mode?: string } | null;
-  const difficultyMode = (groupConfig?.difficulty_mode || sessionConfig?.difficulty_mode || "classify") as "spot" | "classify" | "full";
+  const difficultyMode = (groupConfig?.difficulty_mode || sessionConfig?.difficulty_mode || "classify") as DifficultyMode;
+
+  // Extract evaluation data (needed for reviewing + recognize/locate modes)
+  const flawIndex = (activity.flawIndex || []) as {
+    flaw_id: string;
+    locations: string[];
+    flaw_type: string;
+    severity: string;
+  }[];
+
+  const evaluationData = activity.evaluation as {
+    flaws: {
+      flaw_id: string;
+      flaw_type: string;
+      severity: string;
+      description: string;
+      evidence: string;
+      explanation: string;
+      location: { type: string; references: string[] };
+    }[];
+    summary: { total_flaws: number; key_patterns: string };
+  } | null;
 
   // Compute feedback if in reviewing mode
   let matchResult = null;
   let evaluation = null;
   if (isReviewing) {
-    const flawIndex = (activity.flawIndex || []) as {
-      flaw_id: string;
-      locations: string[];
-      flaw_type: string;
-      severity: string;
-    }[];
 
     // Use group answers for matching if any exist, otherwise all annotations
     const hasGroupAnswers = annotations.some((a) => a.isGroupAnswer);
@@ -110,25 +129,15 @@ export default async function StudentSessionPage({ params }: PageProps) {
         flawType: a.flawType,
       })),
       flawIndex,
-      { spotMode: difficultyMode === "spot" }
+      { spotMode: difficultyMode === "spot" || difficultyMode === "locate" }
     );
 
-    evaluation = activity.evaluation as {
-      flaws: {
-        flaw_id: string;
-        flaw_type: string;
-        severity: string;
-        description: string;
-        evidence: string;
-        explanation: string;
-        location: { type: string; references: string[] };
-      }[];
-      summary: { total_flaws: number; key_patterns: string };
-    };
+    evaluation = evaluationData;
   }
 
   return (
     <div>
+      <ModeChangeListener sessionId={id} groupId={group.id} />
       <div className="mb-4">
         <a href="/student" className="text-sm text-blue-600 hover:text-blue-800">
           &larr; Back to activities
@@ -171,6 +180,37 @@ export default async function StudentSessionPage({ params }: PageProps) {
           transcript={activity.transcriptContent as unknown}
           activityType={activity.type}
           agents={agents}
+        />
+      ) : difficultyMode === "learn" ? (
+        <LearnMode
+          groupId={group.id}
+          sessionId={id}
+        />
+      ) : difficultyMode === "recognize" && evaluationData ? (
+        <RecognizeMode
+          sessionId={id}
+          groupId={group.id}
+          userId={session.user.id}
+          activityType={activity.type}
+          transcript={activity.transcriptContent as { sections?: PresentationTranscript["sections"]; turns?: DiscussionTranscript["turns"] }}
+          agents={agents}
+          flaws={evaluationData.flaws}
+          sessionPhase={classSession.status}
+          pendingScaffolds={pendingScaffolds}
+        />
+      ) : difficultyMode === "locate" ? (
+        <LocateMode
+          sessionId={id}
+          groupId={group.id}
+          userId={session.user.id}
+          activityType={activity.type}
+          transcript={activity.transcriptContent as unknown}
+          agents={agents}
+          flawIndex={flawIndex}
+          initialAnnotations={annotations}
+          pendingScaffolds={pendingScaffolds}
+          readOnly={false}
+          sessionPhase={classSession.status}
         />
       ) : (
         <SessionActivityViewer

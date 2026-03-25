@@ -83,7 +83,7 @@ Read an AI-generated presentation or discussion, then identify critical thinking
 
 Metadata (knowledge areas, rationale, reactive tendency), expected flaws, agent profiles, severity in the reference evaluation (until after submission).
 
-### Annotation Difficulty Modes
+### Annotation Practice Modes
 
 Teacher-configurable per group, per session:
 
@@ -109,7 +109,7 @@ Set up sessions, monitor student groups in real time, send scaffolds, control wh
 |---------|-------------|
 | **Create session** | Pick activity, assign groups, set time. |
 | **Scaffold library** | Pre-load scaffold prompts organized by flaw type and difficulty. Reusable across sessions. Teacher can also write custom scaffolds. |
-| **Scaffolding mode** | Choose difficulty mode per group (Spot / Spot+Classify / Full). |
+| **Scaffolding mode** | Choose practice mode per group (Spot / Spot+Classify / Full). |
 
 ### Live Dashboard (During Class)
 
@@ -337,7 +337,7 @@ One teacher, one class, one session at a time. Get the core classroom loop worki
 | Tap into any group to see their annotations in real time | Phase timer with student-visible countdown |
 | Send free-text scaffolds targeted to a group | Pause/freeze all groups |
 | Control when reference evaluation is revealed | Post-session class discussion projector view |
-| View reference evaluation with full flaw details | Per-group difficulty mode |
+| View reference evaluation with full flaw details | Per-group practice mode |
 
 ### Researcher v1
 
@@ -464,7 +464,7 @@ Core tables:
 |-------|-----------|
 | `users` | id, username, display_name, role (student/teacher/researcher), research_consent, created_by |
 | `activities` | id, scenario_id, type (presentation/discussion), topic, transcript (JSONB), evaluation (JSONB), metadata (JSONB) |
-| `sessions` | id, teacher_id, activity_id, status (setup/active/reviewing/closed), config (JSONB: difficulty modes, phase timers), created_at |
+| `sessions` | id, teacher_id, activity_id, status (setup/active/reviewing/closed), config (JSONB: practice modes, phase timers), created_at |
 | `groups` | id, session_id, name |
 | `group_members` | group_id, user_id |
 | `annotations` | id, group_id, user_id, location (section_id/turn_id + text range as JSONB), flaw_type, severity, explanation, is_group_answer, created_at |
@@ -537,7 +537,7 @@ CrossCheck/
 | **Phase 2: Teacher Core** | Create session, assign groups, live group overview, tap into group detail, send free-text scaffolds, release evaluation | Phase 0 |
 | **Phase 3: Real-time** | Socket.IO integration — live annotation feed on teacher dashboard, scaffold delivery to students, phase transitions, connectivity status | Phases 1 + 2 |
 | **Phase 4: Feedback Loop** | Annotation matching engine, side-by-side comparison view (student annotations vs. reference), class discussion projector view | Phase 3 |
-| **Phase 5: Polish** | Individual → group annotation flow, difficulty modes, scaffold library, phase timer, offline queue with sync | Phase 4 |
+| **Phase 5: Polish** | Individual → group annotation flow, practice modes, scaffold library, phase timer, offline queue with sync | Phase 4 |
 | **Phase 6: Researcher (v2)** | Pipeline view, knowledge-to-flaw tracing, cross-scenario comparison, export/API, student performance analytics, scaffold outcome analysis | Phase 5 + accumulated usage data |
 
 ---

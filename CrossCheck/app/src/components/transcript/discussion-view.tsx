@@ -17,6 +17,7 @@ interface DiscussionViewProps {
   annotations: Annotation[];
   onTextSelected: (location: AnnotationLocation) => void;
   onAnnotationClick: (annotation: Annotation) => void;
+  emphasizedItems?: string[];
 }
 
 export function DiscussionView({
@@ -25,6 +26,7 @@ export function DiscussionView({
   annotations,
   onTextSelected,
   onAnnotationClick,
+  emphasizedItems,
 }: DiscussionViewProps) {
   const agentMap = useMemo(() => Object.fromEntries(agents.map((a) => [a.agent_id, a])), [agents]);
 
@@ -52,7 +54,7 @@ export function DiscussionView({
             )}
             <div
               id={turn.turn_id}
-              className="flex gap-3 bg-white rounded-lg border border-gray-200 p-4"
+              className={`flex gap-3 bg-white rounded-lg border border-gray-200 p-4 transition-opacity ${emphasizedItems && !emphasizedItems.includes(turn.turn_id) ? "opacity-40" : ""}`}
             >
               <div className="pt-0.5">
                 {agent && <AgentAvatar agentId={agent.agent_id} name={agent.name} />}

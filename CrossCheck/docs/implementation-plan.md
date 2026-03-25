@@ -570,7 +570,7 @@ When session is in reviewing, teacher can project aggregate results for whole-cl
 - Shows: which flaws were found by most/fewest groups, which flaw types were hardest
 - Bar chart or summary table of all groups' detection rates
 
-### 5d. Difficulty Modes
+### 5d. Practice Modes
 
 Teacher-configurable per session:
 - **Spot** — highlight only, no flaw type classification
@@ -590,7 +590,7 @@ Store in session.config, bottom bar adapts based on mode.
 - [ ] Bottom bar usable on tablet-sized screens
 - [ ] Teacher can create student accounts
 - [ ] Class projector view shows aggregate results
-- [ ] Difficulty modes change the bottom bar behavior
+- [ ] Practice modes change the bottom bar behavior
 - [ ] Teacher can delete sessions and reopen reviewing sessions
 
 ---

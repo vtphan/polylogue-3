@@ -19,6 +19,7 @@ interface PresentationViewProps {
   annotations: Annotation[];
   onTextSelected: (location: AnnotationLocation) => void;
   onAnnotationClick: (annotation: Annotation) => void;
+  emphasizedItems?: string[];
 }
 
 export function PresentationView({
@@ -27,6 +28,7 @@ export function PresentationView({
   annotations,
   onTextSelected,
   onAnnotationClick,
+  emphasizedItems,
 }: PresentationViewProps) {
   const agentMap = useMemo(() => Object.fromEntries(agents.map((a) => [a.agent_id, a])), [agents]);
 
@@ -34,11 +36,12 @@ export function PresentationView({
     <div className="space-y-4">
       {sections.map((section) => {
         const agent = agentMap[section.speaker];
+        const isDimmed = emphasizedItems && !emphasizedItems.includes(section.section_id);
         return (
           <div
             key={section.section_id}
             id={section.section_id}
-            className="bg-white rounded-lg border border-gray-200 p-5"
+            className={`bg-white rounded-lg border border-gray-200 p-5 transition-opacity ${isDimmed ? "opacity-40" : ""}`}
           >
             <div className="flex items-center gap-3 mb-3">
               {agent && <AgentAvatar agentId={agent.agent_id} name={agent.name} />}

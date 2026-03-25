@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { VALID_DIFFICULTY_MODES } from "@/lib/types";
 
 export async function GET() {
   const session = await auth();
@@ -73,6 +74,16 @@ export async function POST(request: NextRequest) {
       { error: "activityId and groups required" },
       { status: 400 }
     );
+  }
+
+  // Validate difficulty modes
+  for (const g of groups) {
+    if (g.difficultyMode && !VALID_DIFFICULTY_MODES.includes(g.difficultyMode as typeof VALID_DIFFICULTY_MODES[number])) {
+      return NextResponse.json(
+        { error: `Invalid difficulty mode: ${g.difficultyMode}` },
+        { status: 400 }
+      );
+    }
   }
 
   const newSession = await prisma.session.create({

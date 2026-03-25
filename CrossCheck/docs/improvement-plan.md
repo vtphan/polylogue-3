@@ -239,17 +239,17 @@ Out of scope. Research consent is handled externally (IRB process), not within t
 
 ---
 
-### 3.2 Difficulty Modes
+### 3.2 Practice Modes
 
 **Problem:** All students get the same annotation interface. Teacher can't differentiate by group ability.
 
-**Solution:** Per-session difficulty setting that changes the bottom bar and feedback.
+**Solution:** Per-session practice mode setting that changes the bottom bar and feedback.
 
 **Files to modify:**
-- `src/app/teacher/sessions/new/create-session-form.tsx` — add difficulty selector
-- `src/app/api/sessions/route.ts` — store difficulty in session.config
+- `src/app/teacher/sessions/new/create-session-form.tsx` — add practice mode selector
+- `src/app/api/sessions/route.ts` — store practice mode in session.config
 - `src/components/annotation/flaw-toolbar.tsx` — adapt bottom bar based on mode
-- `src/app/student/session/[id]/page.tsx` — pass difficulty mode to viewer
+- `src/app/student/session/[id]/page.tsx` — pass practice mode to viewer
 - `src/components/feedback/feedback-view.tsx` — adapt feedback based on mode
 
 **Modes:**
@@ -260,7 +260,7 @@ Out of scope. Research consent is handled externally (IRB process), not within t
 | **Spot + Classify** | 4 flaw type buttons (current) | Location + type | Full match comparison (current) |
 | **Full** | 4 flaw type buttons + severity dropdown + explanation field | Location + type + severity + explanation | Full comparison + severity accuracy |
 
-**Schema:** `session.config.difficulty_mode: "spot" | "classify" | "full"` — already a JSONB field.
+**Schema:** `session.config.difficulty_mode: "spot" | "classify" | "full"` — already a JSONB field (internal name; user-facing label is "Practice Mode").
 
 **Note:** Spot mode requires changes to the matching engine — match by location only (any annotation at the flaw's location counts as "found" regardless of type).
 
@@ -351,7 +351,7 @@ Dependencies flow top-to-bottom. Items at the same level can be built in paralle
 3.1 Student Progress ──────────────────────────────────────────────┤
     └─ independent (new pages, existing data)                      │
                                                                    │
-3.2 Difficulty Modes ──────────────────────────────────────────────┤
+3.2 Practice Modes ───────────────────────────────────────────────┤
     └─ modifies matching engine + bottom bar + feedback            │
                                                                    │
 3.3 Group Consensus ───────────────────────────────────────────────┤
@@ -412,9 +412,9 @@ Lower-priority items. None are blocking classroom deployment.
 
 ---
 
-### 4.5 "Full" Difficulty Mode Completion
+### 4.5 "Full" Practice Mode Completion
 
-**Problem:** The schema has `severity` and `explanation` fields on annotations. The UI shows 3 difficulty modes but "Full" (severity + explanation) isn't fully wired.
+**Problem:** The schema has `severity` and `explanation` fields on annotations. The UI shows 3 practice modes but "Full" (severity + explanation) isn't fully wired.
 
 **Solution:** Add severity dropdown and explanation textarea to the bottom bar in Full mode. Include severity accuracy in feedback comparison.
 

@@ -2,7 +2,8 @@
 
 import { useState, useCallback, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { FLAW_TYPES } from "@/lib/types";
+import { FLAW_TYPES, DIFFICULTY_MODE_INFO } from "@/lib/types";
+import type { DifficultyMode } from "@/lib/types";
 import { computeMatches } from "@/lib/matching";
 import { EvaluationPanel } from "@/components/evaluation/evaluation-panel";
 import { PresentationView } from "@/components/transcript/presentation-view";
@@ -94,6 +95,7 @@ export function SessionDashboard({ session: initialSession }: { session: Session
   const [showEvaluation, setShowEvaluation] = useState(false);
   const [notes, setNotes] = useState(initialSession.notes || "");
   const [notesSaved, setNotesSaved] = useState(true);
+  const [modePickerGroupId, setModePickerGroupId] = useState<string | null>(null);
   const [activityFeed, setActivityFeed] = useState<FeedItem[]>([]);
   const router = useRouter();
 
@@ -480,10 +482,62 @@ export function SessionDashboard({ session: initialSession }: { session: Session
                   })()}
                 </div>
                 <div className="flex items-center gap-2">
-                  {group.config?.difficulty_mode && group.config.difficulty_mode !== "classify" && (
-                    <span className="text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">
-                      {group.config.difficulty_mode === "spot" ? "Spot" : "Full"}
-                    </span>
+                  {group.config?.difficulty_mode && (
+                    <div className="relative">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (!["setup", "closed"].includes(session.status)) {
+                            setModePickerGroupId(modePickerGroupId === group.id ? null : group.id);
+                          }
+                        }}
+                        className={`text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded ${
+                          !["setup", "closed"].includes(session.status) ? "hover:bg-blue-50 hover:text-blue-600 cursor-pointer" : ""
+                        }`}
+                        title={["setup", "closed"].includes(session.status) ? undefined : "Change practice mode"}
+                      >
+                        {DIFFICULTY_MODE_INFO[group.config.difficulty_mode as DifficultyMode]?.label || group.config.difficulty_mode}
+                      </button>
+                      {modePickerGroupId === group.id && (
+                        <div className="absolute right-0 top-full mt-1 z-20 bg-white border border-gray-200 rounded-lg shadow-lg p-2 w-48">
+                          <p className="text-xs font-medium text-gray-500 mb-1.5 px-1">Practice Mode</p>
+                          <div className="space-y-0.5">
+                            {(Object.entries(DIFFICULTY_MODE_INFO) as [DifficultyMode, { label: string; desc: string }][]).map(([value, info]) => (
+                              <button
+                                key={value}
+                                onClick={async (e) => {
+                                  e.stopPropagation();
+                                  setModePickerGroupId(null);
+                                  if (value === group.config?.difficulty_mode) return;
+                                  // Optimistic update
+                                  setSession((prev) => ({
+                                    ...prev,
+                                    groups: prev.groups.map((g) =>
+                                      g.id === group.id
+                                        ? { ...g, config: { ...g.config, difficulty_mode: value } }
+                                        : g
+                                    ),
+                                  }));
+                                  await fetch(`/api/sessions/${session.id}`, {
+                                    method: "PATCH",
+                                    headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify({ action: "change_mode", groupId: group.id, difficultyMode: value }),
+                                  });
+                                }}
+                                className={`w-full text-left text-xs px-2 py-1.5 rounded transition-colors ${
+                                  value === group.config?.difficulty_mode
+                                    ? "bg-blue-50 text-blue-700 font-medium"
+                                    : "text-gray-600 hover:bg-gray-50"
+                                }`}
+                              >
+                                <span className="font-medium">{info.label}</span>
+                                <span className="text-gray-400 ml-1">{info.desc}</span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   )}
                   <span className="text-xs text-gray-400">
                     {totalAnnotations} annotations

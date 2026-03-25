@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import type { Agent } from "@/lib/types";
+import { DIFFICULTY_MODE_INFO } from "@/lib/types";
+import type { DifficultyMode } from "@/lib/types";
 
 interface Activity {
   id: string;
@@ -34,7 +35,7 @@ export function CreateSessionForm({
   const router = useRouter();
   const [activityId, setActivityId] = useState("");
   const [groups, setGroups] = useState<GroupDraft[]>([
-    { name: "Group A", studentIds: [], difficultyMode: "classify" },
+    { name: "Group A", studentIds: [], difficultyMode: "recognize" },
   ]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -43,7 +44,7 @@ export function CreateSessionForm({
 
   function addGroup() {
     const letter = String.fromCharCode(65 + groups.length); // A, B, C, ...
-    setGroups([...groups, { name: `Group ${letter}`, studentIds: [], difficultyMode: "classify" }]);
+    setGroups([...groups, { name: `Group ${letter}`, studentIds: [], difficultyMode: "recognize" }]);
   }
 
   function removeGroup(index: number) {
@@ -197,30 +198,35 @@ export function CreateSessionForm({
                 </p>
               )}
 
-              {/* Per-group difficulty */}
-              <div className="flex gap-1.5 mt-3 pt-3 border-t border-gray-100">
-                {[
-                  { value: "spot", label: "Spot" },
-                  { value: "classify", label: "Classify" },
-                  { value: "full", label: "Full" },
-                ].map((opt) => (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    onClick={() => {
-                      const updated = [...groups];
-                      updated[gi] = { ...updated[gi], difficultyMode: opt.value };
-                      setGroups(updated);
-                    }}
-                    className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
-                      group.difficultyMode === opt.value
-                        ? "border-blue-400 bg-blue-50 text-blue-800 font-medium"
-                        : "border-gray-200 text-gray-500 hover:border-gray-300"
-                    }`}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
+              {/* Per-group practice mode */}
+              <div className="mt-3 pt-3 border-t border-gray-100">
+                <span className="text-xs font-medium text-gray-500">Practice Mode</span>
+                <div className="flex flex-wrap gap-1.5 mt-1.5">
+                  {(Object.entries(DIFFICULTY_MODE_INFO) as [DifficultyMode, { label: string; desc: string }][]).map(([value, info]) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => {
+                        const updated = [...groups];
+                        updated[gi] = { ...updated[gi], difficultyMode: value };
+                        setGroups(updated);
+                      }}
+                      className={`text-xs px-2 py-1 rounded-full border transition-colors ${
+                        group.difficultyMode === value
+                          ? "border-blue-400 bg-blue-50 text-blue-800 font-medium"
+                          : "border-gray-200 text-gray-500 hover:border-gray-300"
+                      }`}
+                    >
+                      {info.label}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-400 mt-1">
+                  {DIFFICULTY_MODE_INFO[group.difficultyMode as DifficultyMode]?.desc}
+                </p>
+                <p className="text-xs text-gray-300 mt-0.5">
+                  Choose any mode — no sequence required.
+                </p>
               </div>
             </div>
           ))}

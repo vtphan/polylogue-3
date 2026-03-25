@@ -23,6 +23,7 @@ export default async function StudentLayout({
               <Link href="/student" className="font-bold text-lg">CrossCheck</Link>
               <div className="flex items-center gap-4 text-sm">
                 <Link href="/student" className="text-gray-600 hover:text-gray-900">Activities</Link>
+                <Link href="/student/learn" className="text-gray-600 hover:text-gray-900">Learn</Link>
                 <Link href="/student/progress" className="text-gray-600 hover:text-gray-900">Progress</Link>
               </div>
             </div>

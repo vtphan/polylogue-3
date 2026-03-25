@@ -1,6 +1,6 @@
 # CrossCheck — Pedagogical Model, Gap Analysis, and Implementation Plan
 
-CrossCheck teaches middle school students to identify critical thinking flaws in AI-generated discourse. This document describes the pedagogical model (Bloom's × ZPD with CLT governance), audits the current codebase against the model, identifies every gap, and provides a detailed implementation plan for a coding agent.
+CrossCheck teaches middle school students to identify critical thinking flaws in AI-generated discourse. This document describes the pedagogical model (Bloom's × ZPD, governed by CLT, informed by ICAP), audits the current codebase against the model, identifies every gap, and provides a detailed implementation plan for a coding agent.
 
 ---
 
@@ -19,7 +19,7 @@ Bloom's Revised Taxonomy (Anderson & Krathwohl, 2001) describes six levels of co
 | **Evaluate** | Make judgments, justify decisions | Classify flaws by type and severity, explain reasoning |
 | **Create** | Produce new work, synthesize | Write corrections, evaluate peers' work (future) |
 
-**Role in CrossCheck:** Bloom's levels map to difficulty modes. The mode determines what cognitive work the task demands.
+**Role in CrossCheck:** Bloom's levels map to practice modes. The mode determines what cognitive work the task demands.
 
 ### 1.2 Zone of Proximal Development — The Support Dimension
 
@@ -32,7 +32,7 @@ Vygotsky's ZPD (1978) defines three zones:
 Scaffolding (Wood, Bruner, & Ross, 1976) is temporary support that is contingent, fading, and transfers responsibility to the learner.
 
 **Role in CrossCheck:** Support comes from three sources:
-- **App-provided structure:** The difficulty mode provides baseline scaffolding (Recognize gives locations; Spot gives nothing).
+- **App-provided structure:** The practice mode provides baseline scaffolding (Recognize gives locations; Spot gives nothing).
 - **Teacher interventions:** The 6-level scaffold system lets the teacher add support within any mode.
 - **Peer scaffolding:** Individual→group phase transition creates MKO relationships between students.
 
@@ -44,9 +44,9 @@ CLT (Sweller, 1988) says working memory is limited. Three types of cognitive loa
 - **Extraneous load:** Unnecessary effort from poor design. Minimized by adapting the UI per mode.
 - **Germane load:** Productive schema-building effort. Maximized by ZPD-calibrated scaffolding.
 
-**Role in CrossCheck:** CLT constrains the 2D space. As Bloom's level increases (more intrinsic load), the app must reduce extraneous load (simplify UI) and calibrate support (manage germane load). Each difficulty mode should show only what's needed for that cognitive level.
+**Role in CrossCheck:** CLT constrains the 2D space. As Bloom's level increases (more intrinsic load), the app must reduce extraneous load (simplify UI) and calibrate support (manage germane load). Each practice mode should show only what's needed for that cognitive level.
 
-### 1.4 The Integrated Model — A 2D Space with CLT Governance
+### 1.4 The Integrated Model — A 2D Space with CLT Governance and ICAP Guidance
 
 ```
     ZPD (support level)
@@ -80,12 +80,40 @@ CLT (Sweller, 1988) says working memory is limited. Three types of cognitive loa
 | Bloom's Revised Taxonomy | What cognitive work the task requires | X-axis (task complexity) |
 | Zone of Proximal Development | How much support the student receives | Y-axis (support level) |
 | Cognitive Load Theory | How the experience is designed at each point | Constraint (governs UI, information visibility, scaffold calibration) |
+| ICAP (Chi & Wylie, 2014) | What the student produces at each mode | Engagement type (design constraint) |
 
-**Learning is movement through the space:** Right (harder tasks) + Down (less support). The teacher keeps each group inside the productive struggle band. The app minimizes extraneous load at every point.
+**Learning is movement through the space:** Right (harder tasks) + Down (less support). The teacher keeps each group inside the productive struggle band. The app minimizes extraneous load at every point. ICAP informs what the student produces at each point — progressing from Passive/Active toward Constructive and Interactive engagement.
+
+### 1.5 ICAP Framework — The Engagement Dimension
+
+Chi and Wylie's ICAP framework (2014) classifies learning activities by the type of cognitive engagement they elicit:
+
+- **Passive:** Receiving information without overt processing (reading, listening, watching).
+- **Active:** Manipulating or selecting existing material (highlighting, choosing from options, flagging).
+- **Constructive:** Generating output beyond what was given (explaining in own words, justifying, hypothesizing).
+- **Interactive:** Co-constructing meaning through dialogue (building on peers' ideas, negotiating, resolving disagreements).
+
+The ICAP hypothesis predicts I > C > A > P for learning outcomes. Passive activities produce the least learning; Interactive activities produce the most.
+
+**Role in CrossCheck:** ICAP determines what the student *produces* at each practice mode. It reveals that most current modes cluster in the Active band — students select and flag, but rarely generate explanations or co-construct understanding.
+
+| Mode | Bloom's Level | ICAP Level | What Student Produces |
+|------|--------------|------------|----------------------|
+| Learn | Remember | P → A | Reads definitions (P), then selects quiz answers (A) |
+| Recognize | Understand | A | Selects flaw type for pre-highlighted passages |
+| Locate | Apply | A | Flags text in a constrained search space |
+| Spot | Analyze | A | Flags text independently |
+| Classify | Analyze | A | Flags text + selects flaw type |
+| Evaluate | Evaluate | A → C | Flags + classifies + writes severity judgment and explanation |
+| Group phase | (any) | I | Negotiates consensus through physical discussion + digital confirmation |
+
+**Design principle:** ICAP informs the future direction of practice mode design. Active modes should progressively incorporate Constructive elements — brief justification prompts ("Why do you think this is a reasoning flaw?") — so that the engagement type deepens alongside the Bloom's level. The Group phase provides the Interactive dimension, but should evolve from simple vote-counting toward structured disagreement resolution.
+
+ICAP does not become a new axis the teacher configures. Like CLT, it is a design constraint that shapes how each mode is built.
 
 ---
 
-## Part 2: Difficulty Modes — Full Specification
+## Part 2: Practice Modes — Full Specification
 
 Six modes, one per Bloom's level (Analyze has two sub-levels):
 
@@ -191,7 +219,7 @@ Six modes, one per Bloom's level (Analyze has two sub-levels):
 
 ### What's Implemented
 
-**Difficulty modes:** 3 of 6 (Spot, Classify, Full/Analyze partial). Stored in `group.config.difficulty_mode`.
+**Practice modes:** 3 of 6 (Spot, Classify, Full/Analyze partial). Stored in `group.config.difficulty_mode`.
 
 **Scaffolding:** 6-level teacher scaffold system with 12 templates, real-time delivery via Socket.IO, acknowledgment tracking. All manual — no smart suggestions.
 
@@ -218,16 +246,16 @@ Each gap is numbered for reference in the implementation plan.
 | G5 | No discussion prompts in group phase | Peer ZPD — prompts when group members disagree on flaw types | Group phase shows annotations + confirm/unconfirm buttons only. No prompts |
 | G6 | No progressive feedback | CLT — staged reveal (results first, explanations later) | Feedback view shows everything at once |
 | G7 | No reflection prompts | Metacognition — auto-generated discussion questions after feedback | Neither feedback view nor projector view has reflection prompts |
-| G8 | Progress page doesn't show mode trajectory | Cross-session narrative — which mode, what was the outcome | Shows detection rates and flaw type breakdown but not difficulty mode history |
+| G8 | Progress page doesn't show mode trajectory | Cross-session narrative — which mode, what was the outcome | Shows detection rates and flaw type breakdown but not practice mode history |
 
 **Teacher interface gaps:**
 
 | # | Gap | Model Requirement | Current State |
 |---|-----|-------------------|---------------|
-| G9 | Difficulty selector has only 3 levels | 6 modes: Learn, Recognize, Locate, Spot, Classify, Analyze | Session creation form shows Spot / Classify / Full buttons |
-| G10 | No mid-session difficulty change | ZPD fading — teacher changes group mode during session | Dashboard shows difficulty badge (read-only). No way to change |
+| G9 | Practice mode selector has only 3 levels | 6 modes: Learn, Recognize, Locate, Spot, Classify, Analyze | Session creation form shows Spot / Classify / Full buttons |
+| G10 | No mid-session practice mode change | ZPD fading — teacher changes group mode during session | Dashboard shows practice mode badge (read-only). No way to change |
 | G11 | No smart scaffold suggestions | ZPD adaptive support — observations + pre-drafted scaffolds | Dashboard shows annotation counts but doesn't compare against reference to generate suggestions |
-| G12 | No difficulty recommendations | Cross-session progression — suggest starting mode based on history | Session creation form has no recommendations |
+| G12 | No practice mode recommendations | Cross-session progression — suggest starting mode based on history | Session creation form has no recommendations |
 | G13 | No feedback stage control | Progressive feedback — teacher controls when explanations are revealed | Single "Release Evaluation" button. No staged reveal |
 | G14 | Projector view has no reflection prompts | Metacognition — discussion questions for class debrief | Shows group comparison stats and flaw breakdown only |
 
@@ -235,7 +263,7 @@ Each gap is numbered for reference in the implementation plan.
 
 | # | Gap | Model Requirement | Current State |
 |---|-----|-------------------|---------------|
-| G15 | UI doesn't adapt to difficulty mode | Each mode should show only what's needed | Same interface for all modes: same sidebar, same transcript view. Only bottom bar changes (Spot: single button vs. 4 buttons) |
+| G15 | UI doesn't adapt to practice mode | Each mode should show only what's needed | Same interface for all modes: same sidebar, same transcript view. Only bottom bar changes (Spot: single button vs. 4 buttons) |
 | G16 | Sidebar shows flaw type categories in Spot mode | Redundancy effect — type info is extraneous when student doesn't classify | FlawPalette always shows 4 flaw types with descriptions |
 | G17 | No mobile annotation support | CLT — accessible on tablets (common in classrooms) | FlawPalette is `hidden lg:block`. No drawer/modal alternative. No touch selection handling |
 
@@ -275,7 +303,7 @@ src/app/teacher/sessions/[id]/class-view/
   page.tsx                    — Projector view for class debrief
 
 src/app/teacher/sessions/new/
-  create-session-form.tsx     — Session creation with per-group difficulty
+  create-session-form.tsx     — Session creation with per-group practice mode
 
 src/lib/
   types.ts                    — FlawType, Annotation, etc.
@@ -291,11 +319,11 @@ src/hooks/
 - `activity.flawIndex[]` — Denormalized: `[{flaw_id, locations[], flaw_type, severity}]`
 - `group.config` — JSONB, currently stores `{difficulty_mode: "spot"|"classify"|"full"}`
 
-**Current difficulty mode values:** `"spot"`, `"classify"`, `"full"` (stored in `group.config.difficulty_mode`). New modes will add: `"learn"`, `"recognize"`, `"locate"`. The `"full"` value maps to the "Analyze" mode described in this document.
+**Current practice mode values:** `"spot"`, `"classify"`, `"full"` (stored in `group.config.difficulty_mode`). New modes will add: `"learn"`, `"recognize"`, `"locate"`. The `"full"` value maps to the "Analyze" mode described in this document.
 
 ---
 
-### Phase A: New Difficulty Modes + Mode-Adaptive UI
+### Phase A: New Practice Modes + Mode-Adaptive UI
 
 **Fixes gaps:** G1, G2, G3, G9, G15, G16
 
@@ -303,7 +331,7 @@ src/hooks/
 
 #### A1. Schema + Data Changes
 
-**No Prisma migration needed.** Difficulty mode is stored in `group.config` JSONB — adding new string values requires no schema change. But update validation:
+**No Prisma migration needed.** Practice mode is stored in `group.config` JSONB — adding new string values requires no schema change. But update validation:
 
 File: `src/app/api/sessions/route.ts`
 - The POST handler accepts `difficultyMode` per group. Currently no validation on the value. Add validation:
@@ -341,11 +369,11 @@ Add `flawResponses FlawResponse[]` to Group and User models. Run migration.
 
 **New API route:** `POST /api/flaw-responses` — Create a flaw response (for Recognize mode). Validate group membership and session phase.
 
-#### A2. Session Creation Form — 6 Difficulty Levels
+#### A2. Session Creation Form — 6 Practice Modes
 
 File: `src/app/teacher/sessions/new/create-session-form.tsx`
 
-Replace the 3-button difficulty selector in each group card with 6 options. Use a compact layout to avoid overwhelming the form:
+Replace the 3-button practice mode selector in each group card with 6 options. Use a compact layout to avoid overwhelming the form:
 
 ```tsx
 {[
@@ -545,7 +573,7 @@ File: `src/lib/scaffold-suggestions.ts` (new)
 
 A pure function: `generateSuggestions(groups, flawIndex, difficultyMode) → Suggestion[]`
 
-Input: groups with their annotations + the reference flaw index + each group's difficulty mode.
+Input: groups with their annotations + the reference flaw index + each group's practice mode.
 Output: array of suggestions, each with:
 ```typescript
 interface ScaffoldSuggestion {
@@ -701,7 +729,7 @@ Only shown during group phase. Computed from local state (no API call).
 
 ---
 
-### Phase F: Mid-Session Difficulty Changes + Recommendations
+### Phase F: Mid-Session Practice Mode Changes + Recommendations
 
 **Fixes gaps:** G10, G12, G8
 
@@ -710,7 +738,7 @@ Only shown during group phase. Computed from local state (no API call).
 #### F1. Mid-Session Mode Change
 
 File: `src/app/teacher/sessions/[id]/session-dashboard.tsx`
-- The difficulty badge on each group card (currently read-only) becomes a clickable dropdown.
+- The practice mode badge on each group card (currently read-only) becomes a clickable dropdown.
 - On change: PATCH `/api/groups/[id]` with `{ config: { difficulty_mode: newMode } }`.
 
 File: `src/app/api/groups/[id]/route.ts` (new)
@@ -723,11 +751,11 @@ File: `src/app/student/session/[id]/session-activity-viewer.tsx`
 File: `src/hooks/useSessionSocket.ts`
 - Add `onGroupConfigChanged` handler type.
 
-#### F2. Difficulty Recommendations
+#### F2. Practice Mode Recommendations
 
 File: `src/app/teacher/sessions/new/create-session-form.tsx`
 
-When the teacher selects an activity and creates groups, show a recommendation next to each group's difficulty selector:
+When the teacher selects an activity and creates groups, show a recommendation next to each group's practice mode selector:
 
 - Fetch past session data for these students (query: sessions where these students participated, with match results).
 - If data exists: "Based on past sessions, suggest: Locate" (small text below the selector).
@@ -738,7 +766,7 @@ This requires a lightweight API endpoint or the session creation page can fetch 
 #### F3. Progress Page Mode Trajectory
 
 File: `src/app/student/progress/page.tsx`
-- Include the difficulty mode in each session's display.
+- Include the practice mode in each session's display.
 - Show as a label next to the date: "Oct 3 — Locate mode — 62% detection".
 - This helps students understand their own progression.
 
@@ -762,7 +790,7 @@ Phase B (field guide) ←── can start in parallel with A
   ├── B1: FlawFieldGuide component + mobile drawer
   └── B2: Replace FlawPalette in viewers
          │
-Phase C (scaffold suggestions) ←── after A (uses difficulty mode in suggestions)
+Phase C (scaffold suggestions) ←── after A (uses practice mode in suggestions)
   ├── C1: Suggestion engine (pure function)
   └── C2: Dashboard integration
          │
@@ -775,7 +803,7 @@ Phase E (discussion prompts) ←── after B (renders in field guide sidebar)
          │
 Phase F (mid-session changes + recs) ←── after A (more modes to switch between)
   ├── F1: Mid-session mode change (API + dashboard + socket event)
-  ├── F2: Difficulty recommendations on session creation
+  ├── F2: Practice mode recommendations on session creation
   └── F3: Progress page mode trajectory
 ```
 
@@ -828,7 +856,7 @@ Phase F (mid-session changes + recs) ←── after A (more modes to switch bet
 
 ## Part 6: Design Principles
 
-1. **The teacher is the pedagogical decision-maker.** The app surfaces information and suggests actions. It never sends scaffolds automatically or changes difficulty modes without the teacher.
+1. **The teacher is the pedagogical decision-maker.** The app surfaces information and suggests actions. It never sends scaffolds automatically or changes practice modes without the teacher.
 
 2. **Less UI is more learning.** Every element on screen that isn't needed for the current task is extraneous load. Each mode shows only what that cognitive level requires.
 
@@ -838,4 +866,4 @@ Phase F (mid-session changes + recs) ←── after A (more modes to switch bet
 
 5. **Productive struggle requires time.** A group idle for 3 minutes might be having a valuable discussion. Suggestions say "Group C has been idle" — not "Group C is stuck." The teacher decides.
 
-6. **Feedback drives the next session.** Detection rates, type breakdowns, and mode trajectories inform the teacher's choices. The app suggests difficulty levels but doesn't prescribe them.
+6. **Feedback drives the next session.** Detection rates, type breakdowns, and mode trajectories inform the teacher's choices. The app suggests practice modes but doesn't prescribe them.

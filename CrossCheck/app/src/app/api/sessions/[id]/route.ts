@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getIO } from "@/lib/socket-server";
+import { VALID_DIFFICULTY_MODES } from "@/lib/types";
 
 export async function GET(
   request: NextRequest,
@@ -79,7 +80,13 @@ export async function PATCH(
 
   const { id } = await params;
   const body = await request.json();
-  const { status, notes } = body as { status?: string; notes?: string };
+  const { status, notes, action, groupId: targetGroupId, difficultyMode } = body as {
+    status?: string;
+    notes?: string;
+    action?: string;
+    groupId?: string;
+    difficultyMode?: string;
+  };
 
   const classSession = await prisma.session.findUnique({ where: { id } });
   if (!classSession) {
@@ -87,6 +94,52 @@ export async function PATCH(
   }
   if (classSession.teacherId !== session.user.id) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  // Mid-session practice mode change
+  if (action === "change_mode") {
+    if (!targetGroupId || !difficultyMode) {
+      return NextResponse.json({ error: "groupId and difficultyMode required" }, { status: 400 });
+    }
+    if (!VALID_DIFFICULTY_MODES.includes(difficultyMode as typeof VALID_DIFFICULTY_MODES[number])) {
+      return NextResponse.json({ error: `Invalid mode: ${difficultyMode}` }, { status: 400 });
+    }
+    if (["setup", "closed"].includes(classSession.status)) {
+      return NextResponse.json({ error: "Cannot change mode in setup or closed phase" }, { status: 400 });
+    }
+
+    const group = await prisma.group.findFirst({ where: { id: targetGroupId, sessionId: id } });
+    if (!group) {
+      return NextResponse.json({ error: "Group not found in this session" }, { status: 404 });
+    }
+
+    const oldConfig = group.config as { difficulty_mode?: string } | null;
+    const oldMode = oldConfig?.difficulty_mode || "classify";
+
+    const updatedGroup = await prisma.group.update({
+      where: { id: targetGroupId },
+      data: { config: { difficulty_mode: difficultyMode } },
+    });
+
+    await prisma.sessionEvent.create({
+      data: {
+        sessionId: id,
+        eventType: "mode_changed",
+        actorId: session.user.id,
+        payload: { groupId: targetGroupId, from: oldMode, to: difficultyMode },
+      },
+    });
+
+    const io = getIO();
+    if (io) {
+      io.to(`session:${id}`).emit("session:mode_changed", {
+        sessionId: id,
+        groupId: targetGroupId,
+        newMode: difficultyMode,
+      });
+    }
+
+    return NextResponse.json(updatedGroup);
   }
 
   // Notes-only update (no phase transition)
