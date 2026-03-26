@@ -1,0 +1,285 @@
+scenario_id: background-music-concentration
+activity: presentation
+evaluated_at: '2026-03-25T16:00:00Z'
+flaws:
+- flaw_id: flaw_001
+  location:
+    type: section
+    references:
+    - introduction
+  flaw_type: epistemic
+  source: knowledge_driven
+  severity: moderate
+  description: The Mozart Effect is presented as a well-established, replicated finding
+    that demonstrates music improves cognitive abilities, when in reality the original
+    1993 result was small, short-lived, and has largely failed to replicate reliably.
+  evidence: The Mozart Effect has been studied many times since then, and it has become
+    one of the most well-known results in cognitive science. It is a really powerful
+    example of how sound can directly influence thinking.
+  explanation: Priya presents the Mozart Effect as a robust, confirmed finding rather
+    than a contested and largely debunked one. The original Rauscher study showed
+    a small, temporary effect on spatial reasoning only, and subsequent replications
+    have been inconsistent. Describing it as 'a really powerful example of how sound
+    can directly influence thinking' treats a disputed claim as established fact.
+    This is an assumption-as-fact epistemic flaw driven by Priya's misconception about
+    the Mozart Effect research.
+- flaw_id: flaw_002
+  location:
+    type: section
+    references:
+    - introduction
+  flaw_type: epistemic
+  source: knowledge_driven
+  severity: minor
+  description: The claim that music 'activates neural pathways and stimulates the
+    brain' is vague and unfalsifiable, giving a scientific-sounding explanation without
+    actual explanatory content.
+  evidence: Music activates neural pathways and stimulates the brain, which is part
+    of why researchers think it can influence how well you perform on tasks.
+  explanation: This statement sounds scientific but is essentially vacuous -- virtually
+    any stimulus activates neural pathways and stimulates the brain. It implies a
+    specific mechanism linking music to performance without actually describing one.
+    This reflects shallow understanding of neural mechanisms being presented with
+    unwarranted confidence.
+- flaw_id: flaw_003
+  location:
+    type: section
+    references:
+    - approach
+  flaw_type: epistemic
+  source: knowledge_driven
+  severity: major
+  description: The experiment used convenience/self-selection sampling (students chose
+    their own testing slots) but is presented as free of bias and as a 'controlled
+    experiment' that supports causal claims.
+  evidence: Students signed up for whatever testing slot worked with their schedule,
+    and they did not know ahead of time which room had which sound condition. So there
+    was no bias in how people ended up in their groups.
+  explanation: Self-selection into testing slots is not random assignment. Students
+    who chose particular time slots may differ systematically in motivation, ability,
+    or other factors. Not knowing the room condition does not eliminate selection
+    bias -- it only means students did not choose based on sound preference. Kayla
+    claims 'there was no bias' when the design has a fundamental bias that undermines
+    causal inference. This is a major flaw because the entire experiment's causal
+    claims rest on this faulty reasoning about assignment.
+- flaw_id: flaw_004
+  location:
+    type: section
+    references:
+    - approach
+  flaw_type: completeness
+  source: knowledge_driven
+  severity: moderate
+  description: 'Multiple confounding variables are unaddressed: time of day for testing
+    sessions, prior academic ability of students in each group, familiarity with math/memory
+    tasks, and whether students in different slots differed systematically.'
+  evidence: We kept everything the same except for the one thing we were testing,
+    which was the type of sound. ... When you have a controlled experiment like this,
+    you can be confident that any differences you see in the results are because of
+    the sound condition and not because of something else.
+  explanation: Kayla equates controlling surface-level features (same desk, timer,
+    pencil) with controlling for confounding variables. With only 8 students per group
+    and no random assignment, pre-existing differences between groups could easily
+    account for the observed score differences. The presentation never considers this
+    possibility, leaving a critical gap in the methodology discussion.
+- flaw_id: flaw_005
+  location:
+    type: section
+    references:
+    - findings
+  flaw_type: epistemic
+  source: knowledge_driven
+  severity: major
+  description: Small percentage-point differences from groups of approximately 8 students
+    are treated as definitive proof rather than as preliminary observations that could
+    easily be due to chance.
+  evidence: The data does not leave a lot of room for debate -- silence came out ahead,
+    music came in last, and white noise was in the middle.
+  explanation: With roughly 8 students per condition, a 6-7 percentage point difference
+    is well within the range that could occur by random variation alone. DeShawn presents
+    these differences as conclusive ('does not leave a lot of room for debate') without
+    any measure of statistical significance, confidence intervals, or acknowledgment
+    that the sample size is too small for strong conclusions. This is a major epistemic
+    flaw because the overstated certainty is the foundation for all subsequent recommendations.
+- flaw_id: flaw_006
+  location:
+    type: section
+    references:
+    - findings
+  flaw_type: completeness
+  source: knowledge_driven
+  severity: moderate
+  description: No information is provided about within-group variability or the spread
+    of individual scores, making it impossible to assess whether the group averages
+    meaningfully differ.
+  evidence: I scored every test using the same answer key, double-checked my tallies,
+    and calculated the averages for each condition.
+  explanation: DeShawn reports only group averages without any measure of variability
+    (range, standard deviation, or individual scores). If scores within each group
+    varied widely, the group averages could overlap substantially, making the between-group
+    differences meaningless. This omission prevents any real assessment of whether
+    the conditions produced genuinely different outcomes.
+- flaw_id: flaw_007
+  location:
+    type: section
+    references:
+    - solution
+  flaw_type: reasoning
+  source: knowledge_driven
+  severity: moderate
+  description: The solution dismisses individual differences in music preferences
+    by citing group averages, which is an overgeneralization that conflates average
+    group trends with what is best for every individual.
+  evidence: 'But here is the thing: the data showed that music was actually the worst
+    condition for both types of tasks we tested. So even if it feels like music is
+    helping, the numbers suggest it might be hurting your performance.'
+  explanation: Group averages showing music performed worst overall do not mean that
+    every individual performed worse with music. Some students in the music condition
+    may have scored higher than some in the silence condition. Malik uses the group
+    average to dismiss all individual experiences as illusory, which is an ecological
+    fallacy -- applying group-level findings to individuals.
+- flaw_id: flaw_008
+  location:
+    type: section
+    references:
+    - solution
+  flaw_type: completeness
+  source: knowledge_driven
+  severity: moderate
+  description: The proposed quiet study zones lack any feasibility analysis -- no
+    consideration of cost, space availability, enforcement, or practical constraints
+    of maintaining silence in a middle school.
+  evidence: We are picturing a room or a section of the library where the rule is
+    silence -- no music, no talking, no phone sounds. You walk in, you sit down, and
+    you focus.
+  explanation: The solution is presented as 'straightforward' without addressing how
+    silence would be enforced, whether the school has available space, what the cost
+    of partitions and noise-level indicators would be, or how this would work alongside
+    normal school activity. For a PBL project proposing changes to the school, ignoring
+    implementation feasibility is a meaningful completeness gap.
+- flaw_id: flaw_009
+  location:
+    type: section
+    references:
+    - solution
+  flaw_type: epistemic
+  source: knowledge_driven
+  severity: moderate
+  description: The experimental results are described as 'tested and proved,' which
+    overstates what a single small-sample experiment can establish.
+  evidence: So this is not just something we read online -- this is something we tested
+    and proved.
+  explanation: A single experiment with 24 students and no random assignment does
+    not 'prove' anything. The word 'proved' implies certainty that the experimental
+    design cannot deliver. This overstates the evidence substantially and misrepresents
+    the nature of scientific inquiry, where single studies provide evidence but not
+    proof.
+- flaw_id: flaw_010
+  location:
+    type: section
+    references:
+    - conclusion
+  flaw_type: reasoning
+  source: knowledge_driven
+  severity: major
+  description: The conclusion generalizes from 24 students on two specific task types
+    to universal claims about all studying, all students, and all academic performance.
+  evidence: You will focus better, you will remember more, and you will do better
+    on your tests.
+  explanation: The experiment tested memory recall and multiplication/division with
+    24 middle school students. The conclusion extends this to all forms of studying,
+    all types of tests, and all students without qualification. This is a major overgeneralization
+    -- the findings, even if statistically valid, would only apply to similar tasks
+    under similar conditions. Creative tasks, reading comprehension, or long-duration
+    studying might yield different results.
+- flaw_id: flaw_011
+  location:
+    type: section
+    references:
+    - conclusion
+  flaw_type: completeness
+  source: knowledge_driven
+  severity: moderate
+  description: The conclusion mentions wanting to test more conditions as a future
+    direction but never acknowledges actual limitations of the current study (small
+    sample, no random assignment, narrow task types).
+  evidence: If we were to do this project again, I think we would want to test even
+    more conditions -- maybe different types of music, like classical versus hip-hop,
+    or different volume levels. ... But honestly, for the scope of a 7th grade project,
+    I think we did a really thorough job.
+  explanation: The reflection frames limitations only as opportunities for expansion
+    rather than as genuine weaknesses. It never acknowledges that the sample size
+    was small, assignment was not random, or that only two task types were tested.
+    The phrase 'really thorough job' actively deflects from real limitations. A complete
+    conclusion should acknowledge what the study cannot tell us, not just what more
+    it could have done.
+- flaw_id: flaw_012
+  location:
+    type: cross_section
+    references:
+    - introduction
+    - conclusion
+  flaw_type: coherence
+  source: knowledge_driven
+  severity: moderate
+  description: The introduction presents the music-cognition relationship as an active
+    scientific debate with valid perspectives on both sides, but the conclusion claims
+    'the strongest evidence points toward sound being a distraction' as if the debate
+    has been settled.
+  evidence: 'Introduction: ''Some scientists believe that music boosts your performance
+    because it improves your mood... Others argue that music is actually a distraction...
+    And some researchers think it depends on the kind of music and the kind of task.''
+    Conclusion: ''even though some scientists think music can help, the strongest
+    evidence points toward sound being a distraction when you are trying to focus.'''
+  explanation: Priya's introduction accurately frames the topic as an unresolved scientific
+    debate. Malik's conclusion selectively recharacterizes the research literature
+    as favoring the distraction view, which was not established in the introduction.
+    The conclusion misrepresents the nuance that the introduction carefully established,
+    creating an internal inconsistency in how the team presents the state of scientific
+    knowledge.
+- flaw_id: flaw_013
+  location:
+    type: cross_section
+    references:
+    - introduction
+    - findings
+    - solution
+  flaw_type: coherence
+  source: knowledge_driven
+  severity: moderate
+  description: The introduction highlights the Mozart Effect as evidence that music
+    enhances cognition, but the findings and solution sections conclude music harms
+    performance, and no speaker reconciles this contradiction.
+  evidence: 'Introduction: ''listening to classical music -- specifically Mozart --
+    actually improved people''s cognitive abilities... It is a really powerful example
+    of how sound can directly influence thinking.'' Solution: ''the data showed that
+    music was actually the worst condition for both types of tasks we tested.'''
+  explanation: Priya presents the Mozart Effect as strong evidence that music enhances
+    cognition. The team's own experiment then finds the opposite. Neither the findings,
+    solution, nor conclusion sections address this tension. A coherent presentation
+    would either reconcile the discrepancy (e.g., the Mozart Effect may not apply
+    to studying tasks) or acknowledge that their results contradict the prominent
+    research cited in the introduction. The disconnect is left unresolved.
+summary:
+  total_flaws: 13
+  by_type:
+    reasoning: 2
+    epistemic: 4
+    completeness: 4
+    coherence: 3
+  by_source:
+    knowledge_driven: 13
+    interaction_driven: 0
+  by_severity:
+    minor: 1
+    moderate: 9
+    major: 3
+  key_patterns: The presentation's most fundamental weakness is treating a small,
+    non-randomly-assigned experiment as definitive proof, which cascades from the
+    approach section through findings to an overconfident recommendation. Epistemic
+    flaws cluster around overstating evidence -- from the Mozart Effect misconception
+    in the introduction to the 'tested and proved' language in the solution -- reflecting
+    a pattern of presenting uncertain findings with unwarranted certainty. The coherence
+    gap between the introduction's balanced framing of the scientific debate and the
+    conclusion's one-sided summary suggests the synthesizer did not fully engage with
+    the nuances established by the background researcher.

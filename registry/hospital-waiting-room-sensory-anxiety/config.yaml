@@ -1,0 +1,18 @@
+scenario_id: hospital-waiting-room-sensory-anxiety
+created_at: '2026-03-25T00:00:00Z'
+topic: How can hospital waiting rooms be redesigned using sensory inputs to reduce
+  patient anxiety?
+activity: discussion
+agents:
+- agent_id: maya
+  name: Maya
+- agent_id: carlos
+  name: Carlos
+- agent_id: aisha
+  name: Aisha
+- agent_id: rafael
+  name: Rafael
+discussion_state:
+  current_stage: converging
+  total_turns: 18
+  last_speaker: aisha
