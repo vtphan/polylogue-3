@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { sessionId, groupId, location, flawType } = body;
+  const { sessionId, groupId, location, flawType, hinted, explanation, severity } = body;
 
   if (!sessionId || !groupId || !location || !flawType) {
     return NextResponse.json(
@@ -46,6 +46,9 @@ export async function POST(request: NextRequest) {
       userId: session.user.id,
       location,
       flawType,
+      ...(hinted ? { hinted: true } : {}),
+      ...(explanation ? { explanation } : {}),
+      ...(severity ? { severity } : {}),
     },
   });
 

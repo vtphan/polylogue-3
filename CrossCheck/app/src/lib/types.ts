@@ -67,25 +67,84 @@ export interface Annotation {
   location: AnnotationLocation;
   flawType: FlawType;
   createdAt: string;
+  hinted?: boolean;
   isGroupAnswer?: boolean;
   confirmedBy?: string[];
   userId?: string;
   comments?: { id: string; text: string; isBonus: boolean }[];
 }
 
-// Difficulty modes — ordered by Bloom's level
-export type DifficultyMode = "learn" | "recognize" | "locate" | "spot" | "classify" | "full";
+// Difficulty modes — ordered by independence gradient (system withdraws, student takes on more)
+export type DifficultyMode = "learn" | "recognize" | "locate" | "classify" | "explain";
 
-export const VALID_DIFFICULTY_MODES: DifficultyMode[] = ["learn", "recognize", "locate", "spot", "classify", "full"];
+export const VALID_DIFFICULTY_MODES: DifficultyMode[] = ["learn", "recognize", "locate", "classify", "explain"];
+
+// Session modes — excludes Learn (standalone page, not a session mode)
+export type SessionMode = "recognize" | "locate" | "classify" | "explain";
+
+export const SESSION_MODES: SessionMode[] = ["recognize", "locate", "classify", "explain"];
 
 // User-facing label is "Practice Mode". Internal name kept for DB compatibility.
 export const DIFFICULTY_MODE_INFO: Record<DifficultyMode, { label: string; desc: string }> = {
   learn:     { label: "Learn",     desc: "Vocabulary primer" },
-  recognize: { label: "Recognize", desc: "Explain shown flaws" },
-  locate:    { label: "Locate",    desc: "Find hinted flaws" },
-  spot:      { label: "Spot",      desc: "Find on your own" },
-  classify:  { label: "Classify",  desc: "Find + categorize" },
-  full:      { label: "Evaluate",  desc: "Full analysis with severity" },
+  recognize: { label: "Recognize", desc: "Comprehend shown flaws" },
+  locate:    { label: "Locate",    desc: "Directed search with hints" },
+  classify:  { label: "Classify",  desc: "Open search" },
+  explain:   { label: "Explain",   desc: "Full analysis with justification" },
+};
+
+// Per-mode granularity knob config types
+export interface RecognizeConfig { response_format: "ab" | "multiple_choice" }
+export interface LocateConfig { hint_scope: "sentence" | "section" }
+export interface ClassifyConfig { categorization: "detect_only" | "assisted" | "full" }
+export interface ExplainConfig { explanation_format: "guided" | "free_text" }
+
+export type ModeConfig = RecognizeConfig | LocateConfig | ClassifyConfig | ExplainConfig;
+
+// Knob info for session creation UI
+export const MODE_KNOB_INFO: Record<SessionMode, {
+  key: string;
+  label: string;
+  options: { value: string; label: string }[];
+  default: string;
+}> = {
+  recognize: {
+    key: "response_format",
+    label: "Response format",
+    options: [
+      { value: "ab", label: "A/B choice" },
+      { value: "multiple_choice", label: "Multiple choice" },
+    ],
+    default: "multiple_choice",
+  },
+  locate: {
+    key: "hint_scope",
+    label: "Hint scope",
+    options: [
+      { value: "sentence", label: "Sentence" },
+      { value: "section", label: "Section" },
+    ],
+    default: "section",
+  },
+  classify: {
+    key: "categorization",
+    label: "Categorization",
+    options: [
+      { value: "detect_only", label: "Detect only" },
+      { value: "assisted", label: "Assisted" },
+      { value: "full", label: "Full" },
+    ],
+    default: "full",
+  },
+  explain: {
+    key: "explanation_format",
+    label: "Explanation format",
+    options: [
+      { value: "guided", label: "Guided" },
+      { value: "free_text", label: "Free text" },
+    ],
+    default: "guided",
+  },
 };
 
 // Flaw type display info

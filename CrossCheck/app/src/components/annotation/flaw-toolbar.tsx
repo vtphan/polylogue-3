@@ -1,6 +1,6 @@
 "use client";
 
-import type { FlawType, Annotation, DifficultyMode } from "@/lib/types";
+import type { FlawType, Annotation, ClassifyConfig, DifficultyMode } from "@/lib/types";
 import { FLAW_TYPES } from "@/lib/types";
 
 interface FlawBottomBarProps {
@@ -10,6 +10,10 @@ interface FlawBottomBarProps {
   onUndo: () => void;
   readOnly?: boolean;
   difficultyMode?: DifficultyMode;
+  categorization?: ClassifyConfig["categorization"];
+  assistedOptions?: FlawType[];
+  onShowHint?: () => void;
+  hintsRemaining?: number;
 }
 
 const FLAW_BUTTON_COLORS: Record<FlawType, string> = {
@@ -26,6 +30,14 @@ const FLAW_INACTIVE_COLORS: Record<FlawType, string> = {
   coherence: "bg-purple-200 text-purple-400",
 };
 
+// Determine which buttons to show based on mode + categorization
+function useFlagMode(difficultyMode: DifficultyMode, categorization?: ClassifyConfig["categorization"]) {
+  if (difficultyMode === "locate") return "single";
+  if (difficultyMode === "classify" && categorization === "detect_only") return "single";
+  if (difficultyMode === "classify" && categorization === "assisted") return "assisted";
+  return "all"; // classify full, explain
+}
+
 export function FlawBottomBar({
   hasSelection,
   annotations,
@@ -33,14 +45,31 @@ export function FlawBottomBar({
   onUndo,
   readOnly,
   difficultyMode = "classify",
+  categorization,
+  assistedOptions,
+  onShowHint,
+  hintsRemaining,
 }: FlawBottomBarProps) {
   if (readOnly) return null;
+
+  const flagMode = useFlagMode(difficultyMode, categorization);
+  const showHintButton = (difficultyMode === "classify" || difficultyMode === "explain") && onShowHint;
+
+  // Determine which flaw type buttons to render
+  let buttonsToRender: FlawType[];
+  if (flagMode === "single") {
+    buttonsToRender = [];
+  } else if (flagMode === "assisted" && assistedOptions) {
+    buttonsToRender = assistedOptions;
+  } else {
+    buttonsToRender = Object.keys(FLAW_TYPES) as FlawType[];
+  }
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 shadow-lg">
       <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-center gap-3">
-        {(difficultyMode === "spot" || difficultyMode === "locate") ? (
-          /* Spot/Locate mode: single "Flag" button — uses "reasoning" as placeholder type */
+        {flagMode === "single" ? (
+          /* Locate / Classify detect-only: single "Flag" button */
           <button
             onClick={() => onSelect("reasoning")}
             disabled={!hasSelection}
@@ -53,8 +82,8 @@ export function FlawBottomBar({
             Flag This
           </button>
         ) : (
-          /* Classify and Full modes: 4 flaw type buttons */
-          (Object.keys(FLAW_TYPES) as FlawType[]).map((type) => (
+          /* Assisted (2-4 buttons) or Full (all 4 buttons) */
+          buttonsToRender.map((type) => (
             <button
               key={type}
               onClick={() => onSelect(type)}
@@ -72,6 +101,24 @@ export function FlawBottomBar({
         )}
 
         <div className="w-px h-6 bg-gray-200 mx-1" />
+
+        {showHintButton && (
+          <>
+            <button
+              onClick={onShowHint}
+              disabled={hintsRemaining === 0}
+              className={`text-sm font-medium px-3 py-2 rounded-lg border transition-colors ${
+                hintsRemaining !== 0
+                  ? "border-amber-300 text-amber-700 bg-amber-50 hover:bg-amber-100"
+                  : "border-gray-200 text-gray-300 cursor-not-allowed"
+              }`}
+              title="Reveal the section of an unfound flaw"
+            >
+              💡{hintsRemaining != null ? ` ${hintsRemaining}` : ""}
+            </button>
+            <div className="w-px h-6 bg-gray-200 mx-1" />
+          </>
+        )}
 
         <button
           onClick={onUndo}

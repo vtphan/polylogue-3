@@ -19,24 +19,29 @@ const FLAW_DEFINITIONS: Record<FlawType, string> = {
   coherence: "Team members contradict each other or the conclusion doesn't match.",
 };
 
+/** Extended type that includes the "no_flaw" false positive option. */
+export type ResponseType = FlawType | "no_flaw";
+
 interface ResponseCardProps {
   flawId: string;
-  correctType: FlawType;
+  correctType: ResponseType;
   explanation: string;
   groupId: string;
   userId: string;
-  onResponse?: (flawId: string, typeAnswer: FlawType, typeCorrect: boolean) => void;
+  onResponse?: (flawId: string, typeAnswer: string, typeCorrect: boolean) => void;
   /** Called on every attempt (not just final). For parent state tracking. */
-  onAttempt?: (flawId: string, typeAnswer: FlawType, isCorrect: boolean, isResolved: boolean) => void;
+  onAttempt?: (flawId: string, typeAnswer: string, isCorrect: boolean, isResolved: boolean) => void;
   standalone?: boolean;
   showDefinitions?: boolean;
   maxAttempts?: number;
   /** Pre-existing attempts (persisted by parent across popup open/close). */
   initialAttempts?: number;
   /** Pre-existing eliminated types (persisted by parent). */
-  initialEliminatedTypes?: FlawType[];
+  initialEliminatedTypes?: string[];
   /** If true, card is already resolved (student used all attempts or got it right). */
   initialResolved?: boolean;
+  /** A/B shows correct + 1 distractor; multiple_choice shows all 4. Both include "No flaw". */
+  responseFormat?: "ab" | "multiple_choice";
 }
 
 export function ResponseCard({
@@ -53,17 +58,33 @@ export function ResponseCard({
   initialAttempts = 0,
   initialEliminatedTypes = [],
   initialResolved = false,
+  responseFormat = "multiple_choice",
 }: ResponseCardProps) {
-  const [selectedType, setSelectedType] = useState<FlawType | null>(null);
+  const [selectedType, setSelectedType] = useState<ResponseType | null>(null);
   const [attempts, setAttempts] = useState(initialAttempts);
   const [resolved, setResolved] = useState(initialResolved);
   const [showingFeedback, setShowingFeedback] = useState(false);
-  const [eliminatedTypes, setEliminatedTypes] = useState<Set<FlawType>>(new Set(initialEliminatedTypes));
+  const [eliminatedTypes, setEliminatedTypes] = useState<Set<string>>(new Set(initialEliminatedTypes));
 
-  const flawTypes = Object.entries(FLAW_TYPES) as [FlawType, typeof FLAW_TYPES[FlawType]][];
+  const allFlawTypes = Object.entries(FLAW_TYPES) as [FlawType, typeof FLAW_TYPES[FlawType]][];
+
+  // In A/B mode, show correct type + 1 deterministic distractor (seeded by flawId)
+  const flawTypes = (() => {
+    if (responseFormat !== "ab" || correctType === "no_flaw") return allFlawTypes;
+    // Deterministic pick of 1 distractor
+    let seed = 0;
+    for (const ch of flawId) seed = ((seed << 5) - seed + ch.charCodeAt(0)) | 0;
+    seed = Math.abs(seed);
+    const others = allFlawTypes.filter(([t]) => t !== correctType);
+    const distractor = others[seed % others.length];
+    const pair = [allFlawTypes.find(([t]) => t === correctType)!, distractor];
+    // Deterministic order (seed-based)
+    return seed % 2 === 0 ? pair : pair.reverse();
+  })();
+
   const effectiveMaxAttempts = maxAttempts ?? 2;
 
-  async function handleSelect(type: FlawType) {
+  async function handleSelect(type: ResponseType) {
     if (resolved || showingFeedback) return;
     setSelectedType(type);
     setShowingFeedback(true);
@@ -81,6 +102,7 @@ export function ResponseCard({
           groupId,
           flawId,
           typeAnswer: type,
+          correctType,
         }),
       });
     } catch {
@@ -103,7 +125,7 @@ export function ResponseCard({
 
   }
 
-  function getButtonStyle(type: FlawType): string {
+  function getButtonStyle(type: ResponseType): string {
     const isEliminated = eliminatedTypes.has(type);
 
     if (resolved) {
@@ -115,11 +137,15 @@ export function ResponseCard({
     if (showingFeedback && type === selectedType) return "border-red-400 bg-red-50";
     if (isEliminated) return "border-gray-200 bg-gray-50 opacity-40 cursor-not-allowed";
 
+    if (type === "no_flaw") {
+      return "border-gray-300 bg-gray-50 text-gray-600 hover:border-gray-400 hover:bg-gray-100";
+    }
+
     const colors = BUTTON_COLORS[type];
     return `${colors.base} ${colors.hover}`;
   }
 
-  const isDisabled = (type: FlawType) => resolved || showingFeedback || eliminatedTypes.has(type);
+  const isDisabled = (type: ResponseType) => resolved || showingFeedback || eliminatedTypes.has(type);
   const attemptsRemaining = effectiveMaxAttempts - attempts;
 
   const wrapperClass = standalone
@@ -150,6 +176,14 @@ export function ResponseCard({
               <span className="text-[11px] ml-1 opacity-75">{FLAW_DEFINITIONS[type]}</span>
             </button>
           ))}
+          <button
+            onClick={() => handleSelect("no_flaw")}
+            disabled={isDisabled("no_flaw")}
+            className={`w-full text-left text-xs p-2 rounded-lg border transition-all ${getButtonStyle("no_flaw")}`}
+          >
+            <span className="font-bold">No flaw here</span>
+            <span className="text-[11px] ml-1 opacity-75">This passage doesn&apos;t contain a problem.</span>
+          </button>
         </div>
       ) : (
         <div className="flex flex-wrap gap-2 mb-3">
@@ -163,6 +197,13 @@ export function ResponseCard({
               {info.label}
             </button>
           ))}
+          <button
+            onClick={() => handleSelect("no_flaw")}
+            disabled={isDisabled("no_flaw")}
+            className={`text-xs font-medium px-3 py-1.5 rounded-full border transition-all ${getButtonStyle("no_flaw")}`}
+          >
+            No flaw here
+          </button>
         </div>
       )}
 
@@ -184,7 +225,9 @@ export function ResponseCard({
           <p className="font-medium text-xs mb-1">
             {selectedType === correctType
               ? "Correct!"
-              : `The answer is ${FLAW_TYPES[correctType].label}.`}
+              : correctType === "no_flaw"
+                ? "This passage doesn't contain a flaw."
+                : `The answer is ${FLAW_TYPES[correctType as FlawType].label}.`}
           </p>
           <p className="text-xs leading-relaxed">{explanation}</p>
         </div>

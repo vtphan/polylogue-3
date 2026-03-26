@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getIO } from "@/lib/socket-server";
-import { VALID_DIFFICULTY_MODES } from "@/lib/types";
+import { VALID_DIFFICULTY_MODES, MODE_KNOB_INFO, SESSION_MODES } from "@/lib/types";
+import type { SessionMode } from "@/lib/types";
 
 export async function GET(
   request: NextRequest,
@@ -80,12 +81,13 @@ export async function PATCH(
 
   const { id } = await params;
   const body = await request.json();
-  const { status, notes, action, groupId: targetGroupId, difficultyMode } = body as {
+  const { status, notes, action, groupId: targetGroupId, difficultyMode, modeConfig } = body as {
     status?: string;
     notes?: string;
     action?: string;
     groupId?: string;
     difficultyMode?: string;
+    modeConfig?: Record<string, string>;
   };
 
   const classSession = await prisma.session.findUnique({ where: { id } });
@@ -107,6 +109,13 @@ export async function PATCH(
     if (["setup", "closed"].includes(classSession.status)) {
       return NextResponse.json({ error: "Cannot change mode in setup or closed phase" }, { status: 400 });
     }
+    if (modeConfig && SESSION_MODES.includes(difficultyMode as SessionMode)) {
+      const knob = MODE_KNOB_INFO[difficultyMode as SessionMode];
+      const value = modeConfig[knob.key];
+      if (value && !knob.options.some((o) => o.value === value)) {
+        return NextResponse.json({ error: `Invalid ${knob.key} value "${value}" for mode "${difficultyMode}"` }, { status: 400 });
+      }
+    }
 
     const group = await prisma.group.findFirst({ where: { id: targetGroupId, sessionId: id } });
     if (!group) {
@@ -118,7 +127,7 @@ export async function PATCH(
 
     const updatedGroup = await prisma.group.update({
       where: { id: targetGroupId },
-      data: { config: { difficulty_mode: difficultyMode } },
+      data: { config: { difficulty_mode: difficultyMode, ...modeConfig } },
     });
 
     await prisma.sessionEvent.create({

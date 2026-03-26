@@ -2,8 +2,8 @@
 
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { FLAW_TYPES, DIFFICULTY_MODE_INFO } from "@/lib/types";
-import type { DifficultyMode } from "@/lib/types";
+import { FLAW_TYPES, DIFFICULTY_MODE_INFO, SESSION_MODES } from "@/lib/types";
+import type { DifficultyMode, SessionMode } from "@/lib/types";
 import { computeMatches } from "@/lib/matching";
 import { EvaluationPanel } from "@/components/evaluation/evaluation-panel";
 import { PresentationView } from "@/components/transcript/presentation-view";
@@ -50,6 +50,7 @@ interface GroupData {
     location: { item_id: string; highlighted_text?: string };
     userId: string;
     createdAt: string;
+    hinted: boolean;
     isGroupAnswer: boolean;
     comments: { id: string; text: string; isBonus: boolean }[];
   }[];
@@ -136,6 +137,7 @@ export function SessionDashboard({ session: initialSession }: { session: Session
                     location: ann.location,
                     userId: ann.userId,
                     createdAt: ann.createdAt,
+                    hinted: ann.hinted || false,
                     isGroupAnswer: ann.isGroupAnswer,
                     comments: [],
                   }],
@@ -538,7 +540,7 @@ export function SessionDashboard({ session: initialSession }: { session: Session
                         <div className="absolute right-0 top-full mt-1 z-20 bg-white border border-gray-200 rounded-lg shadow-lg p-2 w-48">
                           <p className="text-xs font-medium text-gray-500 mb-1.5 px-1">Practice Mode</p>
                           <div className="space-y-0.5">
-                            {(Object.entries(DIFFICULTY_MODE_INFO) as [DifficultyMode, { label: string; desc: string }][]).map(([value, info]) => (
+                            {SESSION_MODES.map((value) => ({ value, info: DIFFICULTY_MODE_INFO[value] })).map(({ value, info }) => (
                               <button
                                 key={value}
                                 onClick={async (e) => {
@@ -1026,6 +1028,14 @@ function GroupDetail({
               </div>
               <div className="text-xs text-gray-600">Total annotations</div>
             </div>
+            {group.annotations.some((a) => a.hinted) && (
+              <div className="bg-amber-50 rounded p-3">
+                <div className="text-2xl font-bold text-amber-600">
+                  {group.annotations.filter((a) => a.hinted).length}
+                </div>
+                <div className="text-xs text-amber-600">Hint-assisted</div>
+              </div>
+            )}
           </div>
 
           {/* Annotation list */}
@@ -1113,6 +1123,7 @@ function AnnotationCard({
               {info?.label || ann.flawType}
             </span>
             {member && <span className="text-xs text-gray-400">{member.user.displayName}</span>}
+            {ann.hinted && <span className="text-xs text-amber-500" title="Hint-assisted">💡</span>}
             {ann.isGroupAnswer && <span className="text-xs text-green-600 font-medium">Group answer</span>}
           </div>
           {location.highlighted_text && (

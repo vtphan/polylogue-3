@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { DIFFICULTY_MODE_INFO } from "@/lib/types";
-import type { DifficultyMode } from "@/lib/types";
+import { DIFFICULTY_MODE_INFO, SESSION_MODES, MODE_KNOB_INFO } from "@/lib/types";
+import type { SessionMode } from "@/lib/types";
 
 interface Activity {
   id: string;
@@ -22,7 +22,12 @@ interface Student {
 interface GroupDraft {
   name: string;
   studentIds: string[];
-  difficultyMode: string;
+  difficultyMode: SessionMode;
+  knobValue: string;
+}
+
+function defaultKnob(mode: SessionMode): string {
+  return MODE_KNOB_INFO[mode].default;
 }
 
 export function CreateSessionForm({
@@ -35,7 +40,7 @@ export function CreateSessionForm({
   const router = useRouter();
   const [activityId, setActivityId] = useState("");
   const [groups, setGroups] = useState<GroupDraft[]>([
-    { name: "Group A", studentIds: [], difficultyMode: "recognize" },
+    { name: "Group A", studentIds: [], difficultyMode: "recognize", knobValue: defaultKnob("recognize") },
   ]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -43,8 +48,8 @@ export function CreateSessionForm({
   const assignedStudentIds = new Set(groups.flatMap((g) => g.studentIds));
 
   function addGroup() {
-    const letter = String.fromCharCode(65 + groups.length); // A, B, C, ...
-    setGroups([...groups, { name: `Group ${letter}`, studentIds: [], difficultyMode: "recognize" }]);
+    const letter = String.fromCharCode(65 + groups.length);
+    setGroups([...groups, { name: `Group ${letter}`, studentIds: [], difficultyMode: "recognize", knobValue: defaultKnob("recognize") }]);
   }
 
   function removeGroup(index: number) {
@@ -63,12 +68,23 @@ export function CreateSessionForm({
     if (group.studentIds.includes(studentId)) {
       group.studentIds = group.studentIds.filter((id) => id !== studentId);
     } else {
-      // Remove from any other group first
       for (const g of updated) {
         g.studentIds = g.studentIds.filter((id) => id !== studentId);
       }
       group.studentIds = [...group.studentIds, studentId];
     }
+    setGroups(updated);
+  }
+
+  function setGroupMode(index: number, mode: SessionMode) {
+    const updated = [...groups];
+    updated[index] = { ...updated[index], difficultyMode: mode, knobValue: defaultKnob(mode) };
+    setGroups(updated);
+  }
+
+  function setGroupKnob(index: number, value: string) {
+    const updated = [...groups];
+    updated[index] = { ...updated[index], knobValue: value };
     setGroups(updated);
   }
 
@@ -89,7 +105,15 @@ export function CreateSessionForm({
     const res = await fetch("/api/sessions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ activityId, groups: groups.map((g) => ({ name: g.name, studentIds: g.studentIds, difficultyMode: g.difficultyMode })) }),
+      body: JSON.stringify({
+        activityId,
+        groups: groups.map((g) => ({
+          name: g.name,
+          studentIds: g.studentIds,
+          difficultyMode: g.difficultyMode,
+          modeConfig: { [MODE_KNOB_INFO[g.difficultyMode].key]: g.knobValue },
+        })),
+      }),
     });
 
     if (res.ok) {
@@ -202,30 +226,53 @@ export function CreateSessionForm({
               <div className="mt-3 pt-3 border-t border-gray-100">
                 <span className="text-xs font-medium text-gray-500">Practice Mode</span>
                 <div className="flex flex-wrap gap-1.5 mt-1.5">
-                  {(Object.entries(DIFFICULTY_MODE_INFO) as [DifficultyMode, { label: string; desc: string }][]).map(([value, info]) => (
+                  {SESSION_MODES.map((mode) => (
                     <button
-                      key={value}
+                      key={mode}
                       type="button"
-                      onClick={() => {
-                        const updated = [...groups];
-                        updated[gi] = { ...updated[gi], difficultyMode: value };
-                        setGroups(updated);
-                      }}
+                      onClick={() => setGroupMode(gi, mode)}
                       className={`text-xs px-2 py-1 rounded-full border transition-colors ${
-                        group.difficultyMode === value
+                        group.difficultyMode === mode
                           ? "border-blue-400 bg-blue-50 text-blue-800 font-medium"
                           : "border-gray-200 text-gray-500 hover:border-gray-300"
                       }`}
                     >
-                      {info.label}
+                      {DIFFICULTY_MODE_INFO[mode].label}
                     </button>
                   ))}
                 </div>
                 <p className="text-xs text-gray-400 mt-1">
-                  {DIFFICULTY_MODE_INFO[group.difficultyMode as DifficultyMode]?.desc}
+                  {DIFFICULTY_MODE_INFO[group.difficultyMode].desc}
                 </p>
-                <p className="text-xs text-gray-300 mt-0.5">
-                  Choose any mode — no sequence required.
+
+                {/* Per-mode knob */}
+                {(() => {
+                  const knob = MODE_KNOB_INFO[group.difficultyMode];
+                  return (
+                    <div className="mt-2">
+                      <span className="text-xs text-gray-400">{knob.label}:</span>
+                      <div className="flex gap-1 mt-1">
+                        {knob.options.map((opt) => (
+                          <button
+                            key={opt.value}
+                            type="button"
+                            onClick={() => setGroupKnob(gi, opt.value)}
+                            className={`text-xs px-2 py-0.5 rounded border transition-colors ${
+                              group.knobValue === opt.value
+                                ? "border-gray-400 bg-gray-100 text-gray-800 font-medium"
+                                : "border-gray-200 text-gray-400 hover:border-gray-300"
+                            }`}
+                          >
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                <p className="text-xs text-gray-300 mt-2">
+                  Choose based on what your students need to practice.
                 </p>
               </div>
             </div>

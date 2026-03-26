@@ -32,6 +32,7 @@ export default async function SessionPage({ params }: PageProps) {
               location: true,
               userId: true,
               createdAt: true,
+              hinted: true,
               isGroupAnswer: true,
               comments: {
                 select: { id: true, text: true, isBonus: true },

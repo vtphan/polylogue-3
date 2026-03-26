@@ -1,7 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { VALID_DIFFICULTY_MODES } from "@/lib/types";
+import { VALID_DIFFICULTY_MODES, MODE_KNOB_INFO, SESSION_MODES } from "@/lib/types";
+import type { SessionMode } from "@/lib/types";
+
+function validateModeConfig(mode: string, modeConfig?: Record<string, string>): string | null {
+  if (!modeConfig) return null;
+  if (!SESSION_MODES.includes(mode as SessionMode)) return null;
+  const knob = MODE_KNOB_INFO[mode as SessionMode];
+  const value = modeConfig[knob.key];
+  if (value && !knob.options.some((o) => o.value === value)) {
+    return `Invalid ${knob.key} value "${value}" for mode "${mode}"`;
+  }
+  return null;
+}
 
 export async function GET() {
   const session = await auth();
@@ -65,7 +77,7 @@ export async function POST(request: NextRequest) {
   const body = await request.json();
   const { activityId, groups, config } = body as {
     activityId: string;
-    groups: { name: string; studentIds: string[]; difficultyMode?: string }[];
+    groups: { name: string; studentIds: string[]; difficultyMode?: string; modeConfig?: Record<string, string> }[];
     config?: Record<string, unknown>;
   };
 
@@ -76,13 +88,19 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Validate difficulty modes
+  // Validate difficulty modes and knob configs
   for (const g of groups) {
     if (g.difficultyMode && !VALID_DIFFICULTY_MODES.includes(g.difficultyMode as typeof VALID_DIFFICULTY_MODES[number])) {
       return NextResponse.json(
         { error: `Invalid difficulty mode: ${g.difficultyMode}` },
         { status: 400 }
       );
+    }
+    if (g.difficultyMode && g.modeConfig) {
+      const knobError = validateModeConfig(g.difficultyMode, g.modeConfig);
+      if (knobError) {
+        return NextResponse.json({ error: knobError }, { status: 400 });
+      }
     }
   }
 
@@ -95,7 +113,7 @@ export async function POST(request: NextRequest) {
       groups: {
         create: groups.map((g) => ({
           name: g.name,
-          config: { difficulty_mode: g.difficultyMode || (config as Record<string, unknown>)?.difficulty_mode || "classify" },
+          config: { difficulty_mode: g.difficultyMode || (config as Record<string, unknown>)?.difficulty_mode || "classify", ...g.modeConfig },
           members: {
             create: g.studentIds.map((sid) => ({ userId: sid })),
           },

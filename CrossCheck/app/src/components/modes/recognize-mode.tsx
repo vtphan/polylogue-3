@@ -4,6 +4,7 @@ import { useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import type { FlawType, Agent, PresentationSection, DiscussionTurn } from "@/lib/types";
 import { ResponseCard } from "./response-card";
+import type { ResponseType } from "./response-card";
 import { useSessionSocket } from "@/hooks/useSessionSocket";
 import type { PhaseChangedEvent, ScaffoldSentEvent } from "@/hooks/useSessionSocket";
 
@@ -31,6 +32,7 @@ interface RecognizeModeProps {
   sessionPhase: string;
   pendingScaffolds: { id: string; text: string; level: number; type: string }[];
   maxAttempts?: number;
+  responseFormat?: "ab" | "multiple_choice";
   existingResponses?: { flawId: string; typeAnswer: string; typeCorrect: boolean }[];
 }
 
@@ -147,13 +149,14 @@ function HighlightedContent({
   activeFlawId,
   onHighlightClick,
   maxAttempts,
+  responseFormat,
   existingResponses,
 }: {
   content: string;
   flaws: EvaluationFlaw[];
   groupId: string;
   userId: string;
-  onResponse: (flawId: string, typeAnswer: FlawType, typeCorrect: boolean) => void;
+  onResponse: (flawId: string, typeAnswer: string, typeCorrect: boolean) => void;
   /** Map of cross-section flawId -> the itemId that should render it. Only the owning item shows the badge. */
   crossSectionOwner?: Map<string, string>;
   /** This item's id — used to check cross-section flaw ownership. */
@@ -161,6 +164,7 @@ function HighlightedContent({
   activeFlawId: string | null;
   onHighlightClick: (flawId: string) => void;
   maxAttempts?: number;
+  responseFormat?: "ab" | "multiple_choice";
   existingResponses?: { flawId: string; typeAnswer: string; typeCorrect: boolean }[];
 }) {
   const effectiveMaxAttempts = maxAttempts ?? 2;
@@ -168,16 +172,16 @@ function HighlightedContent({
 
   // Build initial flawState from existing DB responses (survives page refresh)
   const initialFlawState = useMemo(() => {
-    const map = new Map<string, { attempts: number; resolved: boolean; eliminatedTypes: FlawType[] }>();
+    const map = new Map<string, { attempts: number; resolved: boolean; eliminatedTypes: string[] }>();
     if (!existingResponses) return map;
 
     for (const r of existingResponses) {
-      const current = map.get(r.flawId) || { attempts: 0, resolved: false, eliminatedTypes: [] as FlawType[] };
+      const current = map.get(r.flawId) || { attempts: 0, resolved: false, eliminatedTypes: [] as string[] };
       current.attempts++;
       if (r.typeCorrect) {
         current.resolved = true;
       } else {
-        current.eliminatedTypes.push(r.typeAnswer as FlawType);
+        current.eliminatedTypes.push(r.typeAnswer);
         if (current.attempts >= effectiveMaxAttempts) {
           current.resolved = true;
         }
@@ -191,7 +195,7 @@ function HighlightedContent({
   const [flawState, setFlawState] = useState<Map<string, {
     attempts: number;
     resolved: boolean;
-    eliminatedTypes: FlawType[];
+    eliminatedTypes: string[];
   }>>(initialFlawState);
 
   // Derive per-flaw badge status: "unanswered" | "attempted" | "correct" | "wrong"
@@ -210,7 +214,7 @@ function HighlightedContent({
     return map;
   }, [flawState, effectiveMaxAttempts]);
 
-  function handleAttempt(flawId: string, typeAnswer: FlawType, isCorrect: boolean, isResolved: boolean) {
+  function handleAttempt(flawId: string, typeAnswer: string, isCorrect: boolean, isResolved: boolean) {
     setFlawState((prev) => {
       const next = new Map(prev);
       const current = next.get(flawId) || { attempts: 0, resolved: false, eliminatedTypes: [] };
@@ -373,12 +377,13 @@ function HighlightedContent({
             <ResponseCard
               key={activeFlaw.flaw_id}
               flawId={activeFlaw.flaw_id}
-              correctType={activeFlaw.flaw_type as FlawType}
+              correctType={activeFlaw.flaw_type as ResponseType}
               explanation={activeFlaw.explanation}
               groupId={groupId}
               userId={userId}
               onAttempt={handleAttempt}
-              showDefinitions
+              showDefinitions={responseFormat !== "ab"}
+              responseFormat={responseFormat}
               maxAttempts={maxAttempts}
               initialAttempts={flawState.get(activeFlaw.flaw_id)?.attempts ?? 0}
               initialEliminatedTypes={flawState.get(activeFlaw.flaw_id)?.eliminatedTypes ?? []}
@@ -402,6 +407,7 @@ export function RecognizeMode({
   sessionPhase,
   pendingScaffolds: initialScaffolds,
   maxAttempts,
+  responseFormat = "multiple_choice",
   existingResponses = [],
 }: RecognizeModeProps) {
   // Compute initial score from existing responses (deduplicated by flawId — count only the last response per flaw)
@@ -432,9 +438,58 @@ export function RecognizeMode({
     [agents]
   );
 
+  // Inject false positive passages from non-flawed sections (deterministic per session+group)
+  const augmentedFlaws = useMemo(() => {
+    const allFlaws = [...flaws];
+
+    // Collect all referenced item IDs
+    const flawedItemIds = new Set<string>();
+    for (const f of flaws) {
+      for (const ref of f.location.references) flawedItemIds.add(ref);
+    }
+
+    // Find non-flawed items
+    const allItems = activityType === "presentation"
+      ? (transcript.sections || []).map((s) => ({ id: s.section_id, content: s.content, label: s.section }))
+      : (transcript.turns || []).map((t) => ({ id: t.turn_id, content: t.content, label: "" }));
+
+    const nonFlawedItems = allItems.filter((item) => !flawedItemIds.has(item.id) && !flawedItemIds.has(item.label));
+    if (nonFlawedItems.length === 0) return allFlaws;
+
+    // Deterministic pseudo-random selection seeded by sessionId + groupId
+    let seed = 0;
+    for (const ch of sessionId + groupId) seed = ((seed << 5) - seed + ch.charCodeAt(0)) | 0;
+    const rng = () => { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; };
+
+    // Pick 1-2 false positive items
+    const shuffled = [...nonFlawedItems].sort(() => rng() - 0.5);
+    const fpCount = Math.min(shuffled.length, rng() > 0.5 ? 2 : 1);
+
+    for (let i = 0; i < fpCount; i++) {
+      const item = shuffled[i];
+      // Extract a sentence from the middle of the content
+      const sentences = item.content.split(/(?<=[.!?])\s+/).filter((s) => s.length > 20);
+      if (sentences.length === 0) continue;
+      const sentenceIdx = Math.floor(rng() * sentences.length);
+      const evidence = sentences[sentenceIdx];
+
+      allFlaws.push({
+        flaw_id: `fp_${item.id}`,
+        flaw_type: "no_flaw",
+        severity: "none",
+        description: "This passage does not contain a flaw.",
+        evidence,
+        explanation: "This passage is actually fine — no critical thinking flaw here. Not everything is a problem!",
+        location: { type: activityType === "presentation" ? "section" : "turn", references: [item.id] },
+      });
+    }
+
+    return allFlaws;
+  }, [flaws, activityType, transcript, sessionId, groupId]);
+
   const flawsByItem = useMemo(() => {
     const map = new Map<string, EvaluationFlaw[]>();
-    for (const flaw of flaws) {
+    for (const flaw of augmentedFlaws) {
       for (const ref of flaw.location.references) {
         const list = map.get(ref) || [];
         list.push(flaw);
@@ -442,7 +497,7 @@ export function RecognizeMode({
       }
     }
     return map;
-  }, [flaws]);
+  }, [augmentedFlaws]);
 
   // --- Socket.IO: phase changes + scaffolds ---
   const onPhaseChanged = useCallback((event: PhaseChangedEvent) => {
@@ -479,7 +534,7 @@ export function RecognizeMode({
     setScaffolds((prev) => prev.filter((s) => s.id !== scaffoldId));
   }, []);
 
-  function handleResponse(_flawId: string, _typeAnswer: FlawType, typeCorrect: boolean) {
+  function handleResponse(_flawId: string, _typeAnswer: string, typeCorrect: boolean) {
     setScore((s) => ({
       correct: s.correct + (typeCorrect ? 1 : 0),
       total: s.total + 1,
@@ -547,7 +602,7 @@ export function RecognizeMode({
       <div className="mb-6">
         <h2 className="text-lg font-bold text-gray-900">Recognize Mode</h2>
         <p className="text-sm text-gray-500 mt-1">
-          Highlighted passages contain flaws. For each one, identify the flaw type.
+          Highlighted passages may contain flaws. For each one, identify the flaw type — or decide there&apos;s no flaw.
         </p>
         {score.total > 0 && (
           <p className="text-xs text-gray-400 mt-1">
@@ -560,7 +615,7 @@ export function RecognizeMode({
         {(() => {
           // Pre-compute which section should render each cross-section flaw (first referenced section only)
           const crossSectionOwner = new Map<string, string>(); // flawId -> first itemId that should render it
-          for (const flaw of flaws) {
+          for (const flaw of augmentedFlaws) {
             if (isCrossSectionEvidence(flaw.evidence)) {
               for (const ref of flaw.location.references) {
                 // Find the first item that matches this reference
@@ -614,6 +669,7 @@ export function RecognizeMode({
                 activeFlawId={activeFlawId}
                 onHighlightClick={(id) => setActiveFlawId(id || null)}
                 maxAttempts={maxAttempts}
+                responseFormat={responseFormat}
                 existingResponses={existingResponses}
               />
             </div>

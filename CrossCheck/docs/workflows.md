@@ -27,15 +27,15 @@ How students, teachers, and researchers use CrossCheck in practice. Each workflo
 
 1. From **New Session**, select the activity.
 2. Create groups (e.g., "Group A", "Group B"). Assign students to each group.
-3. Set the practice mode per group. Modes are ordered by cognitive demand (Bloom's level):
-   - **Learn** — Vocabulary primer. Students read flaw type definitions and take a quiz. No transcript. Good for absolute first exposure.
-   - **Recognize** — Pre-highlighted transcript with inline quizzes. Students identify the flaw type of each highlighted passage. Read-only — no annotation. The default for new groups.
-   - **Locate** — Hint cards tell students the flaw type and which section to look in. Students flag the exact text. Reduced search space.
-   - **Spot** — Students highlight problematic text freely (no flaw type selection). Full transcript, no hints.
-   - **Classify** — Students highlight + pick a flaw type (reasoning, epistemic, completeness, coherence).
-   - **Evaluate** — Full analysis: highlight + type + severity + explanation. For advanced groups.
+3. Set the practice mode per group. Four session modes, ordered by independence (how much the system does for the student):
+   - **Recognize** — Pre-highlighted transcript with inline quizzes. Students identify the flaw type of each highlighted passage (includes false positive passages). Read-only — no annotation. The default for new groups. Knob: response format (A/B choice or multiple choice).
+   - **Locate** — Hint cards tell students the flaw type and which section to look in. Students flag the exact text (includes false positive hint cards). Knob: hint scope (sentence or section).
+   - **Classify** — Open search. Students read the full transcript and flag flaws. Knob: categorization level (detect only / assisted / full — controls whether and how students categorize). "Show Hint" button always available.
+   - **Explain** — Full analysis: flag + categorize + severity + written explanation. Knob: explanation format (guided template or free text). "Show Hint" button always available.
 
-   The selected mode's description appears below the pills. Different groups in the same session can use different modes — useful for differentiated instruction.
+   **Learn** is a standalone vocabulary primer accessible from the nav bar — not a session mode.
+
+   The selected mode's description and granularity knob appear below the pills. Different groups in the same session can use different modes — choose based on what your students need to practice.
 4. Click **Create Session**. Session starts in **Setup** phase.
 
 ---
@@ -78,23 +78,26 @@ How students, teachers, and researchers use CrossCheck in practice. Each workflo
 - Each hint card shows: the flaw type (color-coded), which section/turn to look in, and a reading strategy tip.
 - Navigate between hints with Previous/Next buttons.
 - The hinted section is at full opacity; other sections are dimmed (40% opacity).
-- To annotate: select text in the hinted section, click "Flag This" (single button, like Spot).
+- Some hint cards are false positives (no flaw in that section). Students can click "No flaw found" to correctly resolve these.
+- To annotate: select text in the hinted section, click "Flag This" (single button).
 - The flaw type is recorded automatically from the hint — students just find the location.
 - Sidebar shows a list of flags. Undo button available.
 - Full socket integration: phase transitions, scaffolds, live updates in group phase.
 
-**Spot, Classify, and Evaluate modes:**
+**Classify and Explain modes:**
 - Read the full AI-generated transcript:
   - **Presentations**: sections displayed as cards (Introduction, Approach, Findings, Solution, Conclusion). Each section has a speaker name, role, and avatar.
   - **Discussions**: turns displayed as chat bubbles grouped by stage (Opening Up, Working Through, Converging).
 - To annotate a flaw:
   - Select (highlight) the problematic text in the transcript.
   - The bottom bar activates:
-    - **Spot**: Single "Flag This" button.
-    - **Classify**: 4 flaw type buttons (Reasoning, Epistemic, Completeness, Coherence).
-    - **Evaluate**: 4 flaw type buttons + severity and explanation fields.
+    - **Classify (detect only)**: Single "Flag This" button. Compact field guide.
+    - **Classify (assisted)**: 2–4 flaw type buttons (correct type + random distractors, varies per flaw).
+    - **Classify (full)**: All 4 flaw type buttons (Reasoning, Epistemic, Completeness, Coherence).
+    - **Explain**: All 4 flaw type buttons. After selecting a type, an explanation prompt appears (guided template or free text, based on knob) with a severity selector.
   - The annotation appears as a colored underline on the transcript.
-- The sidebar (desktop) shows all annotations with flaw type counts. Click an annotation to scroll to it. Click the X to delete it.
+- **Show Hint** button (always available): reveals the section of an unfound flaw with a pulse animation. Hint-assisted annotations are tracked and visible to the teacher.
+- The sidebar (desktop) shows the Flaw Field Guide (definitions, reading strategies, examples) and all annotations. Click an annotation to scroll to it. Click the X to delete it.
 - The **Undo** button on the bottom bar removes the most recent annotation.
 - During Individual phase, students see only their own annotations — not their group members'.
 

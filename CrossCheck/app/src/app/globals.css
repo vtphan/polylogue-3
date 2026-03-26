@@ -24,3 +24,16 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Hint pulse animation for Show Hint in Classify/Explain modes */
+@keyframes hint-pulse {
+  0%, 100% { box-shadow: none; }
+  25% { box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.4); }
+  50% { box-shadow: none; }
+  75% { box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.4); }
+}
+
+.hint-pulse {
+  animation: hint-pulse 2s ease-in-out;
+  border-radius: 0.5rem;
+}

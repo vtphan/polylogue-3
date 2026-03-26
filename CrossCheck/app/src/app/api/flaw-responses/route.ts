@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getIO } from "@/lib/socket-server";
 
-const VALID_FLAW_TYPES = ["reasoning", "epistemic", "completeness", "coherence"];
+const VALID_FLAW_TYPES = ["reasoning", "epistemic", "completeness", "coherence", "no_flaw"];
 
 export async function POST(request: NextRequest) {
   const session = await auth();
@@ -42,12 +42,14 @@ export async function POST(request: NextRequest) {
   let typeCorrect = false;
   let reasonCorrect: boolean | null = null;
 
-  if (flawId.startsWith("learn:") || flawId.startsWith("self-learn:")) {
-    // Learn mode (assigned or self-initiated): correctness computed from known correct type.
-    // This is a vocabulary quiz, not a graded assessment — the static examples are public.
+  if (flawId.startsWith("learn:") || flawId.startsWith("self-learn:") || flawId.startsWith("fp_")) {
+    // Learn mode, self-initiated, or false positive: correctness from client-provided correctType.
     if (correctType && VALID_FLAW_TYPES.includes(correctType)) {
       typeCorrect = typeAnswer === correctType;
     }
+  } else if (correctType && VALID_FLAW_TYPES.includes(correctType)) {
+    // Client provided correctType — use it (avoids evaluation lookup for synthetic flaws)
+    typeCorrect = typeAnswer === correctType;
   } else {
     // Recognize mode: compute correctness from the activity evaluation
     const group = await prisma.group.findUnique({

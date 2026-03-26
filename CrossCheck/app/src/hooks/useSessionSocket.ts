@@ -14,6 +14,7 @@ export interface AnnotationCreatedEvent {
     location: { item_id: string; start_offset: number; end_offset: number; highlighted_text: string };
     flawType: string;
     createdAt: string;
+    hinted: boolean;
     isGroupAnswer: boolean;
     confirmedBy: string[];
   };

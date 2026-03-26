@@ -77,6 +77,7 @@ export default async function StudentSessionPage({ params }: PageProps) {
       location: a.location as AnnotationLocation,
       flawType: a.flawType as Annotation["flawType"],
       createdAt: a.createdAt.toISOString(),
+      hinted: a.hinted,
       isGroupAnswer: a.isGroupAnswer,
       confirmedBy: (a.confirmedBy as string[]) || [],
       userId: a.userId,
@@ -135,7 +136,7 @@ export default async function StudentSessionPage({ params }: PageProps) {
         flawType: a.flawType,
       })),
       flawIndex,
-      { spotMode: difficultyMode === "spot" || difficultyMode === "locate" }
+      { locationOnly: difficultyMode === "locate" || (difficultyMode === "classify" && (groupConfig as Record<string, unknown>)?.categorization === "detect_only") }
     );
 
     evaluation = evaluationData;
@@ -204,6 +205,7 @@ export default async function StudentSessionPage({ params }: PageProps) {
           sessionPhase={classSession.status}
           pendingScaffolds={pendingScaffolds}
           maxAttempts={maxAttempts}
+          responseFormat={(groupConfig as Record<string, unknown>)?.response_format as "ab" | "multiple_choice" | undefined}
           existingResponses={group.flawResponses as { flawId: string; typeAnswer: string; typeCorrect: boolean }[]}
         />
       ) : difficultyMode === "locate" ? (
@@ -218,7 +220,13 @@ export default async function StudentSessionPage({ params }: PageProps) {
           initialAnnotations={annotations}
           pendingScaffolds={pendingScaffolds}
           readOnly={false}
+          hintScope={(groupConfig as Record<string, unknown>)?.hint_scope as "sentence" | "section" | undefined}
           sessionPhase={classSession.status}
+          existingNoFlawIds={
+            (group.flawResponses as { flawId: string; typeAnswer: string; typeCorrect: boolean }[])
+              .filter((r) => r.flawId.startsWith("fp_") && r.typeAnswer === "no_flaw")
+              .map((r) => r.flawId)
+          }
         />
       ) : (
         <SessionActivityViewer
@@ -232,6 +240,9 @@ export default async function StudentSessionPage({ params }: PageProps) {
           pendingScaffolds={pendingScaffolds}
           readOnly={false}
           difficultyMode={difficultyMode}
+          categorization={(groupConfig as Record<string, unknown>)?.categorization as "detect_only" | "assisted" | "full" | undefined}
+          explanationFormat={(groupConfig as Record<string, unknown>)?.explanation_format as "guided" | "free_text" | undefined}
+          flawIndex={flawIndex}
           sessionPhase={classSession.status}
           userId={session.user.id}
         />

@@ -42,7 +42,9 @@ interface LocateModeProps {
   initialAnnotations: Annotation[];
   pendingScaffolds: { id: string; text: string; level: number; type: string }[];
   readOnly: boolean;
+  hintScope?: "sentence" | "section";
   sessionPhase: string;
+  existingNoFlawIds?: string[];
 }
 
 const SECTION_LABELS: Record<string, string> = {
@@ -53,18 +55,32 @@ const SECTION_LABELS: Record<string, string> = {
   conclusion: "the Conclusion section",
 };
 
-function getLocationLabel(locations: string[], activityType: string): string {
-  if (activityType === "presentation") {
-    // Try to match section names from the location references
-    for (const loc of locations) {
-      // location references are section_ids like "section_introduction"
-      const sectionKey = loc.replace("section_", "");
-      if (SECTION_LABELS[sectionKey]) return SECTION_LABELS[sectionKey];
+function getLocationLabel(locations: string[], activityType: string, hintScope: "sentence" | "section", transcript?: unknown): string {
+  const sectionLabel = (() => {
+    if (activityType === "presentation") {
+      for (const loc of locations) {
+        const sectionKey = loc.replace("section_", "");
+        if (SECTION_LABELS[sectionKey]) return SECTION_LABELS[sectionKey];
+      }
+      return `section: ${locations[0]}`;
     }
-    return `section: ${locations[0]}`;
+    return `turns ${locations.join(", ")}`;
+  })();
+
+  if (hintScope === "sentence" && transcript && locations.length > 0) {
+    // Sentence-level: find the section content and identify which sentence area
+    const sections = (transcript as PresentationTranscript).sections || [];
+    const section = sections.find((s) => locations.includes(s.section_id));
+    if (section) {
+      const sentences = section.content.split(/(?<=[.!?])\s+/).filter((s) => s.length > 10);
+      if (sentences.length > 2) {
+        // Give a general position hint
+        return `${sectionLabel} (near the ${sentences.length <= 3 ? "middle" : "first half"})`;
+      }
+    }
   }
-  // Discussion: turn references
-  return `turns ${locations.join(", ")}`;
+
+  return sectionLabel;
 }
 
 export function LocateMode({
@@ -78,7 +94,9 @@ export function LocateMode({
   initialAnnotations,
   pendingScaffolds: initialScaffolds,
   readOnly,
+  hintScope = "section",
   sessionPhase,
+  existingNoFlawIds = [],
 }: LocateModeProps) {
   const [annotations, setAnnotations] = useState<Annotation[]>(initialAnnotations);
   const [pendingLocation, setPendingLocation] = useState<AnnotationLocation | null>(null);
@@ -87,12 +105,47 @@ export function LocateMode({
   const [scaffolds, setScaffolds] = useState(initialScaffolds);
   const [phaseNotice, setPhaseNotice] = useState<string | null>(null);
   const [currentPhase, setCurrentPhase] = useState(sessionPhase);
+  const [noFlawResolved, setNoFlawResolved] = useState<Set<string>>(new Set(existingNoFlawIds));
   const router = useRouter();
 
   const clearPending = useCallback(() => setPendingLocation(null), []);
   useSelectionClear(pendingLocation !== null, clearPending);
 
-  const currentHint = flawIndex[currentHintIndex];
+  // Inject false positive hint cards (deterministic per session+group)
+  const augmentedFlawIndex = useMemo(() => {
+    const all = [...flawIndex];
+    const flawedLocations = new Set(flawIndex.flatMap((f) => f.locations));
+
+    // Find non-flawed sections/turns
+    const items = activityType === "presentation"
+      ? ((transcript as PresentationTranscript).sections || []).map((s) => s.section_id)
+      : ((transcript as DiscussionTranscript).turns || []).map((t) => t.turn_id);
+
+    const nonFlawedItems = items.filter((id) => !flawedLocations.has(id));
+    if (nonFlawedItems.length === 0) return all;
+
+    // Deterministic pseudo-random
+    let seed = 0;
+    for (const ch of sessionId + groupId) seed = ((seed << 5) - seed + ch.charCodeAt(0)) | 0;
+    const rng = () => { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; };
+
+    const shuffled = [...nonFlawedItems].sort(() => rng() - 0.5);
+    const fpCount = Math.min(shuffled.length, 1);
+
+    for (let i = 0; i < fpCount; i++) {
+      // Insert false positive at a random position in the hint list
+      const insertPos = Math.floor(rng() * (all.length + 1));
+      all.splice(insertPos, 0, {
+        flaw_id: `fp_${shuffled[i]}`,
+        locations: [shuffled[i]],
+        flaw_type: "no_flaw",
+        severity: "none",
+      });
+    }
+    return all;
+  }, [flawIndex, activityType, transcript, sessionId, groupId]);
+
+  const currentHint = augmentedFlawIndex[currentHintIndex];
 
   // Items to emphasize (from current hint's locations)
   const emphasizedItems = useMemo(
@@ -265,12 +318,12 @@ export function LocateMode({
           {currentHint && (
             <div>
               <HintCard
-                flawType={currentHint.flaw_type as FlawType}
-                locationLabel={getLocationLabel(currentHint.locations, activityType)}
+                flawType={currentHint.flaw_type as FlawType | "no_flaw"}
+                locationLabel={getLocationLabel(currentHint.locations, activityType, hintScope, transcript)}
                 currentIndex={currentHintIndex}
-                totalCount={flawIndex.length}
+                totalCount={augmentedFlawIndex.length}
               />
-              {flawIndex.length > 1 && (
+              {augmentedFlawIndex.length > 1 && (
                 <div className="flex gap-2 mb-4">
                   <button
                     onClick={() => setCurrentHintIndex((i) => Math.max(0, i - 1))}
@@ -281,7 +334,7 @@ export function LocateMode({
                   </button>
                   <button
                     onClick={() => setCurrentHintIndex((i) => Math.min(flawIndex.length - 1, i + 1))}
-                    disabled={currentHintIndex === flawIndex.length - 1}
+                    disabled={currentHintIndex === augmentedFlawIndex.length - 1}
                     className="text-xs px-2 py-1 rounded border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     Next
@@ -336,15 +389,63 @@ export function LocateMode({
         </div>
       </div>
 
-      {/* Bottom bar: single Flag button (same as Spot) */}
-      <FlawBottomBar
-        hasSelection={pendingLocation !== null}
-        annotations={annotations}
-        onSelect={handleFlawTypeSelected}
-        onUndo={handleUndo}
-        readOnly={readOnly}
-        difficultyMode="locate"
-      />
+      {/* "No flaw found" feedback for false positive hints */}
+      {currentHint?.flaw_type === "no_flaw" && noFlawResolved.has(currentHint.flaw_id) && (
+        <div className="fixed bottom-16 left-0 right-0 z-30 flex justify-center">
+          <span className="text-xs text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-1.5 font-medium shadow">
+            Correct! No flaw here.
+          </span>
+        </div>
+      )}
+
+      {/* Bottom bar */}
+      {currentHint?.flaw_type === "no_flaw" && !noFlawResolved.has(currentHint.flaw_id) ? (
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 shadow-lg">
+          <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-center gap-3">
+            <button
+              onClick={() => handleFlawTypeSelected("reasoning")}
+              disabled={!pendingLocation}
+              className={`text-sm font-medium px-6 py-2 rounded-lg transition-all ${
+                pendingLocation
+                  ? "bg-gray-800 text-white shadow-sm hover:bg-gray-900"
+                  : "bg-gray-200 text-gray-400 cursor-not-allowed"
+              }`}
+            >
+              Flag This
+            </button>
+            <button
+              onClick={async () => {
+                setNoFlawResolved((prev) => new Set(prev).add(currentHint.flaw_id));
+                // Persist to DB as a FlawResponse so teacher can see it
+                try {
+                  await fetch("/api/flaw-responses", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      groupId,
+                      flawId: currentHint.flaw_id,
+                      typeAnswer: "no_flaw",
+                      correctType: "no_flaw",
+                    }),
+                  });
+                } catch { /* silent */ }
+              }}
+              className="text-sm font-medium px-4 py-2 rounded-lg border border-gray-300 text-gray-600 bg-gray-50 hover:bg-gray-100 transition-colors"
+            >
+              No flaw found
+            </button>
+          </div>
+        </div>
+      ) : (
+        <FlawBottomBar
+          hasSelection={pendingLocation !== null}
+          annotations={annotations}
+          onSelect={handleFlawTypeSelected}
+          onUndo={handleUndo}
+          readOnly={readOnly}
+          difficultyMode="locate"
+        />
+      )}
     </div>
   );
 }

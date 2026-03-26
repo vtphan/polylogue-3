@@ -71,11 +71,11 @@ A teacher might use CrossCheck 2–3 times during the 11-week Build Knowledge ph
 
 | When | Purpose | Suggested Mode |
 |------|---------|---------------|
-| Week 2–3 (early) | Introduce flaw vocabulary | Learn or Recognize |
-| Week 5–6 (mid) | Practice finding flaws with support | Locate or Spot |
-| Week 9–10 (late) | Independent critical evaluation | Classify or Evaluate |
+| Week 2–3 (early) | Introduce flaw vocabulary | Learn (standalone) then Recognize |
+| Week 5–6 (mid) | Practice finding flaws with support | Locate or Classify (detect only) |
+| Week 9–10 (late) | Independent critical evaluation | Classify (full) or Explain |
 
-Different groups within the same session can use different modes. There is no required sequence — a teacher can start any group at any mode. The progression from Learn to Evaluate is a pedagogical recommendation, not a system constraint.
+Different groups within the same session can use different modes. There is no required sequence — a teacher can start any group at any mode. Choose based on what your students need to practice.
 
 ### Example: A Friday Session in Practice
 
@@ -83,14 +83,14 @@ It's Friday, week 6 of a 7th grade STEM project on sensory science. The teacher 
 
 She assigns different practice modes based on what each group needs:
 
-- **Group A** (strong critical thinkers) gets **Classify** — find and categorize flaws independently.
+- **Group A** (strong critical thinkers) gets **Classify (full)** — find and categorize flaws independently.
 - **Group B** (solid but needs focus) gets **Locate** — hint cards direct them to specific sections.
 - **Group C** (new to flaw analysis) gets **Recognize** — pre-highlighted passages with inline quizzes.
-- **Group D** (one absent student, rest are mixed) gets **Spot** — just flag what seems wrong, no categorization pressure.
+- **Group D** (one absent student, rest are mixed) gets **Classify (detect only)** — just flag what seems wrong, no categorization pressure.
 
 She starts the session. Students open their tablets and begin working.
 
-**10 minutes in**, the teacher checks her dashboard. Group B has found 4 of 5 hinted flaws. She clicks their mode badge and switches them to **Spot** — removing the hints to see if they can work independently. Their screens refresh automatically. Group C is struggling with epistemic flaws — she sends a scaffold ("What evidence does the speaker actually have for this claim?") and keeps them on Recognize for now.
+**10 minutes in**, the teacher checks her dashboard. Group B has found 4 of 5 hinted flaws. She clicks their mode badge and switches them to **Classify (detect only)** — removing the hints to see if they can work independently. Their screens refresh automatically. Group C is struggling with epistemic flaws — she sends a scaffold ("What evidence does the speaker actually have for this claim?") and keeps them on Recognize for now.
 
 A student in Group A can't remember the difference between reasoning and coherence flaws. She taps **Learn** in the nav bar, reviews the definitions and examples, then returns to her annotation task — her annotations are still there, nothing lost.
 

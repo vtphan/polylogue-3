@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type {
   Agent,
   Annotation,
   AnnotationLocation,
+  ClassifyConfig,
   DifficultyMode,
   FlawType,
   PresentationTranscript,
@@ -16,6 +17,8 @@ import { DiscussionView } from "@/components/transcript/discussion-view";
 import { FlawBottomBar } from "@/components/annotation/flaw-toolbar";
 import { FlawPalette } from "@/components/annotation/flaw-palette";
 import { FlawFieldGuide, FlawFieldGuideDrawer } from "@/components/annotation/flaw-field-guide";
+import { ExplanationPrompt } from "@/components/modes/explanation-prompt";
+import type { ExplainConfig } from "@/lib/types";
 import { useSelectionClear } from "@/hooks/useSelectionClear";
 import { useSessionSocket } from "@/hooks/useSessionSocket";
 import type { AnnotationCreatedEvent, AnnotationDeletedEvent, AnnotationConfirmedEvent, ScaffoldSentEvent, PhaseChangedEvent } from "@/hooks/useSessionSocket";
@@ -25,6 +28,13 @@ interface ScaffoldNotification {
   text: string;
   level: number;
   type: string;
+}
+
+interface FlawIndexEntry {
+  flaw_id: string;
+  locations: string[];
+  flaw_type: string;
+  severity: string;
 }
 
 interface SessionActivityViewerProps {
@@ -38,6 +48,9 @@ interface SessionActivityViewerProps {
   pendingScaffolds: ScaffoldNotification[];
   readOnly: boolean;
   difficultyMode?: DifficultyMode;
+  categorization?: ClassifyConfig["categorization"];
+  explanationFormat?: ExplainConfig["explanation_format"];
+  flawIndex?: FlawIndexEntry[];
   sessionPhase?: string;
   userId?: string;
 }
@@ -53,11 +66,15 @@ export function SessionActivityViewer({
   pendingScaffolds: initialScaffolds,
   readOnly,
   difficultyMode = "classify",
+  categorization = "full",
+  explanationFormat = "guided",
+  flawIndex = [],
   sessionPhase = "individual",
   userId = "",
 }: SessionActivityViewerProps) {
   const [annotations, setAnnotations] = useState<Annotation[]>(initialAnnotations);
   const [pendingLocation, setPendingLocation] = useState<AnnotationLocation | null>(null);
+  const [pendingExplainType, setPendingExplainType] = useState<FlawType | null>(null);
   const [saving, setSaving] = useState(false);
   const [scaffolds, setScaffolds] = useState(initialScaffolds);
   const [phaseNotice, setPhaseNotice] = useState<string | null>(null);
@@ -66,6 +83,76 @@ export function SessionActivityViewer({
 
   const clearPending = useCallback(() => setPendingLocation(null), []);
   useSelectionClear(pendingLocation !== null, clearPending);
+
+  // Assisted mode: compute dynamic button options when text is selected
+  // Uses deterministic RNG seeded by item_id so buttons are stable across re-renders
+  const assistedOptions = useMemo<FlawType[] | undefined>(() => {
+    if (difficultyMode !== "classify" || categorization !== "assisted" || !pendingLocation) return undefined;
+
+    // Deterministic pseudo-random seeded by item_id
+    let seed = 0;
+    for (const ch of pendingLocation.item_id) seed = ((seed << 5) - seed + ch.charCodeAt(0)) | 0;
+    const rng = () => { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; };
+
+    const allTypes: FlawType[] = ["reasoning", "epistemic", "completeness", "coherence"];
+    const matchingFlaw = flawIndex.find((f) => f.locations.includes(pendingLocation.item_id));
+    if (!matchingFlaw) {
+      const shuffled = [...allTypes].sort(() => rng() - 0.5);
+      return shuffled.slice(0, 2 + (rng() > 0.5 ? 1 : 0));
+    }
+    const correctType = matchingFlaw.flaw_type as FlawType;
+    const others = allTypes.filter((t) => t !== correctType);
+    const numDistractors = 1 + Math.floor(rng() * 3);
+    const shuffled = [...others].sort(() => rng() - 0.5);
+    const distractors = shuffled.slice(0, numDistractors);
+    return [correctType, ...distractors].sort(() => rng() - 0.5);
+  }, [difficultyMode, categorization, pendingLocation, flawIndex]);
+
+  // ---- Show Hint system (Classify + Explain) ----
+  const [hintsUsed, setHintsUsed] = useState<Set<string>>(new Set());
+  const [hintPulseTarget, setHintPulseTarget] = useState<string | null>(null);
+
+  const hintsRemaining = useMemo(() => {
+    if (difficultyMode !== "classify" && difficultyMode !== "explain") return 0;
+    if (flawIndex.length === 0) return 0;
+    let remaining = 0;
+    for (const flaw of flawIndex) {
+      if (hintsUsed.has(flaw.flaw_id)) continue;
+      const found = annotations.some((a) => flaw.locations.includes(a.location.item_id));
+      if (!found) remaining++;
+    }
+    return remaining;
+  }, [difficultyMode, flawIndex, annotations, hintsUsed]);
+
+  const handleShowHint = useCallback(() => {
+    if (flawIndex.length === 0) return;
+    // Find first unfound, un-hinted flaw
+    for (const flaw of flawIndex) {
+      if (hintsUsed.has(flaw.flaw_id)) continue;
+      const found = annotations.some((a) => flaw.locations.includes(a.location.item_id));
+      if (!found && flaw.locations.length > 0) {
+        const targetId = flaw.locations[0];
+        setHintsUsed((prev) => new Set(prev).add(flaw.flaw_id));
+        setHintPulseTarget(targetId);
+        // Scroll to the section
+        const el = document.getElementById(targetId);
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+        // Clear pulse after animation
+        setTimeout(() => setHintPulseTarget(null), 3000);
+        return;
+      }
+    }
+  }, [flawIndex, annotations, hintsUsed]);
+
+  // Apply/remove pulse CSS class on hint target
+  useEffect(() => {
+    if (!hintPulseTarget) return;
+    const el = document.getElementById(hintPulseTarget);
+    if (el) {
+      el.classList.add("hint-pulse");
+      return () => el.classList.remove("hint-pulse");
+    }
+  }, [hintPulseTarget]);
 
   // ---- Socket.IO: live updates ----
   const onAnnotationCreated = useCallback((event: AnnotationCreatedEvent) => {
@@ -80,6 +167,7 @@ export function SessionActivityViewer({
         location: event.annotation.location as AnnotationLocation,
         flawType: event.annotation.flawType as Annotation["flawType"],
         createdAt: event.annotation.createdAt,
+        hinted: event.annotation.hinted,
         isGroupAnswer: event.annotation.isGroupAnswer,
         confirmedBy: event.annotation.confirmedBy,
         userId: event.annotation.userId,
@@ -142,10 +230,15 @@ export function SessionActivityViewer({
     [readOnly]
   );
 
-  const handleFlawTypeSelected = useCallback(
-    async (flawType: FlawType) => {
+  const saveAnnotation = useCallback(
+    async (flawType: FlawType, explanation?: string, severity?: string) => {
       if (!pendingLocation || saving) return;
       setSaving(true);
+
+      const isHinted = flawIndex.some(
+        (f) => hintsUsed.has(f.flaw_id) && f.locations.includes(pendingLocation.item_id)
+      );
+
       try {
         const res = await fetch("/api/annotations/session", {
           method: "POST",
@@ -155,6 +248,9 @@ export function SessionActivityViewer({
             groupId,
             location: pendingLocation,
             flawType,
+            ...(isHinted ? { hinted: true } : {}),
+            ...(explanation ? { explanation } : {}),
+            ...(severity ? { severity } : {}),
           }),
         });
         if (res.ok) {
@@ -172,9 +268,25 @@ export function SessionActivityViewer({
       } finally {
         setSaving(false);
         setPendingLocation(null);
+        setPendingExplainType(null);
       }
     },
-    [sessionId, groupId, pendingLocation, saving]
+    [sessionId, groupId, pendingLocation, saving, flawIndex, hintsUsed]
+  );
+
+  const handleFlawTypeSelected = useCallback(
+    async (flawType: FlawType) => {
+      if (!pendingLocation || saving) return;
+
+      // In Explain mode, show the explanation prompt before saving
+      if (difficultyMode === "explain") {
+        setPendingExplainType(flawType);
+        return;
+      }
+
+      saveAnnotation(flawType);
+    },
+    [pendingLocation, saving, difficultyMode, saveAnnotation]
   );
 
   const handleAnnotationDelete = useCallback(async (annotationId: string) => {
@@ -300,7 +412,7 @@ export function SessionActivityViewer({
         {/* Sidebar */}
         <div className="w-64 shrink-0 hidden lg:block">
           <div className="sticky top-20">
-            <FlawFieldGuide compact={difficultyMode === "spot"} />
+            <FlawFieldGuide compact={difficultyMode === "classify" && categorization === "detect_only"} />
             <FlawPalette
               annotations={annotations}
               onAnnotationClick={handleAnnotationClick}
@@ -314,9 +426,19 @@ export function SessionActivityViewer({
       </div>
 
       {/* Mobile field guide drawer */}
-      <FlawFieldGuideDrawer compact={difficultyMode === "spot"} />
+      <FlawFieldGuideDrawer compact={difficultyMode === "classify" && categorization === "detect_only"} />
 
       {/* Fixed bottom bar */}
+      {/* Explanation prompt modal (Explain mode) */}
+      {pendingExplainType && (
+        <ExplanationPrompt
+          flawType={pendingExplainType}
+          format={explanationFormat}
+          onSubmit={(explanation, severity) => saveAnnotation(pendingExplainType, explanation, severity)}
+          onCancel={() => { setPendingExplainType(null); setPendingLocation(null); }}
+        />
+      )}
+
       <FlawBottomBar
         hasSelection={pendingLocation !== null}
         annotations={annotations}
@@ -324,6 +446,10 @@ export function SessionActivityViewer({
         onUndo={handleUndo}
         readOnly={readOnly}
         difficultyMode={difficultyMode}
+        categorization={difficultyMode === "classify" ? categorization : undefined}
+        assistedOptions={assistedOptions}
+        onShowHint={(difficultyMode === "classify" || difficultyMode === "explain") ? handleShowHint : undefined}
+        hintsRemaining={(difficultyMode === "classify" || difficultyMode === "explain") ? hintsRemaining : undefined}
       />
     </div>
   );

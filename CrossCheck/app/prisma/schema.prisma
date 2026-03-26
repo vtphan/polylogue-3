@@ -114,7 +114,7 @@ model Group {
   id        String   @id @default(uuid()) @db.Uuid
   sessionId String   @map("session_id") @db.Uuid
   name      String
-  config    Json     @default("{}") // {difficulty_mode: "learn" | "recognize" | "locate" | "spot" | "classify" | "full"}
+  config    Json     @default("{}") // {difficulty_mode: "learn" | "recognize" | "locate" | "classify" | "explain", ...per-mode knob}
 
   session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   members   GroupMember[]
@@ -146,6 +146,7 @@ model Annotation {
   flawType      FlawType  @map("flaw_type")
   severity      Severity?
   explanation   String?
+  hinted        Boolean   @default(false)
   isGroupAnswer Boolean   @default(false) @map("is_group_answer")
   confirmedBy   Json?     @map("confirmed_by") // [user_ids]
   createdAt     DateTime  @default(now()) @map("created_at")
