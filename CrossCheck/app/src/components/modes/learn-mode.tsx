@@ -59,6 +59,22 @@ export function LearnMode({ groupId, sessionId }: LearnModeProps) {
     if (type === current.flawType) {
       setScore((s) => s + 1);
     }
+
+    // Persist to server
+    try {
+      fetch("/api/flaw-responses", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          groupId,
+          flawId: `learn:${currentQuestion}`,
+          typeAnswer: type,
+          correctType: current.flawType,
+        }),
+      });
+    } catch {
+      // Silently fail — localStorage is the primary persistence for quiz state
+    }
   }
 
   // Persist state to localStorage on every meaningful change

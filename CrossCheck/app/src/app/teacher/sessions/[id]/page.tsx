@@ -50,6 +50,17 @@ export default async function SessionPage({ params }: PageProps) {
             },
             orderBy: { createdAt: "desc" },
           },
+          flawResponses: {
+            select: {
+              id: true,
+              userId: true,
+              flawId: true,
+              typeAnswer: true,
+              typeCorrect: true,
+              createdAt: true,
+            },
+            orderBy: { createdAt: "asc" },
+          },
         },
       },
     },

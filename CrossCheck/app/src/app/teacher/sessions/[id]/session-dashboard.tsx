@@ -60,6 +60,14 @@ interface GroupData {
     createdAt: string;
     acknowledgedAt: string | null;
   }[];
+  flawResponses: {
+    id: string;
+    userId: string;
+    flawId: string;
+    typeAnswer: string;
+    typeCorrect: boolean;
+    createdAt: string;
+  }[];
 }
 
 const STATUS_FLOW = ["setup", "individual", "group", "reviewing", "closed"];
@@ -540,7 +548,9 @@ export function SessionDashboard({ session: initialSession }: { session: Session
                     </div>
                   )}
                   <span className="text-xs text-gray-400">
-                    {totalAnnotations} annotations
+                    {group.config?.difficulty_mode === "learn" || group.config?.difficulty_mode === "recognize"
+                      ? `${group.flawResponses.length} responses`
+                      : `${totalAnnotations} annotations`}
                   </span>
                 </div>
               </div>
@@ -557,22 +567,42 @@ export function SessionDashboard({ session: initialSession }: { session: Session
                 ))}
               </div>
 
-              {/* Flaw type counts */}
-              <div className="flex gap-2">
-                {(Object.keys(FLAW_TYPES) as FlawType[]).map((type) => (
-                  <div
-                    key={type}
-                    className={`text-xs px-1.5 py-0.5 rounded ${FLAW_TYPES[type].bgColor} ${FLAW_TYPES[type].color}`}
-                    title={FLAW_TYPES[type].label}
-                  >
-                    {flawCounts[type]}
+              {group.config?.difficulty_mode === "learn" || group.config?.difficulty_mode === "recognize" ? (
+                /* Learn/Recognize: show response accuracy */
+                <div>
+                  {group.flawResponses.length > 0 ? (
+                    <div className="flex items-center gap-2 text-xs">
+                      <span className="text-green-600 font-medium">
+                        {group.flawResponses.filter((r) => r.typeCorrect).length}/{group.flawResponses.length} correct
+                      </span>
+                      <span className="text-gray-400">
+                        ({Math.round((group.flawResponses.filter((r) => r.typeCorrect).length / group.flawResponses.length) * 100)}%)
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="text-xs text-gray-300">No responses yet</div>
+                  )}
+                </div>
+              ) : (
+                /* Annotation modes: show flaw type counts */
+                <>
+                  <div className="flex gap-2">
+                    {(Object.keys(FLAW_TYPES) as FlawType[]).map((type) => (
+                      <div
+                        key={type}
+                        className={`text-xs px-1.5 py-0.5 rounded ${FLAW_TYPES[type].bgColor} ${FLAW_TYPES[type].color}`}
+                        title={FLAW_TYPES[type].label}
+                      >
+                        {flawCounts[type]}
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
 
-              <div className="text-xs text-gray-400 mt-2">
-                {sectionsFound} sections touched
-              </div>
+                  <div className="text-xs text-gray-400 mt-2">
+                    {sectionsFound} sections touched
+                  </div>
+                </>
+              )}
 
               {/* Match stats in reviewing mode */}
               {isReviewing && groupMatchResults.has(group.id) && (() => {
@@ -801,22 +831,39 @@ function GroupDetail({
     createdAt: a.createdAt,
   }));
 
+  const mode = group.config?.difficulty_mode;
+  const isResponseMode = mode === "learn" || mode === "recognize";
+
+  // For Learn/Recognize modes: compute quiz stats from flawResponses
+  const learnResponses = group.flawResponses.filter((r) => r.flawId.startsWith("learn:"));
+  const recognizeResponses = group.flawResponses.filter((r) => !r.flawId.startsWith("learn:"));
+  const responses = mode === "learn" ? learnResponses : mode === "recognize" ? recognizeResponses : [];
+  const responsesByUser = new Map<string, { total: number; correct: number }>();
+  for (const r of responses) {
+    const entry = responsesByUser.get(r.userId) || { total: 0, correct: 0 };
+    entry.total++;
+    if (r.typeCorrect) entry.correct++;
+    responsesByUser.set(r.userId, entry);
+  }
+
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-5">
       <div className="flex items-center justify-between mb-3">
         <h3 className="font-semibold text-gray-900">
           {group.name} — Detail
         </h3>
-        <button
-          onClick={() => setShowTranscript(!showTranscript)}
-          className="text-xs text-blue-600 hover:text-blue-800"
-        >
-          {showTranscript ? "Hide transcript" : "View on transcript"}
-        </button>
+        {!isResponseMode && (
+          <button
+            onClick={() => setShowTranscript(!showTranscript)}
+            className="text-xs text-blue-600 hover:text-blue-800"
+          >
+            {showTranscript ? "Hide transcript" : "View on transcript"}
+          </button>
+        )}
       </div>
 
-      {/* Transcript with annotations overlaid */}
-      {showTranscript && (
+      {/* Transcript with annotations overlaid (not for Learn/Recognize) */}
+      {!isResponseMode && showTranscript && (
         <div className="mb-4 border border-gray-100 rounded-lg p-3 bg-gray-50 max-h-96 overflow-y-auto">
           {activityType === "presentation" ? (
             <PresentationView
@@ -838,33 +885,79 @@ function GroupDetail({
         </div>
       )}
 
-      <div className="grid grid-cols-3 gap-4 mb-4 text-center">
-        <div className="bg-green-50 rounded p-3">
-          <div className="text-2xl font-bold text-green-700">
-            {matchedFlaws.size}
+      {isResponseMode ? (
+        /* Learn/Recognize mode: show quiz stats per student */
+        <div>
+          <div className="grid grid-cols-2 gap-4 mb-4 text-center">
+            <div className="bg-blue-50 rounded p-3">
+              <div className="text-2xl font-bold text-blue-700">
+                {responsesByUser.size}
+              </div>
+              <div className="text-xs text-blue-600">
+                {responsesByUser.size === 1 ? "Student responded" : "Students responded"}
+              </div>
+            </div>
+            <div className="bg-green-50 rounded p-3">
+              <div className="text-2xl font-bold text-green-700">
+                {responses.length > 0
+                  ? Math.round((responses.filter((r) => r.typeCorrect).length / responses.length) * 100)
+                  : 0}%
+              </div>
+              <div className="text-xs text-green-600">Accuracy</div>
+            </div>
           </div>
-          <div className="text-xs text-green-600">Flaws found</div>
-        </div>
-        <div className="bg-yellow-50 rounded p-3">
-          <div className="text-2xl font-bold text-yellow-700">
-            {flawIndex.length - matchedFlaws.size}
-          </div>
-          <div className="text-xs text-yellow-600">Flaws missed</div>
-        </div>
-        <div className="bg-gray-50 rounded p-3">
-          <div className="text-2xl font-bold text-gray-700">
-            {group.annotations.length}
-          </div>
-          <div className="text-xs text-gray-600">Total annotations</div>
-        </div>
-      </div>
 
-      {/* Annotation list */}
-      <div className="space-y-2">
-        {group.annotations.map((ann) => (
-          <AnnotationCard key={ann.id} ann={ann} group={group} />
-        ))}
-      </div>
+          {/* Per-student breakdown */}
+          <div className="space-y-2">
+            {group.members.map((m) => {
+              const stats = responsesByUser.get(m.user.id);
+              return (
+                <div key={m.user.id} className="flex items-center justify-between text-sm py-1.5 border-b border-gray-50 last:border-0">
+                  <span className="text-gray-700">{m.user.displayName}</span>
+                  {stats ? (
+                    <span className="text-xs text-gray-500">
+                      {stats.correct}/{stats.total} correct
+                    </span>
+                  ) : (
+                    <span className="text-xs text-gray-300">Not started</span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : (
+        /* Annotation modes: show flaw matching stats */
+        <>
+          <div className="grid grid-cols-3 gap-4 mb-4 text-center">
+            <div className="bg-green-50 rounded p-3">
+              <div className="text-2xl font-bold text-green-700">
+                {matchedFlaws.size}
+              </div>
+              <div className="text-xs text-green-600">Flaws found</div>
+            </div>
+            <div className="bg-yellow-50 rounded p-3">
+              <div className="text-2xl font-bold text-yellow-700">
+                {flawIndex.length - matchedFlaws.size}
+              </div>
+              <div className="text-xs text-yellow-600">Flaws missed</div>
+            </div>
+            <div className="bg-gray-50 rounded p-3">
+              <div className="text-2xl font-bold text-gray-700">
+                {group.annotations.length}
+              </div>
+              <div className="text-xs text-gray-600">Total annotations</div>
+            </div>
+          </div>
+
+          {/* Annotation list */}
+          <div className="space-y-2">
+            {group.annotations.map((ann) => (
+              <AnnotationCard key={ann.id} ann={ann} group={group} />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }
