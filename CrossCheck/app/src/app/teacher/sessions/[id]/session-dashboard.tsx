@@ -976,6 +976,33 @@ function GroupDetail({
               );
             })}
           </div>
+
+          {/* For Recognize groups: also show Learning Progress if students self-learned */}
+          {mode === "recognize" && learnByUser.size > 0 && (
+            <div className="mt-4 pt-4 border-t border-gray-100">
+              <h4 className="text-xs font-medium text-gray-500 mb-2">Learning Progress</h4>
+              <div className="space-y-1.5">
+                {group.members.map((m) => {
+                  const stats = learnByUser.get(m.user.id);
+                  return (
+                    <div key={m.user.id} className="flex items-center justify-between text-xs py-1">
+                      <span className="text-gray-600">{m.user.displayName}</span>
+                      {stats ? (
+                        <span className="text-gray-500">
+                          {stats.correct}/{stats.total} correct
+                          {stats.selfInitiated && (
+                            <span className="ml-1 text-blue-500" title="Self-initiated practice">(self)</span>
+                          )}
+                        </span>
+                      ) : (
+                        <span className="text-gray-300">Not learned yet</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         /* Annotation modes: show flaw matching stats */
