@@ -4,6 +4,13 @@ import { useState } from "react";
 import type { FlawType } from "@/lib/types";
 import { FLAW_TYPES } from "@/lib/types";
 
+const BUTTON_COLORS: Record<FlawType, { base: string; hover: string }> = {
+  reasoning:    { base: "border-red-200 bg-red-50 text-red-700",     hover: "hover:border-red-400 hover:bg-red-100" },
+  epistemic:    { base: "border-amber-200 bg-amber-50 text-amber-700", hover: "hover:border-amber-400 hover:bg-amber-100" },
+  completeness: { base: "border-blue-200 bg-blue-50 text-blue-700",   hover: "hover:border-blue-400 hover:bg-blue-100" },
+  coherence:    { base: "border-purple-200 bg-purple-50 text-purple-700", hover: "hover:border-purple-400 hover:bg-purple-100" },
+};
+
 interface ResponseCardProps {
   flawId: string;
   correctType: FlawType;
@@ -11,6 +18,8 @@ interface ResponseCardProps {
   groupId: string;
   userId: string;
   onResponse?: (flawId: string, typeAnswer: FlawType, typeCorrect: boolean) => void;
+  /** If true, renders as a standalone card (for unmatched/cross-section flaws). Otherwise renders minimal for popup use. */
+  standalone?: boolean;
 }
 
 export function ResponseCard({
@@ -20,6 +29,7 @@ export function ResponseCard({
   groupId,
   userId,
   onResponse,
+  standalone,
 }: ResponseCardProps) {
   const [selectedType, setSelectedType] = useState<FlawType | null>(null);
   const [submitted, setSubmitted] = useState(false);
@@ -51,20 +61,27 @@ export function ResponseCard({
     onResponse?.(flawId, type, isCorrect);
   }
 
+  const wrapperClass = standalone
+    ? "bg-white border border-gray-200 rounded-lg p-4 my-3 shadow-sm"
+    : "";
+
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-4 my-3 shadow-sm">
+    <div className={wrapperClass}>
       <p className="text-xs font-medium text-gray-500 mb-2">What type of problem is this?</p>
       <div className="flex flex-wrap gap-2 mb-3">
         {flawTypes.map(([type, info]) => {
-          let style = "border-gray-200 text-gray-700 hover:border-gray-400";
+          let style: string;
           if (submitted) {
             if (type === correctType) {
-              style = "border-green-500 bg-green-50 text-green-800 ring-1 ring-green-300";
+              style = "border-green-500 bg-green-50 text-green-800 ring-2 ring-green-300";
             } else if (type === selectedType) {
               style = "border-red-400 bg-red-50 text-red-700";
             } else {
-              style = "border-gray-200 text-gray-400";
+              style = "border-gray-200 text-gray-300";
             }
+          } else {
+            const colors = BUTTON_COLORS[type];
+            style = `${colors.base} ${colors.hover}`;
           }
 
           return (
@@ -82,7 +99,7 @@ export function ResponseCard({
 
       {submitted && (
         <div
-          className={`text-sm rounded-lg p-3 ${
+          className={`rounded-lg p-3 ${
             selectedType === correctType
               ? "bg-green-50 text-green-800"
               : "bg-amber-50 text-amber-800"

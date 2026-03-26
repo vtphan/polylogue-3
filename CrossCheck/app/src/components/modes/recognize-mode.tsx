@@ -133,7 +133,7 @@ function computeFlawPositions(content: string, flaws: EvaluationFlaw[]) {
   return { matched, unmatched, crossSection };
 }
 
-/** Render content with highlighted evidence and response cards inline. */
+/** Render content with clickable highlighted evidence and popup response cards. */
 function HighlightedContent({
   content,
   flaws,
@@ -141,27 +141,43 @@ function HighlightedContent({
   userId,
   onResponse,
   renderedCrossSectionIds,
+  activeFlawId,
+  onHighlightClick,
 }: {
   content: string;
   flaws: EvaluationFlaw[];
   groupId: string;
   userId: string;
   onResponse: (flawId: string, typeAnswer: FlawType, typeCorrect: boolean) => void;
-  /** Set of cross-section flaw IDs already rendered in a previous section — skip these. */
   renderedCrossSectionIds?: Set<string>;
+  /** Which flaw's popup is currently open (controlled by parent) */
+  activeFlawId: string | null;
+  /** Called when a highlight is clicked */
+  onHighlightClick: (flawId: string) => void;
 }) {
   const { matched, unmatched, crossSection } = useMemo(() => computeFlawPositions(content, flaws), [content, flaws]);
+
+  // Track which matched flaws have been answered (to show checkmarks on badges)
+  const [answeredFlaws, setAnsweredFlaws] = useState<Set<string>>(new Set());
+
+  function handleResponse(flawId: string, typeAnswer: FlawType, typeCorrect: boolean) {
+    setAnsweredFlaws((prev) => new Set(prev).add(flawId));
+    onResponse(flawId, typeAnswer, typeCorrect);
+  }
 
   if (matched.length === 0 && unmatched.length === 0 && crossSection.length === 0) {
     return <p className="text-sm text-gray-800 leading-relaxed">{content}</p>;
   }
 
   let lastIdx = 0;
+  let badgeNum = 0;
   const elements: React.ReactNode[] = [];
 
   for (const { flaw, startIdx, endIdx } of matched) {
-    // Skip if this flaw overlaps with a previous one
     if (startIdx < lastIdx) continue;
+    badgeNum++;
+    const isActive = activeFlawId === flaw.flaw_id;
+    const isAnswered = answeredFlaws.has(flaw.flaw_id);
 
     if (startIdx > lastIdx) {
       elements.push(
@@ -171,22 +187,44 @@ function HighlightedContent({
       );
     }
 
+    // Clickable highlight with badge
     elements.push(
-      <mark key={`hl-${flaw.flaw_id}`} className="bg-yellow-100 border-l-4 border-yellow-400 px-1 rounded">
-        {content.slice(startIdx, endIdx)}
-      </mark>
-    );
+      <span key={`hl-wrap-${flaw.flaw_id}`} className="relative inline">
+        <mark
+          onClick={() => onHighlightClick(isActive ? "" : flaw.flaw_id)}
+          className={`cursor-pointer rounded px-0.5 transition-colors ${
+            isActive
+              ? "bg-yellow-200 ring-2 ring-yellow-400"
+              : isAnswered
+                ? "bg-green-100 hover:bg-green-200"
+                : "bg-yellow-100 hover:bg-yellow-200"
+          }`}
+        >
+          {content.slice(startIdx, endIdx)}
+          <span className={`inline-flex items-center justify-center ml-1 w-4 h-4 text-[10px] font-bold rounded-full align-middle ${
+            isAnswered
+              ? "bg-green-500 text-white"
+              : "bg-yellow-400 text-yellow-900"
+          }`}>
+            {isAnswered ? "\u2713" : badgeNum}
+          </span>
+        </mark>
 
-    elements.push(
-      <ResponseCard
-        key={`rc-${flaw.flaw_id}`}
-        flawId={flaw.flaw_id}
-        correctType={flaw.flaw_type as FlawType}
-        explanation={flaw.explanation}
-        groupId={groupId}
-        userId={userId}
-        onResponse={onResponse}
-      />
+        {/* Popup response card */}
+        {isActive && (
+          <div data-popup className="absolute left-0 top-full mt-2 z-30 w-80 bg-white border border-gray-200 rounded-lg shadow-xl p-4">
+            <div className="absolute -top-2 left-4 w-4 h-4 bg-white border-l border-t border-gray-200 rotate-45" />
+            <ResponseCard
+              flawId={flaw.flaw_id}
+              correctType={flaw.flaw_type as FlawType}
+              explanation={flaw.explanation}
+              groupId={groupId}
+              userId={userId}
+              onResponse={handleResponse}
+            />
+          </div>
+        )}
+      </span>
     );
 
     lastIdx = endIdx;
@@ -200,7 +238,7 @@ function HighlightedContent({
     );
   }
 
-  // Append unmatched flaws (evidence didn't match this section's text)
+  // Unmatched flaws — still shown as cards at the bottom (no highlight to anchor to)
   for (const flaw of unmatched) {
     elements.push(
       <div key={`unmatched-${flaw.flaw_id}`} className="mt-3 bg-gray-50 border border-gray-200 rounded-lg p-3">
@@ -211,13 +249,14 @@ function HighlightedContent({
           explanation={flaw.explanation}
           groupId={groupId}
           userId={userId}
-          onResponse={onResponse}
+          onResponse={handleResponse}
+          standalone
         />
       </div>
     );
   }
 
-  // Cross-section flaws — only show if not already rendered in a previous section
+  // Cross-section flaws — only show once
   const filteredCrossSection = crossSection.filter(
     (f) => !renderedCrossSectionIds || !renderedCrossSectionIds.has(f.flaw_id)
   );
@@ -236,7 +275,8 @@ function HighlightedContent({
           explanation={flaw.explanation}
           groupId={groupId}
           userId={userId}
-          onResponse={onResponse}
+          onResponse={handleResponse}
+          standalone
         />
       </div>
     );
@@ -267,6 +307,7 @@ export function RecognizeMode({
   pendingScaffolds: initialScaffolds,
 }: RecognizeModeProps) {
   const [score, setScore] = useState({ correct: 0, total: 0 });
+  const [activeFlawId, setActiveFlawId] = useState<string | null>(null);
   const [scaffolds, setScaffolds] = useState(initialScaffolds);
   const [phaseNotice, setPhaseNotice] = useState<string | null>(null);
   const router = useRouter();
@@ -400,7 +441,15 @@ export function RecognizeMode({
         )}
       </div>
 
-      <div className={activityType === "presentation" ? "space-y-4" : "space-y-3"}>
+      <div
+        className={activityType === "presentation" ? "space-y-4" : "space-y-3"}
+        onClick={(e) => {
+          // Close popup when clicking outside a highlight
+          if (!(e.target as HTMLElement).closest("mark") && !(e.target as HTMLElement).closest("[data-popup]")) {
+            setActiveFlawId(null);
+          }
+        }}
+      >
         {(() => {
           // Track cross-section flaws already rendered so they don't repeat
           const renderedCrossSectionIds = new Set<string>();
@@ -442,6 +491,8 @@ export function RecognizeMode({
                 userId={userId}
                 onResponse={handleResponse}
                 renderedCrossSectionIds={renderedCrossSectionIds}
+                activeFlawId={activeFlawId}
+                onHighlightClick={(id) => setActiveFlawId(id || null)}
               />
               {/* Side effect: mark cross-section flaws as rendered so they don't repeat */}
               <CrossSectionTracker flaws={itemFlaws} tracker={renderedCrossSectionIds} />
