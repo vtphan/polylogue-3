@@ -4,6 +4,8 @@ Step-by-step walkthrough of all features. Use two browser windows: one for the t
 
 ## Setup
 
+All commands must be run from `CrossCheck/app/` (not `CrossCheck/`):
+
 ```bash
 cd CrossCheck/app
 npx tsx scripts/seed-test-classroom.ts    # 1 teacher + 20 students + 1 researcher

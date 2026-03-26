@@ -78,6 +78,7 @@ export default async function TeacherHome() {
                 </div>
                 <h2 className="font-semibold text-gray-900">{s.activity.topic}</h2>
                 <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                  <span>{new Date(s.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</span>
                   <span>{s.groups.length} groups</span>
                   <span>{totalStudents} students</span>
                   <span>{totalAnnotations} annotations</span>

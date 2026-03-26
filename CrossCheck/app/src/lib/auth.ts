@@ -16,9 +16,22 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null;
         }
 
-        const user = await prisma.user.findUnique({
-          where: { username: credentials.username as string },
+        const input = (credentials.username as string).trim();
+
+        // Try username first (teachers/researchers), then display name (students)
+        let user = await prisma.user.findUnique({
+          where: { username: input },
         });
+
+        if (!user) {
+          // Students log in by display name — case-insensitive match
+          user = await prisma.user.findFirst({
+            where: {
+              displayName: { equals: input, mode: "insensitive" },
+              role: "student",
+            },
+          });
+        }
 
         if (!user) {
           return null;
