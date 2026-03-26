@@ -238,47 +238,63 @@ function HighlightedContent({
     );
   }
 
-  // Unmatched flaws — still shown as cards at the bottom (no highlight to anchor to)
-  for (const flaw of unmatched) {
-    elements.push(
-      <div key={`unmatched-${flaw.flaw_id}`} className="mt-3 bg-gray-50 border border-gray-200 rounded-lg p-3">
-        <p className="text-xs text-gray-500 mb-1 italic">A flaw was identified in this section.</p>
-        <ResponseCard
-          flawId={flaw.flaw_id}
-          correctType={flaw.flaw_type as FlawType}
-          explanation={flaw.explanation}
-          groupId={groupId}
-          userId={userId}
-          onResponse={handleResponse}
-          standalone
-        />
-      </div>
-    );
-  }
-
-  // Cross-section flaws — only show once
+  // Unmatched + cross-section flaws: render as inline clickable badges (same popup pattern)
   const filteredCrossSection = crossSection.filter(
     (f) => !renderedCrossSectionIds || !renderedCrossSectionIds.has(f.flaw_id)
   );
-  for (const flaw of filteredCrossSection) {
+  const extraFlaws = [...unmatched, ...filteredCrossSection];
+
+  for (const flaw of extraFlaws) {
+    badgeNum++;
+    const isActive = activeFlawId === flaw.flaw_id;
+    const isAnswered = answeredFlaws.has(flaw.flaw_id);
+    const isCross = isCrossSectionEvidence(flaw.evidence);
+
     elements.push(
-      <div key={`cross-${flaw.flaw_id}`} className="mt-3 bg-purple-50 border border-purple-200 rounded-lg p-3">
-        <p className="text-xs text-purple-600 mb-1 italic">
-          This flaw spans multiple sections. Compare what different speakers say:
-        </p>
-        <p className="text-xs text-gray-600 mb-2 leading-relaxed">
-          {flaw.evidence}
-        </p>
-        <ResponseCard
-          flawId={flaw.flaw_id}
-          correctType={flaw.flaw_type as FlawType}
-          explanation={flaw.explanation}
-          groupId={groupId}
-          userId={userId}
-          onResponse={handleResponse}
-          standalone
-        />
-      </div>
+      <span key={`extra-${flaw.flaw_id}`} className="relative inline-block ml-1">
+        <button
+          onClick={() => onHighlightClick(isActive ? "" : flaw.flaw_id)}
+          className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border transition-all ${
+            isActive
+              ? "border-purple-400 bg-purple-100 ring-2 ring-purple-300"
+              : isAnswered
+                ? "border-green-300 bg-green-50 text-green-700"
+                : isCross
+                  ? "border-purple-300 bg-purple-50 text-purple-700 hover:bg-purple-100"
+                  : "border-gray-300 bg-gray-50 text-gray-600 hover:bg-gray-100"
+          }`}
+        >
+          <span className={`w-4 h-4 text-[10px] font-bold rounded-full inline-flex items-center justify-center ${
+            isAnswered
+              ? "bg-green-500 text-white"
+              : isCross
+                ? "bg-purple-400 text-white"
+                : "bg-gray-400 text-white"
+          }`}>
+            {isAnswered ? "\u2713" : badgeNum}
+          </span>
+          {isCross ? "Compare sections" : "Find the flaw"}
+        </button>
+
+        {isActive && (
+          <div data-popup className="absolute left-0 top-full mt-2 z-30 w-80 bg-white border border-gray-200 rounded-lg shadow-xl p-4">
+            <div className="absolute -top-2 left-4 w-4 h-4 bg-white border-l border-t border-gray-200 rotate-45" />
+            {isCross && (
+              <p className="text-xs text-purple-600 mb-2 italic leading-relaxed">
+                {flaw.evidence}
+              </p>
+            )}
+            <ResponseCard
+              flawId={flaw.flaw_id}
+              correctType={flaw.flaw_type as FlawType}
+              explanation={flaw.explanation}
+              groupId={groupId}
+              userId={userId}
+              onResponse={handleResponse}
+            />
+          </div>
+        )}
+      </span>
     );
   }
 
