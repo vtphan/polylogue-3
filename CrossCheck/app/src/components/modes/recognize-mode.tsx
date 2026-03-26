@@ -194,13 +194,21 @@ function HighlightedContent({
     eliminatedTypes: FlawType[];
   }>>(initialFlawState);
 
-  const answeredFlaws = useMemo(() => {
-    const set = new Set<string>();
+  // Derive per-flaw badge status: "unanswered" | "attempted" | "correct" | "wrong"
+  type BadgeStatus = "unanswered" | "attempted" | "correct" | "wrong";
+  const flawBadgeStatus = useMemo(() => {
+    const map = new Map<string, BadgeStatus>();
     for (const [id, state] of flawState) {
-      if (state.resolved) set.add(id);
+      if (!state.resolved) {
+        map.set(id, state.attempts > 0 ? "attempted" : "unanswered");
+      } else {
+        // Resolved: check if any attempt was correct
+        const wasCorrect = state.eliminatedTypes.length < effectiveMaxAttempts;
+        map.set(id, wasCorrect ? "correct" : "wrong");
+      }
     }
-    return set;
-  }, [flawState]);
+    return map;
+  }, [flawState, effectiveMaxAttempts]);
 
   function handleAttempt(flawId: string, typeAnswer: FlawType, isCorrect: boolean, isResolved: boolean) {
     setFlawState((prev) => {
@@ -230,7 +238,7 @@ function HighlightedContent({
     if (startIdx < lastIdx) continue;
     badgeNum++;
     const isActive = activeFlawId === flaw.flaw_id;
-    const isAnswered = answeredFlaws.has(flaw.flaw_id);
+    const status = flawBadgeStatus.get(flaw.flaw_id) || "unanswered";
 
     if (startIdx > lastIdx) {
       elements.push(
@@ -240,29 +248,39 @@ function HighlightedContent({
       );
     }
 
-    // Clickable highlight with badge
+    // Highlight background color by status
+    const highlightBg = isActive
+      ? "bg-yellow-200 ring-2 ring-yellow-400"
+      : status === "correct" ? "bg-green-100 hover:bg-green-200"
+      : status === "wrong" ? "bg-red-100 hover:bg-red-200"
+      : status === "attempted" ? "bg-amber-100 hover:bg-amber-200"
+      : "bg-yellow-100 hover:bg-yellow-200";
+
+    // Badge icon and color by status
+    const badgeStyle = status === "correct"
+      ? "bg-green-500 text-white"
+      : status === "wrong"
+        ? "bg-red-500 text-white"
+        : status === "attempted"
+          ? "bg-amber-500 text-white"
+          : "bg-yellow-400 text-yellow-900";
+
+    const badgeIcon = status === "correct" ? "\u2713"    // checkmark
+      : status === "wrong" ? "\u2717"                     // X
+      : status === "attempted" ? "\u21BB"                 // retry arrow
+      : String(badgeNum);
+
     elements.push(
       <span key={`hl-wrap-${flaw.flaw_id}`} className="relative inline">
         <mark
           onClick={(e) => { e.stopPropagation(); onHighlightClick(isActive ? "" : flaw.flaw_id); }}
-          className={`cursor-pointer rounded px-0.5 transition-colors ${
-            isActive
-              ? "bg-yellow-200 ring-2 ring-yellow-400"
-              : isAnswered
-                ? "bg-green-100 hover:bg-green-200"
-                : "bg-yellow-100 hover:bg-yellow-200"
-          }`}
+          className={`cursor-pointer rounded px-0.5 transition-colors ${highlightBg}`}
         >
           {content.slice(startIdx, endIdx)}
-          <span className={`inline-flex items-center justify-center ml-1 w-4 h-4 text-[10px] font-bold rounded-full align-middle ${
-            isAnswered
-              ? "bg-green-500 text-white"
-              : "bg-yellow-400 text-yellow-900"
-          }`}>
-            {isAnswered ? "\u2713" : badgeNum}
+          <span className={`inline-flex items-center justify-center ml-1 w-4 h-4 text-[10px] font-bold rounded-full align-middle ${badgeStyle}`}>
+            {badgeIcon}
           </span>
         </mark>
-
       </span>
     );
 
@@ -287,31 +305,37 @@ function HighlightedContent({
   for (const flaw of extraFlaws) {
     badgeNum++;
     const isActive = activeFlawId === flaw.flaw_id;
-    const isAnswered = answeredFlaws.has(flaw.flaw_id);
+    const status = flawBadgeStatus.get(flaw.flaw_id) || "unanswered";
     const isCross = isCrossSectionEvidence(flaw.evidence);
+
+    const extraBorderStyle = isActive
+      ? "border-purple-400 bg-purple-100 ring-2 ring-purple-300"
+      : status === "correct" ? "border-green-300 bg-green-50 text-green-700"
+      : status === "wrong" ? "border-red-300 bg-red-50 text-red-700"
+      : status === "attempted" ? "border-amber-300 bg-amber-50 text-amber-700"
+      : isCross
+        ? "border-purple-300 bg-purple-50 text-purple-700 hover:bg-purple-100"
+        : "border-gray-300 bg-gray-50 text-gray-600 hover:bg-gray-100";
+
+    const extraBadgeStyle = status === "correct" ? "bg-green-500 text-white"
+      : status === "wrong" ? "bg-red-500 text-white"
+      : status === "attempted" ? "bg-amber-500 text-white"
+      : isCross ? "bg-purple-400 text-white"
+      : "bg-gray-400 text-white";
+
+    const extraBadgeIcon = status === "correct" ? "\u2713"
+      : status === "wrong" ? "\u2717"
+      : status === "attempted" ? "\u21BB"
+      : String(badgeNum);
 
     elements.push(
       <span key={`extra-${flaw.flaw_id}`} className="relative inline-block ml-1">
         <button
           onClick={(e) => { e.stopPropagation(); onHighlightClick(isActive ? "" : flaw.flaw_id); }}
-          className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border transition-all ${
-            isActive
-              ? "border-purple-400 bg-purple-100 ring-2 ring-purple-300"
-              : isAnswered
-                ? "border-green-300 bg-green-50 text-green-700"
-                : isCross
-                  ? "border-purple-300 bg-purple-50 text-purple-700 hover:bg-purple-100"
-                  : "border-gray-300 bg-gray-50 text-gray-600 hover:bg-gray-100"
-          }`}
+          className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border transition-all ${extraBorderStyle}`}
         >
-          <span className={`w-4 h-4 text-[10px] font-bold rounded-full inline-flex items-center justify-center ${
-            isAnswered
-              ? "bg-green-500 text-white"
-              : isCross
-                ? "bg-purple-400 text-white"
-                : "bg-gray-400 text-white"
-          }`}>
-            {isAnswered ? "\u2713" : badgeNum}
+          <span className={`w-4 h-4 text-[10px] font-bold rounded-full inline-flex items-center justify-center ${extraBadgeStyle}`}>
+            {extraBadgeIcon}
           </span>
           {isCross ? "Compare sections" : "Find the flaw"}
         </button>
