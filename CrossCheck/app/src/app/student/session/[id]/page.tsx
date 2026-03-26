@@ -48,6 +48,11 @@ export default async function StudentSessionPage({ params }: PageProps) {
             where: { acknowledgedAt: null },
             orderBy: { createdAt: "desc" },
           },
+          flawResponses: {
+            where: { userId: session.user.id },
+            select: { flawId: true, typeAnswer: true, typeCorrect: true },
+            orderBy: { createdAt: "asc" },
+          },
         },
       },
     },
@@ -199,6 +204,7 @@ export default async function StudentSessionPage({ params }: PageProps) {
           sessionPhase={classSession.status}
           pendingScaffolds={pendingScaffolds}
           maxAttempts={maxAttempts}
+          existingResponses={group.flawResponses as { flawId: string; typeAnswer: string; typeCorrect: boolean }[]}
         />
       ) : difficultyMode === "locate" ? (
         <LocateMode

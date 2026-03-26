@@ -31,6 +31,7 @@ interface RecognizeModeProps {
   sessionPhase: string;
   pendingScaffolds: { id: string; text: string; level: number; type: string }[];
   maxAttempts?: number;
+  existingResponses?: { flawId: string; typeAnswer: string; typeCorrect: boolean }[];
 }
 
 /** Normalize whitespace for fuzzy matching. */
@@ -141,29 +142,57 @@ function HighlightedContent({
   groupId,
   userId,
   onResponse,
-  renderedCrossSectionIds,
+  crossSectionOwner,
+  itemId,
   activeFlawId,
   onHighlightClick,
   maxAttempts,
+  existingResponses,
 }: {
   content: string;
   flaws: EvaluationFlaw[];
   groupId: string;
   userId: string;
   onResponse: (flawId: string, typeAnswer: FlawType, typeCorrect: boolean) => void;
-  renderedCrossSectionIds?: Set<string>;
+  /** Map of cross-section flawId -> the itemId that should render it. Only the owning item shows the badge. */
+  crossSectionOwner?: Map<string, string>;
+  /** This item's id — used to check cross-section flaw ownership. */
+  itemId: string;
   activeFlawId: string | null;
   onHighlightClick: (flawId: string) => void;
   maxAttempts?: number;
+  existingResponses?: { flawId: string; typeAnswer: string; typeCorrect: boolean }[];
 }) {
+  const effectiveMaxAttempts = maxAttempts ?? 2;
   const { matched, unmatched, crossSection } = useMemo(() => computeFlawPositions(content, flaws), [content, flaws]);
+
+  // Build initial flawState from existing DB responses (survives page refresh)
+  const initialFlawState = useMemo(() => {
+    const map = new Map<string, { attempts: number; resolved: boolean; eliminatedTypes: FlawType[] }>();
+    if (!existingResponses) return map;
+
+    for (const r of existingResponses) {
+      const current = map.get(r.flawId) || { attempts: 0, resolved: false, eliminatedTypes: [] as FlawType[] };
+      current.attempts++;
+      if (r.typeCorrect) {
+        current.resolved = true;
+      } else {
+        current.eliminatedTypes.push(r.typeAnswer as FlawType);
+        if (current.attempts >= effectiveMaxAttempts) {
+          current.resolved = true;
+        }
+      }
+      map.set(r.flawId, current);
+    }
+    return map;
+  }, [existingResponses, effectiveMaxAttempts]);
 
   // Track per-flaw state across popup open/close cycles
   const [flawState, setFlawState] = useState<Map<string, {
     attempts: number;
     resolved: boolean;
     eliminatedTypes: FlawType[];
-  }>>(new Map());
+  }>>(initialFlawState);
 
   const answeredFlaws = useMemo(() => {
     const set = new Set<string>();
@@ -248,9 +277,10 @@ function HighlightedContent({
     );
   }
 
-  // Unmatched + cross-section flaws: render as inline clickable badges (same popup pattern)
+  // Unmatched + cross-section flaws: render as inline clickable badges
+  // Only show cross-section flaws if this item is the designated owner
   const filteredCrossSection = crossSection.filter(
-    (f) => !renderedCrossSectionIds || !renderedCrossSectionIds.has(f.flaw_id)
+    (f) => !crossSectionOwner || crossSectionOwner.get(f.flaw_id) === itemId
   );
   const extraFlaws = [...unmatched, ...filteredCrossSection];
 
@@ -337,16 +367,6 @@ function HighlightedContent({
   );
 }
 
-/** Side-effect component: marks cross-section flaws as rendered in the tracking set. */
-function CrossSectionTracker({ flaws, tracker }: { flaws: EvaluationFlaw[]; tracker: Set<string> }) {
-  for (const f of flaws) {
-    if (isCrossSectionEvidence(f.evidence)) {
-      tracker.add(f.flaw_id);
-    }
-  }
-  return null;
-}
-
 export function RecognizeMode({
   sessionId,
   groupId,
@@ -358,8 +378,26 @@ export function RecognizeMode({
   sessionPhase,
   pendingScaffolds: initialScaffolds,
   maxAttempts,
+  existingResponses = [],
 }: RecognizeModeProps) {
-  const [score, setScore] = useState({ correct: 0, total: 0 });
+  // Compute initial score from existing responses (deduplicated by flawId — count only the last response per flaw)
+  const initialScore = useMemo(() => {
+    const byFlaw = new Map<string, boolean>();
+    for (const r of existingResponses) {
+      if (!byFlaw.has(r.flawId) || r.typeCorrect) {
+        byFlaw.set(r.flawId, r.typeCorrect);
+      }
+    }
+    let correct = 0;
+    let total = 0;
+    for (const isCorrect of byFlaw.values()) {
+      total++;
+      if (isCorrect) correct++;
+    }
+    return { correct, total };
+  }, [existingResponses]);
+
+  const [score, setScore] = useState(initialScore);
   const [activeFlawId, setActiveFlawId] = useState<string | null>(null);
   const [scaffolds, setScaffolds] = useState(initialScaffolds);
   const [phaseNotice, setPhaseNotice] = useState<string | null>(null);
@@ -496,8 +534,20 @@ export function RecognizeMode({
 
       <div className={activityType === "presentation" ? "space-y-4" : "space-y-3"}>
         {(() => {
-          // Track cross-section flaws already rendered so they don't repeat
-          const renderedCrossSectionIds = new Set<string>();
+          // Pre-compute which section should render each cross-section flaw (first referenced section only)
+          const crossSectionOwner = new Map<string, string>(); // flawId -> first itemId that should render it
+          for (const flaw of flaws) {
+            if (isCrossSectionEvidence(flaw.evidence)) {
+              for (const ref of flaw.location.references) {
+                // Find the first item that matches this reference
+                const matchingItem = items.find((item) => item.id === ref || item.label === ref);
+                if (matchingItem && !crossSectionOwner.has(flaw.flaw_id)) {
+                  crossSectionOwner.set(flaw.flaw_id, matchingItem.id);
+                }
+              }
+            }
+          }
+
           return items.map((item) => {
           const agent = agentMap[item.speaker];
           // Match by section_id/turn_id OR by section name (e.g., "introduction")
@@ -535,13 +585,13 @@ export function RecognizeMode({
                 groupId={groupId}
                 userId={userId}
                 onResponse={handleResponse}
-                renderedCrossSectionIds={renderedCrossSectionIds}
+                crossSectionOwner={crossSectionOwner}
+                itemId={item.id}
                 activeFlawId={activeFlawId}
                 onHighlightClick={(id) => setActiveFlawId(id || null)}
                 maxAttempts={maxAttempts}
+                existingResponses={existingResponses}
               />
-              {/* Side effect: mark cross-section flaws as rendered so they don't repeat */}
-              <CrossSectionTracker flaws={itemFlaws} tracker={renderedCrossSectionIds} />
             </div>
           );
         });
