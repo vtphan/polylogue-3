@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { getIO } from "@/lib/socket-server";
 
 const VALID_FLAW_TYPES = ["reasoning", "epistemic", "completeness", "coherence"];
 
@@ -84,6 +85,28 @@ export async function POST(request: NextRequest) {
       reasonCorrect,
     },
   });
+
+  // Emit real-time event so teacher dashboard updates
+  const groupForSocket = await prisma.group.findUnique({
+    where: { id: groupId },
+    select: { sessionId: true },
+  });
+  if (groupForSocket) {
+    const io = getIO();
+    if (io) {
+      io.to(`session:${groupForSocket.sessionId}`).emit("flaw_response:created", {
+        sessionId: groupForSocket.sessionId,
+        groupId,
+        response: {
+          id: response.id,
+          userId: session.user.id,
+          flawId,
+          typeAnswer,
+          typeCorrect,
+        },
+      });
+    }
+  }
 
   return NextResponse.json(response, { status: 201 });
 }

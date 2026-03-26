@@ -86,9 +86,10 @@ export default async function StudentSessionPage({ params }: PageProps) {
   }));
 
   // Difficulty mode: per-group first, fall back to session-level for backward compatibility
-  const groupConfig = group.config as { difficulty_mode?: string } | null;
+  const groupConfig = group.config as { difficulty_mode?: string; max_attempts?: number } | null;
   const sessionConfig = classSession.config as { difficulty_mode?: string } | null;
   const difficultyMode = (groupConfig?.difficulty_mode || sessionConfig?.difficulty_mode || "classify") as DifficultyMode;
+  const maxAttempts = groupConfig?.max_attempts ?? 2;
 
   // Extract evaluation data (needed for reviewing + recognize/locate modes)
   const flawIndex = (activity.flawIndex || []) as {
@@ -197,6 +198,7 @@ export default async function StudentSessionPage({ params }: PageProps) {
           flaws={evaluationData.flaws}
           sessionPhase={classSession.status}
           pendingScaffolds={pendingScaffolds}
+          maxAttempts={maxAttempts}
         />
       ) : difficultyMode === "locate" ? (
         <LocateMode

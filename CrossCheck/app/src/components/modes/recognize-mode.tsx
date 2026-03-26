@@ -30,6 +30,7 @@ interface RecognizeModeProps {
   flaws: EvaluationFlaw[];
   sessionPhase: string;
   pendingScaffolds: { id: string; text: string; level: number; type: string }[];
+  maxAttempts?: number;
 }
 
 /** Normalize whitespace for fuzzy matching. */
@@ -143,6 +144,7 @@ function HighlightedContent({
   renderedCrossSectionIds,
   activeFlawId,
   onHighlightClick,
+  maxAttempts,
 }: {
   content: string;
   flaws: EvaluationFlaw[];
@@ -150,10 +152,9 @@ function HighlightedContent({
   userId: string;
   onResponse: (flawId: string, typeAnswer: FlawType, typeCorrect: boolean) => void;
   renderedCrossSectionIds?: Set<string>;
-  /** Which flaw's popup is currently open (controlled by parent) */
   activeFlawId: string | null;
-  /** Called when a highlight is clicked */
   onHighlightClick: (flawId: string) => void;
+  maxAttempts?: number;
 }) {
   const { matched, unmatched, crossSection } = useMemo(() => computeFlawPositions(content, flaws), [content, flaws]);
 
@@ -300,6 +301,7 @@ function HighlightedContent({
               userId={userId}
               onResponse={handleResponse}
               showDefinitions
+              maxAttempts={maxAttempts}
             />
           </div>
         </>
@@ -328,6 +330,7 @@ export function RecognizeMode({
   flaws,
   sessionPhase,
   pendingScaffolds: initialScaffolds,
+  maxAttempts,
 }: RecognizeModeProps) {
   const [score, setScore] = useState({ correct: 0, total: 0 });
   const [activeFlawId, setActiveFlawId] = useState<string | null>(null);
@@ -508,6 +511,7 @@ export function RecognizeMode({
                 renderedCrossSectionIds={renderedCrossSectionIds}
                 activeFlawId={activeFlawId}
                 onHighlightClick={(id) => setActiveFlawId(id || null)}
+                maxAttempts={maxAttempts}
               />
               {/* Side effect: mark cross-section flaws as rendered so they don't repeat */}
               <CrossSectionTracker flaws={itemFlaws} tracker={renderedCrossSectionIds} />

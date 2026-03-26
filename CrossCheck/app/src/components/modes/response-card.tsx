@@ -30,6 +30,8 @@ interface ResponseCardProps {
   standalone?: boolean;
   /** If true, show flaw type definitions alongside each button (for Recognize mode scaffolding). */
   showDefinitions?: boolean;
+  /** Maximum number of attempts allowed (default: unlimited until correct). */
+  maxAttempts?: number;
 }
 
 export function ResponseCard({
@@ -41,20 +43,27 @@ export function ResponseCard({
   onResponse,
   standalone,
   showDefinitions,
+  maxAttempts,
 }: ResponseCardProps) {
   const [selectedType, setSelectedType] = useState<FlawType | null>(null);
-  const [submitted, setSubmitted] = useState(false);
+  const [attempts, setAttempts] = useState(0);
+  const [resolved, setResolved] = useState(false); // true when correct or out of attempts
+  const [showingFeedback, setShowingFeedback] = useState(false);
+  const [eliminatedTypes, setEliminatedTypes] = useState<Set<FlawType>>(new Set());
 
   const flawTypes = Object.entries(FLAW_TYPES) as [FlawType, typeof FLAW_TYPES[FlawType]][];
+  const effectiveMaxAttempts = maxAttempts ?? 2;
 
   async function handleSelect(type: FlawType) {
-    if (submitted) return;
+    if (resolved || showingFeedback) return;
     setSelectedType(type);
-    setSubmitted(true);
+    setShowingFeedback(true);
 
     const isCorrect = type === correctType;
+    const newAttempts = attempts + 1;
+    setAttempts(newAttempts);
 
-    // Save response to API (server computes typeCorrect)
+    // Save response to API
     try {
       await fetch("/api/flaw-responses", {
         method: "POST",
@@ -66,11 +75,41 @@ export function ResponseCard({
         }),
       });
     } catch {
-      // Silently fail — response is saved locally in state
+      // Silently fail
     }
 
-    onResponse?.(flawId, type, isCorrect);
+    if (isCorrect || newAttempts >= effectiveMaxAttempts) {
+      setResolved(true);
+      onResponse?.(flawId, type, isCorrect);
+    } else {
+      // Wrong answer but still has attempts — after showing feedback briefly, allow retry
+      setEliminatedTypes((prev) => new Set(prev).add(type));
+      setTimeout(() => {
+        setSelectedType(null);
+        setShowingFeedback(false);
+      }, 1500);
+    }
+
   }
+
+  function getButtonStyle(type: FlawType): string {
+    const isEliminated = eliminatedTypes.has(type);
+
+    if (resolved) {
+      if (type === correctType) return "border-green-500 bg-green-50 ring-2 ring-green-300";
+      if (type === selectedType) return "border-red-400 bg-red-50";
+      return "border-gray-200 bg-gray-50 opacity-40";
+    }
+
+    if (showingFeedback && type === selectedType) return "border-red-400 bg-red-50";
+    if (isEliminated) return "border-gray-200 bg-gray-50 opacity-40 cursor-not-allowed";
+
+    const colors = BUTTON_COLORS[type];
+    return `${colors.base} ${colors.hover}`;
+  }
+
+  const isDisabled = (type: FlawType) => resolved || showingFeedback || eliminatedTypes.has(type);
+  const attemptsRemaining = effectiveMaxAttempts - attempts;
 
   const wrapperClass = standalone
     ? "bg-white border border-gray-200 rounded-lg p-4 my-3 shadow-sm"
@@ -78,71 +117,52 @@ export function ResponseCard({
 
   return (
     <div className={wrapperClass}>
-      <p className="text-xs font-medium text-gray-500 mb-2">What type of problem is this?</p>
-      {showDefinitions ? (
-        /* Scaffolded layout: each flaw type as a labeled card with definition */
-        <div className="space-y-1.5 mb-3">
-          {flawTypes.map(([type, info]) => {
-            let style: string;
-            if (submitted) {
-              if (type === correctType) {
-                style = "border-green-500 bg-green-50 ring-2 ring-green-300";
-              } else if (type === selectedType) {
-                style = "border-red-400 bg-red-50";
-              } else {
-                style = "border-gray-200 bg-gray-50 opacity-50";
-              }
-            } else {
-              const colors = BUTTON_COLORS[type];
-              style = `${colors.base} ${colors.hover}`;
-            }
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-xs font-medium text-gray-500">What type of problem is this?</p>
+        {!resolved && attempts > 0 && (
+          <span className="text-[10px] text-gray-400">
+            {attemptsRemaining} {attemptsRemaining === 1 ? "try" : "tries"} left
+          </span>
+        )}
+      </div>
 
-            return (
-              <button
-                key={type}
-                onClick={() => handleSelect(type)}
-                disabled={submitted}
-                className={`w-full text-left text-xs p-2 rounded-lg border transition-all ${style}`}
-              >
-                <span className="font-bold">{info.label}</span>
-                <span className="text-[11px] ml-1 opacity-75">{FLAW_DEFINITIONS[type]}</span>
-              </button>
-            );
-          })}
+      {showDefinitions ? (
+        <div className="space-y-1.5 mb-3">
+          {flawTypes.map(([type, info]) => (
+            <button
+              key={type}
+              onClick={() => handleSelect(type)}
+              disabled={isDisabled(type)}
+              className={`w-full text-left text-xs p-2 rounded-lg border transition-all ${getButtonStyle(type)}`}
+            >
+              <span className="font-bold">{info.label}</span>
+              <span className="text-[11px] ml-1 opacity-75">{FLAW_DEFINITIONS[type]}</span>
+            </button>
+          ))}
         </div>
       ) : (
-        /* Compact layout: color-coded pills */
         <div className="flex flex-wrap gap-2 mb-3">
-          {flawTypes.map(([type, info]) => {
-            let style: string;
-            if (submitted) {
-              if (type === correctType) {
-                style = "border-green-500 bg-green-50 text-green-800 ring-2 ring-green-300";
-              } else if (type === selectedType) {
-                style = "border-red-400 bg-red-50 text-red-700";
-              } else {
-                style = "border-gray-200 text-gray-300";
-              }
-            } else {
-              const colors = BUTTON_COLORS[type];
-              style = `${colors.base} ${colors.hover}`;
-            }
-
-            return (
-              <button
-                key={type}
-                onClick={() => handleSelect(type)}
-                disabled={submitted}
-                className={`text-xs font-medium px-3 py-1.5 rounded-full border transition-all ${style}`}
-              >
-                {info.label}
-              </button>
-            );
-          })}
+          {flawTypes.map(([type, info]) => (
+            <button
+              key={type}
+              onClick={() => handleSelect(type)}
+              disabled={isDisabled(type)}
+              className={`text-xs font-medium px-3 py-1.5 rounded-full border transition-all ${getButtonStyle(type)}`}
+            >
+              {info.label}
+            </button>
+          ))}
         </div>
       )}
 
-      {submitted && (
+      {/* Feedback: show on wrong attempt (briefly) or when resolved */}
+      {showingFeedback && !resolved && selectedType !== correctType && (
+        <div className="rounded-lg p-3 bg-amber-50 text-amber-800">
+          <p className="font-medium text-xs">Not quite — try again.</p>
+        </div>
+      )}
+
+      {resolved && (
         <div
           className={`rounded-lg p-3 ${
             selectedType === correctType
@@ -153,7 +173,7 @@ export function ResponseCard({
           <p className="font-medium text-xs mb-1">
             {selectedType === correctType
               ? "Correct!"
-              : `This is a ${FLAW_TYPES[correctType].label} flaw.`}
+              : `The answer is ${FLAW_TYPES[correctType].label}.`}
           </p>
           <p className="text-xs leading-relaxed">{explanation}</p>
         </div>

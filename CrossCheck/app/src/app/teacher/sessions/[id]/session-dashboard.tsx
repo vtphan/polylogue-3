@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo, useRef } from "react";
+import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FLAW_TYPES, DIFFICULTY_MODE_INFO } from "@/lib/types";
 import type { DifficultyMode } from "@/lib/types";
@@ -10,6 +10,7 @@ import { PresentationView } from "@/components/transcript/presentation-view";
 import { DiscussionView } from "@/components/transcript/discussion-view";
 import { SCAFFOLD_TEMPLATES } from "@/lib/scaffold-templates";
 import { useSessionSocket } from "@/hooks/useSessionSocket";
+import { getSocket } from "@/lib/socket-client";
 import type {
   AnnotationCreatedEvent,
   AnnotationDeletedEvent,
@@ -264,6 +265,33 @@ export function SessionDashboard({ session: initialSession }: { session: Session
     onUserDisconnected,
     onConnectionRoster,
   });
+
+  // Listen for flaw response events (Learn/Recognize mode quiz answers)
+  useEffect(() => {
+    const socket = getSocket();
+    function handleFlawResponse(event: { groupId: string; response: { id: string; userId: string; flawId: string; typeAnswer: string; typeCorrect: boolean } }) {
+      setSession((prev) => ({
+        ...prev,
+        groups: prev.groups.map((g) =>
+          g.id === event.groupId
+            ? {
+                ...g,
+                flawResponses: [...g.flawResponses, {
+                  id: event.response.id,
+                  userId: event.response.userId,
+                  flawId: event.response.flawId,
+                  typeAnswer: event.response.typeAnswer,
+                  typeCorrect: event.response.typeCorrect,
+                  createdAt: new Date().toISOString(),
+                }],
+              }
+            : g
+        ),
+      }));
+    }
+    socket.on("flaw_response:created", handleFlawResponse);
+    return () => { socket.off("flaw_response:created", handleFlawResponse); };
+  }, []);
 
   // Derive connection status per group
   const groupConnectionStatus = useMemo(() => {
