@@ -64,10 +64,12 @@ How students, teachers, and researchers use CrossCheck in practice. Each workflo
 - When the teacher advances to Reviewing, students see the feedback view.
 
 **Recognize mode:**
-- Read-only transcript with pre-highlighted passages (yellow marks with a left border).
-- After each highlighted passage, a response card asks: "What type of problem is this?" with 4 buttons.
-- Immediate feedback: correct type highlighted green, wrong choice in red, plus an explanation.
-- Score tracker at the top. Responses are saved to the server.
+- Read-only transcript with specific flaw sentences highlighted in yellow, each with a numbered badge.
+- Click a badge to open a centered popup with color-coded flaw type buttons and concise definitions (scaffolding for students still learning the vocabulary).
+- Students get configurable max attempts (default: 2). Wrong answers show "Not quite — try again" briefly, then gray out the wrong choice. After all attempts, the correct answer + explanation is revealed.
+- Badge colors: yellow (unanswered), amber with retry arrow (wrong, retries left), green with checkmark (correct), red with X (wrong, no retries left).
+- Cross-section flaws (spanning multiple sections) appear as purple "Compare sections" badges.
+- Results persist across popup close and page refresh (stored in database). Score tracker at top.
 - Scaffolds from the teacher appear as blue notification cards at the top.
 - When the teacher advances to Reviewing, the page refreshes to show the feedback view.
 

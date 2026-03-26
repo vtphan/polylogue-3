@@ -63,7 +63,7 @@ Open two browser windows:
 ### 2.3 Standalone Learn page
 - Click **Learn** in the top nav bar
 - **Verify**: Shows the same definitions + quiz experience
-- **Verify**: This is independent of the session (different localStorage key)
+- **Verify**: Results saved to student's active group with "(self)" tag on teacher dashboard
 
 ---
 
@@ -72,15 +72,21 @@ Open two browser windows:
 ### 3.1 Login as a Group C student
 - **Window S**: Log out, enter name `Lily Nguyen`
 - Click the active session
-- **Verify**: Sees the transcript with **yellow highlighted passages** (pre-highlighted evidence)
-- **Verify**: After each highlight, a **response card** with 4 flaw type buttons
+- **Verify**: Sees the transcript with **yellow highlighted sentences** within each section (not the whole section)
+- **Verify**: Each highlighted sentence has a **numbered badge** (1, 2, 3...)
+- **Verify**: Cross-section flaws appear as purple **"Compare sections"** badges at the end of the section
 - **Verify**: No bottom bar (read-only — no text selection)
 - **Verify**: Score tracker visible
 
 ### 3.2 Answer response cards
-- Click a flaw type button on the first response card
-- **Verify**: Immediate feedback — correct type turns green, wrong turns red, explanation shown
-- **Verify**: Score updates
+- Click a highlighted sentence badge
+- **Verify**: A **centered popup** appears with a semi-transparent backdrop
+- **Verify**: Popup shows "What type of problem is this?" with 4 **color-coded buttons with definitions** (e.g., "Reasoning — The logic doesn't hold up...")
+- **Verify**: Click a flaw type — if wrong but attempts remain, shows "Not quite — try again" for 1.5s, then the wrong choice is grayed out
+- **Verify**: If correct or out of attempts (default: 2), shows explanation and the badge turns green (correct) or red (wrong)
+- **Verify**: Close popup (click backdrop, X, or same badge) — reopen shows preserved state (attempts, eliminated choices)
+- **Verify**: Refresh page — answered flaws still show as resolved (green/red badges)
+- **Verify**: Score updates after each resolved flaw
 
 ---
 
@@ -114,11 +120,10 @@ Open two browser windows:
 - **Verify**: Annotation appears as underline
 - **Verify**: Sidebar shows the flag in "Your Flags" list
 
-### 5.3 Flaw Field Guide (reference)
-- **Desktop**: Look for the **"Flaw Type Guide"** collapsible panel in the sidebar (above the annotation list)
-- Click a flaw type to expand — **verify** reading strategy and example appear
-- **Mobile** (resize window to < 1024px): Look for a floating **"Guide"** button above the bottom bar
-- Tap it — **verify** slide-up drawer opens with flaw type definitions
+### 5.3 Reference
+- In Locate mode, the **hint card** itself serves as the scaffold (flaw type + reading strategy)
+- The Flaw Field Guide is available in **Spot and Classify** modes, not Locate (hint card replaces it)
+- Students can always access the standalone **Learn** page from the nav bar for full definitions
 
 ---
 
@@ -210,8 +215,13 @@ Open two browser windows:
 | Test | Expected |
 |------|----------|
 | Student navigates away mid-Learn-quiz, returns | Resumes at same question |
+| Student closes and reopens Recognize popup after wrong answer | Attempt count and eliminated choices preserved |
+| Student refreshes page during Recognize mode | Answered flaws show green/red badges, score restored |
+| Student visits /student/learn then returns to session | Learn results saved to group with "(self)" tag, session state unchanged |
+| Teacher dashboard for non-Learn group | Shows "X/Y learned" if students have Learn data; group detail shows Learning Progress section |
 | Teacher changes mode to Learn for an annotating group | Student page refreshes to show Learn quiz (annotations preserved in DB for later) |
 | Teacher changes mode from Learn to Classify | Student page refreshes to show transcript with 4-button toolbar |
 | Student on Recognize mode when teacher advances to Reviewing | Page refreshes to show feedback view |
 | WiFi drop during annotation | Annotation saves via HTTP; Socket.IO auto-reconnects |
 | Teacher clicks mode badge in setup/closed phase | Badge is not clickable (no hover effect, no dropdown) |
+| Student signs out on shared tablet | All crosscheck: localStorage cleared, next student starts fresh |
