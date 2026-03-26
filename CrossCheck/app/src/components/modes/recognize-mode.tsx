@@ -191,7 +191,7 @@ function HighlightedContent({
     elements.push(
       <span key={`hl-wrap-${flaw.flaw_id}`} className="relative inline">
         <mark
-          onClick={() => onHighlightClick(isActive ? "" : flaw.flaw_id)}
+          onClick={(e) => { e.stopPropagation(); onHighlightClick(isActive ? "" : flaw.flaw_id); }}
           className={`cursor-pointer rounded px-0.5 transition-colors ${
             isActive
               ? "bg-yellow-200 ring-2 ring-yellow-400"
@@ -253,7 +253,7 @@ function HighlightedContent({
     elements.push(
       <span key={`extra-${flaw.flaw_id}`} className="relative inline-block ml-1">
         <button
-          onClick={() => onHighlightClick(isActive ? "" : flaw.flaw_id)}
+          onClick={(e) => { e.stopPropagation(); onHighlightClick(isActive ? "" : flaw.flaw_id); }}
           className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border transition-all ${
             isActive
               ? "border-purple-400 bg-purple-100 ring-2 ring-purple-300"
