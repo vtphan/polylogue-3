@@ -337,7 +337,12 @@ export function RecognizeMode({
       <div className={activityType === "presentation" ? "space-y-4" : "space-y-3"}>
         {items.map((item) => {
           const agent = agentMap[item.speaker];
-          const itemFlaws = flawsByItem.get(item.id) || [];
+          // Match by section_id/turn_id OR by section name (e.g., "introduction")
+          // because evaluation references may use either format
+          const itemFlaws = [
+            ...(flawsByItem.get(item.id) || []),
+            ...(item.label && item.label !== item.id ? (flawsByItem.get(item.label) || []) : []),
+          ].filter((flaw, i, arr) => arr.findIndex((f) => f.flaw_id === flaw.flaw_id) === i);
 
           return (
             <div

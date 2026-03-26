@@ -56,15 +56,39 @@ function stripMetadata(transcript: Record<string, unknown>, activityType: string
 }
 
 /**
- * Build the flaw index from evaluation data for annotation matching.
+ * Build a map from section/turn names to their IDs.
+ * Evaluation files reference sections by name ("introduction"), but the transcript
+ * uses section_id ("section_01"). This map lets us normalize.
  */
-function buildFlawIndex(evaluation: Record<string, unknown>): FlawIndexEntry[] {
+function buildLocationMap(transcript: Record<string, unknown>, activityType: string): Map<string, string> {
+  const map = new Map<string, string>();
+  const items = (activityType === "presentation" ? transcript.sections : transcript.turns) as Array<Record<string, string>> | undefined;
+  if (!items) return map;
+
+  for (const item of items) {
+    const id = activityType === "presentation" ? item.section_id : item.turn_id;
+    const name = activityType === "presentation" ? item.section : item.stage;
+    if (id && name && name !== id) {
+      map.set(name, id);
+    }
+  }
+  return map;
+}
+
+/**
+ * Build the flaw index from evaluation data for annotation matching.
+ * Normalizes location references to use section_id/turn_id (not section names).
+ */
+function buildFlawIndex(evaluation: Record<string, unknown>, locationMap: Map<string, string>): FlawIndexEntry[] {
   const flaws = (evaluation.flaws as Array<Record<string, unknown>>) || [];
   return flaws.map((flaw) => {
     const location = flaw.location as Record<string, unknown>;
+    const rawRefs = (location?.references as string[]) || [];
+    // Normalize: if a reference is a section name, map it to the section_id
+    const normalizedRefs = rawRefs.map((ref) => locationMap.get(ref) || ref);
     return {
       flaw_id: flaw.flaw_id as string,
-      locations: (location?.references as string[]) || [],
+      locations: normalizedRefs,
       flaw_type: flaw.flaw_type as string,
       severity: flaw.severity as string,
     };
@@ -131,9 +155,19 @@ async function ingestScenario(scenarioId: string): Promise<void> {
     return;
   }
 
-  // 5. Build flaw index
-  const flawIndex = buildFlawIndex(evaluation);
+  // 5. Build flaw index (with location normalization)
+  const locationMap = buildLocationMap(transcript, activityType);
+  const flawIndex = buildFlawIndex(evaluation, locationMap);
   console.log(`  Flaws indexed: ${flawIndex.length}`);
+
+  // 5b. Normalize evaluation location references to use section_id/turn_id
+  const evalFlaws = (evaluation.flaws as Array<Record<string, unknown>>) || [];
+  for (const flaw of evalFlaws) {
+    const loc = flaw.location as Record<string, unknown>;
+    if (loc?.references && Array.isArray(loc.references)) {
+      loc.references = (loc.references as string[]).map((ref) => locationMap.get(ref) || ref);
+    }
+  }
 
   // 6. Read scenario YAML
   const scenarioYaml = readYamlIfExists(path.join(SCENARIOS_DIR, `${scenarioId}.yaml`));
