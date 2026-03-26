@@ -8,6 +8,8 @@ import { LEARN_EXAMPLES } from "@/lib/learn-mode-content";
 interface LearnModeProps {
   groupId: string;
   sessionId: string;
+  /** Prefix for flawId when saving responses. Default "learn:". Use "self-learn:" for standalone page. */
+  flawIdPrefix?: string;
 }
 
 interface LearnState {
@@ -38,7 +40,7 @@ function saveState(storageKey: string, state: LearnState) {
   localStorage.setItem(storageKey, JSON.stringify(state));
 }
 
-export function LearnMode({ groupId, sessionId }: LearnModeProps) {
+export function LearnMode({ groupId, sessionId, flawIdPrefix = "learn:" }: LearnModeProps) {
   const storageKey = getStorageKey(sessionId, groupId);
   const savedState = loadState(storageKey);
 
@@ -67,7 +69,7 @@ export function LearnMode({ groupId, sessionId }: LearnModeProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           groupId,
-          flawId: `learn:${currentQuestion}`,
+          flawId: `${flawIdPrefix}${currentQuestion}`,
           typeAnswer: type,
           correctType: current.flawType,
         }),

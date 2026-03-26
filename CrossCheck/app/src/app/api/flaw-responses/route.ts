@@ -42,8 +42,8 @@ export async function POST(request: NextRequest) {
   let typeCorrect = false;
   let reasonCorrect: boolean | null = null;
 
-  if (flawId.startsWith("learn:")) {
-    // Learn mode: correctness is computed from the known correct type sent by the client.
+  if (flawId.startsWith("learn:") || flawId.startsWith("self-learn:")) {
+    // Learn mode (assigned or self-initiated): correctness computed from known correct type.
     // This is a vocabulary quiz, not a graded assessment — the static examples are public.
     if (correctType && VALID_FLAW_TYPES.includes(correctType)) {
       typeCorrect = typeAnswer === correctType;

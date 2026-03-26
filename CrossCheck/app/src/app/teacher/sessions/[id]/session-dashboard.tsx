@@ -629,6 +629,18 @@ export function SessionDashboard({ session: initialSession }: { session: Session
                   <div className="text-xs text-gray-400 mt-2">
                     {sectionsFound} sections touched
                   </div>
+
+                  {/* Learning progress indicator for non-Learn groups */}
+                  {(() => {
+                    const learnResps = group.flawResponses.filter((r) => r.flawId.startsWith("learn:") || r.flawId.startsWith("self-learn:"));
+                    if (learnResps.length === 0) return null;
+                    const learnUsers = new Set(learnResps.map((r) => r.userId));
+                    return (
+                      <div className="text-xs text-blue-500 mt-1">
+                        {learnUsers.size}/{group.members.length} learned
+                      </div>
+                    );
+                  })()}
                 </>
               )}
 
@@ -862,9 +874,20 @@ function GroupDetail({
   const mode = group.config?.difficulty_mode;
   const isResponseMode = mode === "learn" || mode === "recognize";
 
+  // Learn quiz stats (assigned + self-initiated) — shown for ALL groups
+  const allLearnResponses = group.flawResponses.filter((r) => r.flawId.startsWith("learn:") || r.flawId.startsWith("self-learn:"));
+  const learnByUser = new Map<string, { total: number; correct: number; selfInitiated: boolean }>();
+  for (const r of allLearnResponses) {
+    const entry = learnByUser.get(r.userId) || { total: 0, correct: 0, selfInitiated: false };
+    entry.total++;
+    if (r.typeCorrect) entry.correct++;
+    if (r.flawId.startsWith("self-learn:")) entry.selfInitiated = true;
+    learnByUser.set(r.userId, entry);
+  }
+
   // For Learn/Recognize modes: compute quiz stats from flawResponses
-  const learnResponses = group.flawResponses.filter((r) => r.flawId.startsWith("learn:"));
-  const recognizeResponses = group.flawResponses.filter((r) => !r.flawId.startsWith("learn:"));
+  const learnResponses = group.flawResponses.filter((r) => r.flawId.startsWith("learn:") || r.flawId.startsWith("self-learn:"));
+  const recognizeResponses = group.flawResponses.filter((r) => !r.flawId.startsWith("learn:") && !r.flawId.startsWith("self-learn:"));
   const responses = mode === "learn" ? learnResponses : mode === "recognize" ? recognizeResponses : [];
   const responsesByUser = new Map<string, { total: number; correct: number }>();
   for (const r of responses) {
@@ -984,6 +1007,33 @@ function GroupDetail({
               <AnnotationCard key={ann.id} ann={ann} group={group} />
             ))}
           </div>
+
+          {/* Learning progress — shown for annotation groups when students have Learn quiz data */}
+          {learnByUser.size > 0 && (
+            <div className="mt-4 pt-4 border-t border-gray-100">
+              <h4 className="text-xs font-medium text-gray-500 mb-2">Learning Progress</h4>
+              <div className="space-y-1.5">
+                {group.members.map((m) => {
+                  const stats = learnByUser.get(m.user.id);
+                  return (
+                    <div key={m.user.id} className="flex items-center justify-between text-xs py-1">
+                      <span className="text-gray-600">{m.user.displayName}</span>
+                      {stats ? (
+                        <span className="text-gray-500">
+                          {stats.correct}/{stats.total} correct
+                          {stats.selfInitiated && (
+                            <span className="ml-1 text-blue-500" title="Self-initiated practice">(self)</span>
+                          )}
+                        </span>
+                      ) : (
+                        <span className="text-gray-300">Not learned yet</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </>
       )}
     </div>
