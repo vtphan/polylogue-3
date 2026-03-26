@@ -210,21 +210,6 @@ function HighlightedContent({
           </span>
         </mark>
 
-        {/* Popup response card */}
-        {isActive && (
-          <div data-popup className="absolute left-0 top-full mt-2 z-30 w-96 bg-white border border-gray-200 rounded-lg shadow-xl p-4">
-            <div className="absolute -top-2 left-4 w-4 h-4 bg-white border-l border-t border-gray-200 rotate-45" />
-            <ResponseCard
-              flawId={flaw.flaw_id}
-              correctType={flaw.flaw_type as FlawType}
-              explanation={flaw.explanation}
-              groupId={groupId}
-              userId={userId}
-              onResponse={handleResponse}
-              showDefinitions
-            />
-          </div>
-        )}
       </span>
     );
 
@@ -277,30 +262,50 @@ function HighlightedContent({
           {isCross ? "Compare sections" : "Find the flaw"}
         </button>
 
-        {isActive && (
-          <div data-popup className="absolute left-0 top-full mt-2 z-30 w-96 bg-white border border-gray-200 rounded-lg shadow-xl p-4">
-            <div className="absolute -top-2 left-4 w-4 h-4 bg-white border-l border-t border-gray-200 rotate-45" />
-            {isCross && (
+      </span>
+    );
+  }
+
+  // Find the active flaw for the centered popup
+  const activeFlaw = activeFlawId
+    ? [...matched.map((m) => m.flaw), ...unmatched, ...filteredCrossSection].find((f) => f.flaw_id === activeFlawId)
+    : null;
+  const activeIsCross = activeFlaw ? isCrossSectionEvidence(activeFlaw.evidence) : false;
+
+  return (
+    <div>
+      {elements}
+
+      {/* Centered popup with backdrop */}
+      {activeFlaw && (
+        <>
+          <div className="fixed inset-0 z-40 bg-black/20" onClick={() => onHighlightClick("")} />
+          <div data-popup className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[min(24rem,90vw)] bg-white border border-gray-200 rounded-lg shadow-xl p-4">
+            <button
+              onClick={() => onHighlightClick("")}
+              className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 text-lg leading-none"
+            >
+              &times;
+            </button>
+            {activeIsCross && (
               <p className="text-xs text-purple-600 mb-2 italic leading-relaxed">
-                {flaw.evidence}
+                {activeFlaw.evidence}
               </p>
             )}
             <ResponseCard
-              flawId={flaw.flaw_id}
-              correctType={flaw.flaw_type as FlawType}
-              explanation={flaw.explanation}
+              flawId={activeFlaw.flaw_id}
+              correctType={activeFlaw.flaw_type as FlawType}
+              explanation={activeFlaw.explanation}
               groupId={groupId}
               userId={userId}
               onResponse={handleResponse}
               showDefinitions
             />
           </div>
-        )}
-      </span>
-    );
-  }
-
-  return <div>{elements}</div>;
+        </>
+      )}
+    </div>
+  );
 }
 
 /** Side-effect component: marks cross-section flaws as rendered in the tracking set. */
@@ -459,15 +464,7 @@ export function RecognizeMode({
         )}
       </div>
 
-      <div
-        className={activityType === "presentation" ? "space-y-4" : "space-y-3"}
-        onClick={(e) => {
-          // Close popup when clicking outside a highlight
-          if (!(e.target as HTMLElement).closest("mark") && !(e.target as HTMLElement).closest("[data-popup]")) {
-            setActiveFlawId(null);
-          }
-        }}
-      >
+      <div className={activityType === "presentation" ? "space-y-4" : "space-y-3"}>
         {(() => {
           // Track cross-section flaws already rendered so they don't repeat
           const renderedCrossSectionIds = new Set<string>();
