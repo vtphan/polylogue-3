@@ -158,12 +158,35 @@ function HighlightedContent({
 }) {
   const { matched, unmatched, crossSection } = useMemo(() => computeFlawPositions(content, flaws), [content, flaws]);
 
-  // Track which matched flaws have been answered (to show checkmarks on badges)
-  const [answeredFlaws, setAnsweredFlaws] = useState<Set<string>>(new Set());
+  // Track per-flaw state across popup open/close cycles
+  const [flawState, setFlawState] = useState<Map<string, {
+    attempts: number;
+    resolved: boolean;
+    eliminatedTypes: FlawType[];
+  }>>(new Map());
 
-  function handleResponse(flawId: string, typeAnswer: FlawType, typeCorrect: boolean) {
-    setAnsweredFlaws((prev) => new Set(prev).add(flawId));
-    onResponse(flawId, typeAnswer, typeCorrect);
+  const answeredFlaws = useMemo(() => {
+    const set = new Set<string>();
+    for (const [id, state] of flawState) {
+      if (state.resolved) set.add(id);
+    }
+    return set;
+  }, [flawState]);
+
+  function handleAttempt(flawId: string, typeAnswer: FlawType, isCorrect: boolean, isResolved: boolean) {
+    setFlawState((prev) => {
+      const next = new Map(prev);
+      const current = next.get(flawId) || { attempts: 0, resolved: false, eliminatedTypes: [] };
+      next.set(flawId, {
+        attempts: current.attempts + 1,
+        resolved: isResolved,
+        eliminatedTypes: isCorrect ? current.eliminatedTypes : [...current.eliminatedTypes, typeAnswer],
+      });
+      return next;
+    });
+    if (isResolved) {
+      onResponse(flawId, typeAnswer, isCorrect);
+    }
   }
 
   if (matched.length === 0 && unmatched.length === 0 && crossSection.length === 0) {
@@ -294,14 +317,18 @@ function HighlightedContent({
               </p>
             )}
             <ResponseCard
+              key={activeFlaw.flaw_id}
               flawId={activeFlaw.flaw_id}
               correctType={activeFlaw.flaw_type as FlawType}
               explanation={activeFlaw.explanation}
               groupId={groupId}
               userId={userId}
-              onResponse={handleResponse}
+              onAttempt={handleAttempt}
               showDefinitions
               maxAttempts={maxAttempts}
+              initialAttempts={flawState.get(activeFlaw.flaw_id)?.attempts ?? 0}
+              initialEliminatedTypes={flawState.get(activeFlaw.flaw_id)?.eliminatedTypes ?? []}
+              initialResolved={flawState.get(activeFlaw.flaw_id)?.resolved ?? false}
             />
           </div>
         </>

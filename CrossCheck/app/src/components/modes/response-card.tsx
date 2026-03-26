@@ -26,12 +26,17 @@ interface ResponseCardProps {
   groupId: string;
   userId: string;
   onResponse?: (flawId: string, typeAnswer: FlawType, typeCorrect: boolean) => void;
-  /** If true, renders as a standalone card (for unmatched/cross-section flaws). Otherwise renders minimal for popup use. */
+  /** Called on every attempt (not just final). For parent state tracking. */
+  onAttempt?: (flawId: string, typeAnswer: FlawType, isCorrect: boolean, isResolved: boolean) => void;
   standalone?: boolean;
-  /** If true, show flaw type definitions alongside each button (for Recognize mode scaffolding). */
   showDefinitions?: boolean;
-  /** Maximum number of attempts allowed (default: unlimited until correct). */
   maxAttempts?: number;
+  /** Pre-existing attempts (persisted by parent across popup open/close). */
+  initialAttempts?: number;
+  /** Pre-existing eliminated types (persisted by parent). */
+  initialEliminatedTypes?: FlawType[];
+  /** If true, card is already resolved (student used all attempts or got it right). */
+  initialResolved?: boolean;
 }
 
 export function ResponseCard({
@@ -41,15 +46,19 @@ export function ResponseCard({
   groupId,
   userId,
   onResponse,
+  onAttempt,
   standalone,
   showDefinitions,
   maxAttempts,
+  initialAttempts = 0,
+  initialEliminatedTypes = [],
+  initialResolved = false,
 }: ResponseCardProps) {
   const [selectedType, setSelectedType] = useState<FlawType | null>(null);
-  const [attempts, setAttempts] = useState(0);
-  const [resolved, setResolved] = useState(false); // true when correct or out of attempts
+  const [attempts, setAttempts] = useState(initialAttempts);
+  const [resolved, setResolved] = useState(initialResolved);
   const [showingFeedback, setShowingFeedback] = useState(false);
-  const [eliminatedTypes, setEliminatedTypes] = useState<Set<FlawType>>(new Set());
+  const [eliminatedTypes, setEliminatedTypes] = useState<Set<FlawType>>(new Set(initialEliminatedTypes));
 
   const flawTypes = Object.entries(FLAW_TYPES) as [FlawType, typeof FLAW_TYPES[FlawType]][];
   const effectiveMaxAttempts = maxAttempts ?? 2;
@@ -80,10 +89,12 @@ export function ResponseCard({
 
     if (isCorrect || newAttempts >= effectiveMaxAttempts) {
       setResolved(true);
+      onAttempt?.(flawId, type, isCorrect, true);
       onResponse?.(flawId, type, isCorrect);
     } else {
       // Wrong answer but still has attempts — after showing feedback briefly, allow retry
       setEliminatedTypes((prev) => new Set(prev).add(type));
+      onAttempt?.(flawId, type, isCorrect, false);
       setTimeout(() => {
         setSelectedType(null);
         setShowingFeedback(false);
