@@ -11,6 +11,14 @@ const BUTTON_COLORS: Record<FlawType, { base: string; hover: string }> = {
   coherence:    { base: "border-purple-200 bg-purple-50 text-purple-700", hover: "hover:border-purple-400 hover:bg-purple-100" },
 };
 
+// Concise definitions for scaffolding in Recognize mode
+const FLAW_DEFINITIONS: Record<FlawType, string> = {
+  reasoning: "The logic doesn't hold up — bad arguments or jumping to conclusions.",
+  epistemic: "Treating guesses as facts or being way too confident.",
+  completeness: "Something important is missing — key people, tradeoffs, or counterpoints.",
+  coherence: "Team members contradict each other or the conclusion doesn't match.",
+};
+
 interface ResponseCardProps {
   flawId: string;
   correctType: FlawType;
@@ -20,6 +28,8 @@ interface ResponseCardProps {
   onResponse?: (flawId: string, typeAnswer: FlawType, typeCorrect: boolean) => void;
   /** If true, renders as a standalone card (for unmatched/cross-section flaws). Otherwise renders minimal for popup use. */
   standalone?: boolean;
+  /** If true, show flaw type definitions alongside each button (for Recognize mode scaffolding). */
+  showDefinitions?: boolean;
 }
 
 export function ResponseCard({
@@ -30,6 +40,7 @@ export function ResponseCard({
   userId,
   onResponse,
   standalone,
+  showDefinitions,
 }: ResponseCardProps) {
   const [selectedType, setSelectedType] = useState<FlawType | null>(null);
   const [submitted, setSubmitted] = useState(false);
@@ -68,34 +79,68 @@ export function ResponseCard({
   return (
     <div className={wrapperClass}>
       <p className="text-xs font-medium text-gray-500 mb-2">What type of problem is this?</p>
-      <div className="flex flex-wrap gap-2 mb-3">
-        {flawTypes.map(([type, info]) => {
-          let style: string;
-          if (submitted) {
-            if (type === correctType) {
-              style = "border-green-500 bg-green-50 text-green-800 ring-2 ring-green-300";
-            } else if (type === selectedType) {
-              style = "border-red-400 bg-red-50 text-red-700";
+      {showDefinitions ? (
+        /* Scaffolded layout: each flaw type as a labeled card with definition */
+        <div className="space-y-1.5 mb-3">
+          {flawTypes.map(([type, info]) => {
+            let style: string;
+            if (submitted) {
+              if (type === correctType) {
+                style = "border-green-500 bg-green-50 ring-2 ring-green-300";
+              } else if (type === selectedType) {
+                style = "border-red-400 bg-red-50";
+              } else {
+                style = "border-gray-200 bg-gray-50 opacity-50";
+              }
             } else {
-              style = "border-gray-200 text-gray-300";
+              const colors = BUTTON_COLORS[type];
+              style = `${colors.base} ${colors.hover}`;
             }
-          } else {
-            const colors = BUTTON_COLORS[type];
-            style = `${colors.base} ${colors.hover}`;
-          }
 
-          return (
-            <button
-              key={type}
-              onClick={() => handleSelect(type)}
-              disabled={submitted}
-              className={`text-xs font-medium px-3 py-1.5 rounded-full border transition-all ${style}`}
-            >
-              {info.label}
-            </button>
-          );
-        })}
-      </div>
+            return (
+              <button
+                key={type}
+                onClick={() => handleSelect(type)}
+                disabled={submitted}
+                className={`w-full text-left text-xs p-2 rounded-lg border transition-all ${style}`}
+              >
+                <span className="font-bold">{info.label}</span>
+                <span className="text-[11px] ml-1 opacity-75">{FLAW_DEFINITIONS[type]}</span>
+              </button>
+            );
+          })}
+        </div>
+      ) : (
+        /* Compact layout: color-coded pills */
+        <div className="flex flex-wrap gap-2 mb-3">
+          {flawTypes.map(([type, info]) => {
+            let style: string;
+            if (submitted) {
+              if (type === correctType) {
+                style = "border-green-500 bg-green-50 text-green-800 ring-2 ring-green-300";
+              } else if (type === selectedType) {
+                style = "border-red-400 bg-red-50 text-red-700";
+              } else {
+                style = "border-gray-200 text-gray-300";
+              }
+            } else {
+              const colors = BUTTON_COLORS[type];
+              style = `${colors.base} ${colors.hover}`;
+            }
+
+            return (
+              <button
+                key={type}
+                onClick={() => handleSelect(type)}
+                disabled={submitted}
+                className={`text-xs font-medium px-3 py-1.5 rounded-full border transition-all ${style}`}
+              >
+                {info.label}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {submitted && (
         <div

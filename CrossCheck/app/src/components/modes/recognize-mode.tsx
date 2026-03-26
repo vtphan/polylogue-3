@@ -212,7 +212,7 @@ function HighlightedContent({
 
         {/* Popup response card */}
         {isActive && (
-          <div data-popup className="absolute left-0 top-full mt-2 z-30 w-80 bg-white border border-gray-200 rounded-lg shadow-xl p-4">
+          <div data-popup className="absolute left-0 top-full mt-2 z-30 w-96 bg-white border border-gray-200 rounded-lg shadow-xl p-4">
             <div className="absolute -top-2 left-4 w-4 h-4 bg-white border-l border-t border-gray-200 rotate-45" />
             <ResponseCard
               flawId={flaw.flaw_id}
@@ -221,6 +221,7 @@ function HighlightedContent({
               groupId={groupId}
               userId={userId}
               onResponse={handleResponse}
+              showDefinitions
             />
           </div>
         )}
@@ -277,7 +278,7 @@ function HighlightedContent({
         </button>
 
         {isActive && (
-          <div data-popup className="absolute left-0 top-full mt-2 z-30 w-80 bg-white border border-gray-200 rounded-lg shadow-xl p-4">
+          <div data-popup className="absolute left-0 top-full mt-2 z-30 w-96 bg-white border border-gray-200 rounded-lg shadow-xl p-4">
             <div className="absolute -top-2 left-4 w-4 h-4 bg-white border-l border-t border-gray-200 rotate-45" />
             {isCross && (
               <p className="text-xs text-purple-600 mb-2 italic leading-relaxed">
@@ -291,6 +292,7 @@ function HighlightedContent({
               groupId={groupId}
               userId={userId}
               onResponse={handleResponse}
+              showDefinitions
             />
           </div>
         )}
