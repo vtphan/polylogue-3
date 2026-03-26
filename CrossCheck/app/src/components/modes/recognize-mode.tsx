@@ -37,41 +37,61 @@ function normalize(s: string) {
   return s.replace(/\s+/g, " ").trim().toLowerCase();
 }
 
+/** Strip enclosing quotes from evidence text. Evaluation YAML often wraps evidence in quotes. */
+function stripQuotes(s: string): string {
+  const trimmed = s.trim();
+  if ((trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+      (trimmed.startsWith('\u201c') && trimmed.endsWith('\u201d'))) {
+    return trimmed.slice(1, -1).trim();
+  }
+  return trimmed;
+}
+
+/** Check if evidence is a cross-section composite (e.g., 'Introduction: "..." Findings: "..."'). */
+function isCrossSectionEvidence(evidence: string): boolean {
+  return /^[A-Z][a-z]+:\s*[""\u201c]/.test(evidence.trim());
+}
+
 /** Try to find evidence in content. Returns { startIdx, matchLen } or null. */
 function findEvidence(content: string, evidence: string): { startIdx: number; matchLen: number } | null {
   const lowerContent = content.toLowerCase();
-  const trimmed = evidence.trim();
 
-  // Exact match
-  const exact = lowerContent.indexOf(trimmed.toLowerCase());
-  if (exact !== -1) return { startIdx: exact, matchLen: trimmed.length };
+  // Strip enclosing quotes (evaluation YAML often wraps evidence in quotes)
+  const stripped = stripQuotes(evidence);
 
-  // Normalized match (collapse whitespace)
-  const normContent = normalize(content);
-  const normEvidence = normalize(trimmed);
-  const normIdx = normContent.indexOf(normEvidence);
-  if (normIdx !== -1) {
-    // Map normalized index back to original content approximately
-    // Walk original content to find the position that maps to normIdx
-    let origIdx = 0;
-    let normPos = 0;
-    while (normPos < normIdx && origIdx < content.length) {
-      if (/\s/.test(content[origIdx])) {
-        while (origIdx < content.length && /\s/.test(content[origIdx])) origIdx++;
-        normPos++; // normalized collapses to single space
-      } else {
-        origIdx++;
-        normPos++;
+  // Try both the original trimmed and the stripped version
+  for (const candidate of [stripped, evidence.trim()]) {
+    if (!candidate) continue;
+
+    // Exact match
+    const exact = lowerContent.indexOf(candidate.toLowerCase());
+    if (exact !== -1) return { startIdx: exact, matchLen: candidate.length };
+
+    // Normalized match (collapse whitespace)
+    const normContent = normalize(content);
+    const normEvidence = normalize(candidate);
+    const normIdx = normContent.indexOf(normEvidence);
+    if (normIdx !== -1) {
+      let origIdx = 0;
+      let normPos = 0;
+      while (normPos < normIdx && origIdx < content.length) {
+        if (/\s/.test(content[origIdx])) {
+          while (origIdx < content.length && /\s/.test(content[origIdx])) origIdx++;
+          normPos++;
+        } else {
+          origIdx++;
+          normPos++;
+        }
       }
+      return { startIdx: origIdx, matchLen: candidate.length };
     }
-    return { startIdx: origIdx, matchLen: trimmed.length };
-  }
 
-  // Prefix match (first 50 chars)
-  const prefix = trimmed.slice(0, 50).toLowerCase();
-  if (prefix.length >= 20) {
-    const prefixIdx = lowerContent.indexOf(prefix);
-    if (prefixIdx !== -1) return { startIdx: prefixIdx, matchLen: trimmed.length };
+    // Prefix match (first 50 chars)
+    const prefix = candidate.slice(0, 50).toLowerCase();
+    if (prefix.length >= 20) {
+      const prefixIdx = lowerContent.indexOf(prefix);
+      if (prefixIdx !== -1) return { startIdx: prefixIdx, matchLen: candidate.length };
+    }
   }
 
   return null;
@@ -83,12 +103,20 @@ interface FlawPosition {
   endIdx: number;
 }
 
-/** Pre-compute flaw positions in content with fuzzy fallback. Returns matched and unmatched flaws. */
+/** Pre-compute flaw positions in content with fuzzy fallback. Returns matched, unmatched, and cross-section flaws. */
 function computeFlawPositions(content: string, flaws: EvaluationFlaw[]) {
   const matched: FlawPosition[] = [];
   const unmatched: EvaluationFlaw[] = [];
+  const crossSection: EvaluationFlaw[] = [];
 
   for (const flaw of flaws) {
+    // Cross-section flaws (coherence flaws spanning multiple sections) can't be
+    // highlighted inline — their evidence quotes from multiple sections.
+    if (isCrossSectionEvidence(flaw.evidence)) {
+      crossSection.push(flaw);
+      continue;
+    }
+
     const result = findEvidence(content, flaw.evidence);
     if (result) {
       matched.push({
@@ -102,7 +130,7 @@ function computeFlawPositions(content: string, flaws: EvaluationFlaw[]) {
   }
 
   matched.sort((a, b) => a.startIdx - b.startIdx);
-  return { matched, unmatched };
+  return { matched, unmatched, crossSection };
 }
 
 /** Render content with highlighted evidence and response cards inline. */
@@ -112,16 +140,19 @@ function HighlightedContent({
   groupId,
   userId,
   onResponse,
+  renderedCrossSectionIds,
 }: {
   content: string;
   flaws: EvaluationFlaw[];
   groupId: string;
   userId: string;
   onResponse: (flawId: string, typeAnswer: FlawType, typeCorrect: boolean) => void;
+  /** Set of cross-section flaw IDs already rendered in a previous section — skip these. */
+  renderedCrossSectionIds?: Set<string>;
 }) {
-  const { matched, unmatched } = useMemo(() => computeFlawPositions(content, flaws), [content, flaws]);
+  const { matched, unmatched, crossSection } = useMemo(() => computeFlawPositions(content, flaws), [content, flaws]);
 
-  if (matched.length === 0 && unmatched.length === 0) {
+  if (matched.length === 0 && unmatched.length === 0 && crossSection.length === 0) {
     return <p className="text-sm text-gray-800 leading-relaxed">{content}</p>;
   }
 
@@ -169,7 +200,7 @@ function HighlightedContent({
     );
   }
 
-  // Append unmatched flaws as ResponseCards at the end (no highlight, but student still gets the question)
+  // Append unmatched flaws (evidence didn't match this section's text)
   for (const flaw of unmatched) {
     elements.push(
       <div key={`unmatched-${flaw.flaw_id}`} className="mt-3 bg-gray-50 border border-gray-200 rounded-lg p-3">
@@ -186,7 +217,42 @@ function HighlightedContent({
     );
   }
 
+  // Cross-section flaws — only show if not already rendered in a previous section
+  const filteredCrossSection = crossSection.filter(
+    (f) => !renderedCrossSectionIds || !renderedCrossSectionIds.has(f.flaw_id)
+  );
+  for (const flaw of filteredCrossSection) {
+    elements.push(
+      <div key={`cross-${flaw.flaw_id}`} className="mt-3 bg-purple-50 border border-purple-200 rounded-lg p-3">
+        <p className="text-xs text-purple-600 mb-1 italic">
+          This flaw spans multiple sections. Compare what different speakers say:
+        </p>
+        <p className="text-xs text-gray-600 mb-2 leading-relaxed">
+          {flaw.evidence}
+        </p>
+        <ResponseCard
+          flawId={flaw.flaw_id}
+          correctType={flaw.flaw_type as FlawType}
+          explanation={flaw.explanation}
+          groupId={groupId}
+          userId={userId}
+          onResponse={onResponse}
+        />
+      </div>
+    );
+  }
+
   return <div>{elements}</div>;
+}
+
+/** Side-effect component: marks cross-section flaws as rendered in the tracking set. */
+function CrossSectionTracker({ flaws, tracker }: { flaws: EvaluationFlaw[]; tracker: Set<string> }) {
+  for (const f of flaws) {
+    if (isCrossSectionEvidence(f.evidence)) {
+      tracker.add(f.flaw_id);
+    }
+  }
+  return null;
 }
 
 export function RecognizeMode({
@@ -335,7 +401,10 @@ export function RecognizeMode({
       </div>
 
       <div className={activityType === "presentation" ? "space-y-4" : "space-y-3"}>
-        {items.map((item) => {
+        {(() => {
+          // Track cross-section flaws already rendered so they don't repeat
+          const renderedCrossSectionIds = new Set<string>();
+          return items.map((item) => {
           const agent = agentMap[item.speaker];
           // Match by section_id/turn_id OR by section name (e.g., "introduction")
           // because evaluation references may use either format
@@ -372,10 +441,14 @@ export function RecognizeMode({
                 groupId={groupId}
                 userId={userId}
                 onResponse={handleResponse}
+                renderedCrossSectionIds={renderedCrossSectionIds}
               />
+              {/* Side effect: mark cross-section flaws as rendered so they don't repeat */}
+              <CrossSectionTracker flaws={itemFlaws} tracker={renderedCrossSectionIds} />
             </div>
           );
-        })}
+        });
+        })()}
       </div>
     </div>
   );
