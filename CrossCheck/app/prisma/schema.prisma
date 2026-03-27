@@ -20,12 +20,14 @@ enum ActivityType {
 }
 
 enum SessionStatus {
-  setup
   active
+  complete
+}
+
+enum GroupPhase {
   individual
   group
   reviewing
-  closed
 }
 
 enum FlawType {
@@ -60,6 +62,7 @@ model User {
   classStudents  ClassStudent[]
   sessions       Session[]
   groupMembers   GroupMember[]
+  groupReady     GroupReady[]
   annotations    Annotation[]
   flawResponses  FlawResponse[]
   scaffolds      Scaffold[]
@@ -122,11 +125,11 @@ model Session {
   teacherId  String        @map("teacher_id") @db.Uuid
   classId    String?       @map("class_id") @db.Uuid
   activityId String        @map("activity_id") @db.Uuid
-  status     SessionStatus @default(setup)
+  status     SessionStatus @default(active)
   config     Json          @default("{}") // {difficulty_mode, phase_timer, etc.}
   notes      String?       // Teacher notes about this session
   createdAt  DateTime      @default(now()) @map("created_at")
-  closedAt   DateTime?     @map("closed_at")
+  completedAt DateTime?    @map("completed_at")
 
   teacher    User          @relation(fields: [teacherId], references: [id])
   class      Class?        @relation(fields: [classId], references: [id])
@@ -141,18 +144,31 @@ model Session {
 // --- Groups ---
 
 model Group {
-  id        String   @id @default(uuid()) @db.Uuid
-  sessionId String   @map("session_id") @db.Uuid
+  id        String     @id @default(uuid()) @db.Uuid
+  sessionId String     @map("session_id") @db.Uuid
   name      String
-  config    Json     @default("{}") // {difficulty_mode: "learn" | "recognize" | "locate" | "classify" | "explain", ...per-mode knob}
+  phase     GroupPhase @default(individual)
+  config    Json       @default("{}") // {difficulty_mode: "learn" | "recognize" | "locate" | "classify" | "explain", ...per-mode knob}
 
   session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   members   GroupMember[]
+  readySignals GroupReady[]
   annotations Annotation[]
   flawResponses FlawResponse[]
   scaffolds Scaffold[]
 
   @@map("groups")
+}
+
+model GroupReady {
+  groupId String @map("group_id") @db.Uuid
+  userId  String @map("user_id") @db.Uuid
+
+  group   Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user    User   @relation(fields: [userId], references: [id])
+
+  @@id([groupId, userId])
+  @@map("group_ready")
 }
 
 model GroupMember {

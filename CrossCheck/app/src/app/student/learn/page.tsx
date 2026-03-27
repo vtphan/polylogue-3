@@ -14,7 +14,7 @@ export default async function StandaloneLearnPage() {
     where: {
       members: { some: { userId: session.user.id } },
       name: { not: { startsWith: "solo_" } },
-      session: { status: { in: ["individual", "group", "reviewing"] } },
+      session: { status: "active" },
     },
     select: { id: true, sessionId: true },
     orderBy: { session: { createdAt: "desc" } },

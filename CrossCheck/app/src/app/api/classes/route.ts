@@ -13,7 +13,7 @@ export async function GET() {
     include: {
       _count: { select: { students: true, sessions: true } },
       sessions: {
-        where: { status: { not: "closed" } },
+        where: { status: "active" },
         select: { id: true, status: true },
       },
     },

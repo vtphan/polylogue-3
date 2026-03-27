@@ -65,10 +65,12 @@ export default async function StudentSessionPage({ params }: PageProps) {
   const group = classSession.groups[0];
   const activity = classSession.activity;
   const agents = activity.agents as Agent[];
-  const isReviewing = ["reviewing", "closed"].includes(classSession.status);
+  // Phase is now per-group — check group.phase for reviewing, or session.status for complete
+  const groupPhase = (group as unknown as { phase: string }).phase;
+  const isReviewing = groupPhase === "reviewing" || classSession.status === "complete";
 
   // Filter annotations: in individual phase, show only own; in group/reviewing, show all
-  const showAllAnnotations = ["group", "reviewing", "closed"].includes(classSession.status);
+  const showAllAnnotations = groupPhase === "group" || groupPhase === "reviewing" || classSession.status === "complete";
 
   const annotations: Annotation[] = group.annotations
     .filter((a) => showAllAnnotations || a.userId === session.user.id)
@@ -202,7 +204,7 @@ export default async function StudentSessionPage({ params }: PageProps) {
           transcript={activity.transcriptContent as { sections?: PresentationTranscript["sections"]; turns?: DiscussionTranscript["turns"] }}
           agents={agents}
           flaws={evaluationData.flaws}
-          sessionPhase={classSession.status}
+          sessionPhase={groupPhase}
           pendingScaffolds={pendingScaffolds}
           maxAttempts={maxAttempts}
           responseFormat={(groupConfig as Record<string, unknown>)?.response_format as "ab" | "multiple_choice" | undefined}
@@ -221,7 +223,7 @@ export default async function StudentSessionPage({ params }: PageProps) {
           pendingScaffolds={pendingScaffolds}
           readOnly={false}
           hintScope={(groupConfig as Record<string, unknown>)?.hint_scope as "sentence" | "section" | undefined}
-          sessionPhase={classSession.status}
+          sessionPhase={groupPhase}
           existingNoFlawIds={
             (group.flawResponses as { flawId: string; typeAnswer: string; typeCorrect: boolean }[])
               .filter((r) => r.flawId.startsWith("fp_") && r.typeAnswer === "no_flaw")
@@ -243,7 +245,7 @@ export default async function StudentSessionPage({ params }: PageProps) {
           categorization={(groupConfig as Record<string, unknown>)?.categorization as "detect_only" | "assisted" | "full" | undefined}
           explanationFormat={(groupConfig as Record<string, unknown>)?.explanation_format as "guided" | "free_text" | undefined}
           flawIndex={flawIndex}
-          sessionPhase={classSession.status}
+          sessionPhase={groupPhase}
           userId={session.user.id}
         />
       )}

@@ -56,7 +56,11 @@ export async function GET(
     }
 
     // During individual phase, students only see their own annotations
-    if (classSession.status === "individual") {
+    // TODO: phase is now per-group — need to check group.phase once groups include phase in the query
+    const studentGroup = classSession.groups.find((g) =>
+      g.members.some((m) => m.user.id === session.user.id)
+    );
+    if (studentGroup && (studentGroup as unknown as { phase: string }).phase === "individual") {
       return NextResponse.json({
         ...classSession,
         groups: classSession.groups.map((g) => ({
@@ -106,8 +110,8 @@ export async function PATCH(
     if (!VALID_DIFFICULTY_MODES.includes(difficultyMode as typeof VALID_DIFFICULTY_MODES[number])) {
       return NextResponse.json({ error: `Invalid mode: ${difficultyMode}` }, { status: 400 });
     }
-    if (["setup", "closed"].includes(classSession.status)) {
-      return NextResponse.json({ error: "Cannot change mode in setup or closed phase" }, { status: 400 });
+    if (classSession.status === "complete") {
+      return NextResponse.json({ error: "Cannot change mode in a completed session" }, { status: 400 });
     }
     if (modeConfig && SESSION_MODES.includes(difficultyMode as SessionMode)) {
       const knob = MODE_KNOB_INFO[difficultyMode as SessionMode];
@@ -164,17 +168,11 @@ export async function PATCH(
     return NextResponse.json({ error: "status or notes required" }, { status: 400 });
   }
 
-  const validTransitions: Record<string, string[]> = {
-    setup: ["individual"],
-    individual: ["group"],
-    group: ["reviewing"],
-    reviewing: ["group", "closed"], // allow reopening to group phase
-  };
-
-  const allowed = validTransitions[classSession.status] || [];
-  if (!allowed.includes(status)) {
+  // Session-level: only accept { status: "complete" } to complete an active session.
+  // Phase advancement (individual → group → reviewing) is now per-group (see group endpoint).
+  if (status !== "complete" || classSession.status !== "active") {
     return NextResponse.json(
-      { error: `Cannot transition from ${classSession.status} to ${status}` },
+      { error: `Invalid session status transition: ${classSession.status} → ${status}. Only active → complete is allowed.` },
       { status: 400 }
     );
   }
@@ -183,7 +181,7 @@ export async function PATCH(
     where: { id },
     data: {
       status: status as never,
-      ...(status === "closed" ? { closedAt: new Date() } : {}),
+      completedAt: new Date(),
     },
   });
 
@@ -229,9 +227,9 @@ export async function DELETE(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  if (!["setup", "closed"].includes(classSession.status)) {
+  if (classSession.status !== "complete" && classSession.status !== "active") {
     return NextResponse.json(
-      { error: "Can only delete sessions in setup or closed status" },
+      { error: "Can only delete sessions in active or complete status" },
       { status: 400 }
     );
   }

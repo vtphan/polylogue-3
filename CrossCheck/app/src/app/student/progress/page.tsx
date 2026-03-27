@@ -14,7 +14,7 @@ export default async function StudentProgressPage() {
   // Find all sessions this student participated in (non-solo, reviewing or closed)
   const sessions = await prisma.session.findMany({
     where: {
-      status: { in: ["reviewing", "closed"] },
+      status: "complete",
       groups: {
         some: {
           members: { some: { userId: session.user.id } },

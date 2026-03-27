@@ -36,8 +36,11 @@ export async function GET(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  // Only available in reviewing or closed sessions
-  if (!["reviewing", "closed"].includes(classSession.status)) {
+  // Only available if session is complete or any group is in reviewing phase
+  const hasReviewingGroup = classSession.groups.some(
+    (g) => (g as unknown as { phase: string }).phase === "reviewing"
+  );
+  if (classSession.status !== "complete" && !hasReviewingGroup) {
     return NextResponse.json(
       { error: "Feedback not available until evaluation is released" },
       { status: 400 }

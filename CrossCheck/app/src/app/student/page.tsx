@@ -5,9 +5,7 @@ import type { Agent } from "@/lib/types";
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   active: { label: "Active", color: "bg-green-100 text-green-700" },
-  individual: { label: "Individual Phase", color: "bg-blue-100 text-blue-700" },
-  group: { label: "Group Phase", color: "bg-yellow-100 text-yellow-700" },
-  reviewing: { label: "Reviewing", color: "bg-purple-100 text-purple-700" },
+  complete: { label: "Complete", color: "bg-gray-100 text-gray-700" },
 };
 
 export default async function StudentHome() {
@@ -17,7 +15,7 @@ export default async function StudentHome() {
   // Find sessions where this student is assigned (not solo sessions)
   const assignedSessions = await prisma.session.findMany({
     where: {
-      status: { not: "closed" },
+      status: "active",
       groups: {
         some: {
           members: { some: { userId: session.user.id } },

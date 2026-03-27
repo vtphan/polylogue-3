@@ -119,7 +119,6 @@ export async function POST(request: NextRequest) {
       teacherId: session.user.id,
       classId,
       activityId,
-      status: "setup",
       config: config || {},
       groups: {
         create: groups.map((g) => ({

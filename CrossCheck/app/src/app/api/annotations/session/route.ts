@@ -31,13 +31,19 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Not a member of this group" }, { status: 403 });
   }
 
-  // Verify session is in an annotatable state
+  // Verify session is active and group is in an annotatable phase
   const classSession = await prisma.session.findUnique({
     where: { id: sessionId },
   });
 
-  if (!classSession || ["reviewing", "closed", "setup"].includes(classSession.status)) {
+  if (!classSession || classSession.status !== "active") {
     return NextResponse.json({ error: "Session not accepting annotations" }, { status: 400 });
+  }
+
+  // Check group phase — reviewing means annotations are locked
+  const groupRecord = await prisma.group.findUnique({ where: { id: groupId } });
+  if (!groupRecord || (groupRecord as unknown as { phase: string }).phase === "reviewing") {
+    return NextResponse.json({ error: "Group is in reviewing phase — annotations locked" }, { status: 400 });
   }
 
   const annotation = await prisma.annotation.create({

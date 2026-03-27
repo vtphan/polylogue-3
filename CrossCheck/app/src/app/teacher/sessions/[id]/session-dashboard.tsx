@@ -72,19 +72,13 @@ interface GroupData {
   }[];
 }
 
-const STATUS_FLOW = ["setup", "individual", "group", "reviewing", "closed"];
+const STATUS_FLOW = ["active", "complete"];
 const STATUS_LABELS: Record<string, string> = {
-  setup: "Setup",
-  individual: "Individual",
-  group: "Group",
-  reviewing: "Reviewing",
-  closed: "Closed",
+  active: "Active",
+  complete: "Complete",
 };
 const NEXT_BUTTON_LABELS: Record<string, string> = {
-  individual: "Start Session",
-  group: "Group Phase",
-  reviewing: "Release Evaluation",
-  closed: "Close Session",
+  complete: "Complete Session",
 };
 
 interface FeedItem {
@@ -359,7 +353,8 @@ export function SessionDashboard({ session: initialSession }: { session: Session
 
   const flawIndex = (session.activity.flawIndex || []) as { flaw_id: string; locations: string[]; flaw_type: string; severity: string }[];
   const totalFlaws = flawIndex.length;
-  const isReviewing = ["reviewing", "closed"].includes(session.status);
+  // TODO: isReviewing is now per-group (group.phase === "reviewing"). For now, check if any group is reviewing or session is complete.
+  const isReviewing = session.status === "complete" || session.groups.some((g) => (g as unknown as { phase: string }).phase === "reviewing");
 
   // Compute match results per group (for reviewing mode)
   const groupMatchResults = useMemo(() => {
@@ -401,35 +396,15 @@ export function SessionDashboard({ session: initialSession }: { session: Session
         {/* Phase control */}
         <div className="flex items-center gap-2">
           {isReviewing && (
-            <>
-              <a
-                href={`/teacher/sessions/${session.id}/class-view`}
-                className="bg-purple-600 text-white text-sm font-medium px-4 py-2 rounded-md hover:bg-purple-700 transition-colors"
-              >
-                Class View
-              </a>
-              <button
-                onClick={async () => {
-                  const confirmed = window.confirm(
-                    "Students have already seen the evaluation results. Reopening will hide the feedback and let them annotate again. Continue?"
-                  );
-                  if (!confirmed) return;
-                  const res = await fetch(`/api/sessions/${session.id}`, {
-                    method: "PATCH",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ status: "group" }),
-                  });
-                  if (res.ok) {
-                    setSession((prev) => ({ ...prev, status: "group" }));
-                  }
-                }}
-                className="border border-gray-300 text-gray-700 text-sm font-medium px-4 py-2 rounded-md hover:bg-gray-50 transition-colors"
-              >
-                Reopen
-              </button>
-            </>
+            <a
+              href={`/teacher/sessions/${session.id}/class-view`}
+              className="bg-purple-600 text-white text-sm font-medium px-4 py-2 rounded-md hover:bg-purple-700 transition-colors"
+            >
+              Class View
+            </a>
           )}
-          {nextStatus && session.status !== "closed" && (
+          {/* TODO: Reopen is now per-group (group phase endpoint). Will be added to group detail panel. */}
+          {nextStatus && session.status !== "complete" && (
             <button
               onClick={advancePhase}
               className="bg-blue-600 text-white text-sm font-medium px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
@@ -534,12 +509,12 @@ export function SessionDashboard({ session: initialSession }: { session: Session
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            if (!["setup", "closed"].includes(session.status)) {
+                            if (session.status !== "complete") {
                               setModePickerGroupId(modePickerGroupId === group.id ? null : group.id);
                             }
                           }}
                           className={`text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded ${
-                            !["setup", "closed"].includes(session.status) ? "hover:bg-blue-50 hover:text-blue-600 cursor-pointer" : ""
+                            session.status !== "complete" ? "hover:bg-blue-50 hover:text-blue-600 cursor-pointer" : ""
                           }`}
                         >
                           {DIFFICULTY_MODE_INFO[mode as DifficultyMode]?.label || mode}
@@ -688,7 +663,7 @@ export function SessionDashboard({ session: initialSession }: { session: Session
       </div>
 
       {/* Delete session */}
-      {["setup", "closed"].includes(session.status) && (
+      {session.status === "complete" && (
         <div className="mt-6 pt-4 border-t border-gray-200">
           <button
             onClick={async () => {
@@ -795,7 +770,7 @@ function GroupDetail({
       </div>
 
       {/* Scaffold form — always visible for active sessions */}
-      {!["setup", "closed"].includes(sessionStatus) && (
+      {sessionStatus !== "complete" && (
         <div className="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-3">
           <div className="flex flex-wrap gap-1 mb-2">
             {SCAFFOLD_TEMPLATES.map((t, i) => (

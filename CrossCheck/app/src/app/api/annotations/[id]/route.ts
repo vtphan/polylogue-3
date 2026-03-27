@@ -32,11 +32,12 @@ export async function DELETE(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  // Block deletion if session is in reviewing or closed state
+  // Block deletion if group is in reviewing phase or session is complete
+  const groupPhase = (annotation.group as unknown as { phase: string }).phase;
   const sessionStatus = annotation.group.session.status;
-  if (["reviewing", "closed"].includes(sessionStatus)) {
+  if (groupPhase === "reviewing" || sessionStatus === "complete") {
     return NextResponse.json(
-      { error: "Cannot delete annotations in reviewing/closed sessions" },
+      { error: "Cannot delete annotations in reviewing/complete state" },
       { status: 400 }
     );
   }
@@ -86,8 +87,9 @@ export async function PATCH(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  // Must be in group phase
-  if (annotation.group.session.status !== "group") {
+  // Must be in group phase (now checked on group.phase, not session.status)
+  const annotationGroupPhase = (annotation.group as unknown as { phase: string }).phase;
+  if (annotationGroupPhase !== "group") {
     return NextResponse.json({ error: "Consensus only available in group phase" }, { status: 400 });
   }
 
