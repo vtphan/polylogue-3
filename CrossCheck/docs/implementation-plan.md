@@ -75,9 +75,8 @@ Tables to define:
 | Column | Type | Notes |
 |--------|------|-------|
 | id | UUID | Primary key, auto-generated |
-| username | String | Unique, used for login |
-| password_hash | String | bcrypt hash |
-| display_name | String | Shown in UI (real name for teacher view, can be alias) |
+| display_name | String | Unique per role, used for login (e.g., "Ms. Johnson" for teachers, "Maya" for students) |
+| password_hash | String? | bcrypt hash. Nullable — students log in by name only, teachers/researchers require password |
 | role | Enum (student, teacher, researcher) | |
 | research_consent | Boolean | Default false, set by teacher |
 | created_by | UUID? | FK to users (teacher who created this student) |
@@ -103,6 +102,7 @@ Tables to define:
 |--------|------|-------|
 | id | UUID | Primary key |
 | teacher_id | UUID | FK to users |
+| class_id | UUID | FK to classes |
 | activity_id | UUID | FK to activities |
 | status | Enum (setup, active, individual, group, reviewing, closed) | Tracks session phase |
 | config | JSONB | {difficulty_mode, phase_timer, etc.} |
@@ -225,14 +225,15 @@ Route protection:
 - `/api/*` → role checked per endpoint
 - `/auth/*` → public
 
-**Seed script:** Create an initial teacher account for development:
-```
-username: teacher1
-password: (set via env var or CLI prompt)
-role: teacher
-```
+**Database reset:** `npm run db:reset` — single command that drops/recreates the database, runs migrations, and seeds test data.
 
-Teachers create student accounts through the app. For Phase 0, a seed script creates test accounts.
+**Seed data:** Configured via `seed.yaml`. Test accounts:
+- Ms. Johnson / teacher123 (teacher)
+- Mr. Davis / teacher123 (teacher)
+- Dr. Chen / researcher123 (researcher)
+- No pre-seeded students — teachers create students within classes.
+
+All users log in by display name. Teachers and researchers require a password; students do not.
 
 ### 0f. Role-Based Route Shells
 
@@ -351,7 +352,7 @@ Goal: A teacher can create a session, assign students to groups, monitor annotat
 
 ### 2a. Session Management APIs
 
-**`POST /api/sessions`** — Create session. Body: `{ activityId, groups: [{name, studentIds}] }`. Creates session + groups + group members.
+**`POST /api/sessions`** — Create session. Body: `{ classId, activityId, groups: [{name, studentIds}] }`. Creates session + groups + group members. Students in groups must belong to the class roster.
 
 **`GET /api/sessions`** — List teacher's sessions with status and activity info.
 
@@ -365,7 +366,7 @@ Goal: A teacher can create a session, assign students to groups, monitor annotat
 
 ### 2c. Create Session Page
 
-**`/teacher/sessions/new`** — Pick an activity from the library, create groups, assign students. Simple form: activity dropdown, group name + student multi-select for each group.
+**`/teacher/classes/[classId]/sessions/new`** — Pick an activity from the library, create groups, assign students from the class roster. Simple form: activity dropdown, group name + student multi-select for each group.
 
 ### 2d. Live Dashboard
 
@@ -662,7 +663,7 @@ Decisions made during implementation that aren't covered in `app-concept.md`.
 | 2026-03-24 | In-memory connection tracking, not database | 30 concurrent users max. Map<socketId, ConnectedUser> is negligible memory. No persistence needed — connection state is ephemeral. |
 | 2026-03-24 | Deferred IndexedDB offline queue | Socket.IO auto-reconnection handles brief drops. HTTP fetch for annotations still works when WebSocket is down. Classroom WiFi is reliable enough. |
 | 2026-03-24 | Multiple teachers supported via session rooms | Teachers join `session:{id}` room. Each teacher sees all groups in sessions they own. Multiple teachers can monitor different sessions simultaneously. |
-| 2026-03-24 | Name-only login for students, passwords removed | Classroom context: students in the same room with a teacher. No eavesdropping incentive. Students enter their name; teachers/researchers still use passwords. Password reset feature deleted. |
+| 2026-03-24 | Name-only login for students, passwords removed | Classroom context: students in the same room with a teacher. No eavesdropping incentive. Students enter their name; teachers/researchers log in by display name (e.g., "Ms. Johnson") + password. Password reset feature deleted. |
 | 2026-03-24 | `onDelete: Cascade` on all child relations | Simplifies session delete to a single `prisma.session.delete()`. Database enforces referential integrity automatically. |
 | 2026-03-24 | Socket.IO room joins validated against DB | Prevents unauthorized room access. Teacher ownership and student group membership checked before `socket.join()`. Old rooms cleared on navigation. |
 | 2026-03-24 | JWT salt set dynamically from cookie name | Cookie name differs between dev (`authjs.session-token`) and production HTTPS (`__Secure-authjs.session-token`). Salt must match for decode to work. |

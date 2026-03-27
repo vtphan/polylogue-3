@@ -56,6 +56,8 @@ model User {
   creator        User?    @relation("CreatedUsers", fields: [createdBy], references: [id])
   createdUsers   User[]   @relation("CreatedUsers")
 
+  teacherClasses Class[]        @relation("TeacherClasses")
+  classStudents  ClassStudent[]
   sessions       Session[]
   groupMembers   GroupMember[]
   annotations    Annotation[]
@@ -65,6 +67,32 @@ model User {
   annotationComments AnnotationComment[]
 
   @@map("users")
+}
+
+// --- Classes ---
+
+model Class {
+  id        String   @id @default(uuid()) @db.Uuid
+  teacherId String   @map("teacher_id") @db.Uuid
+  name      String   // e.g., "6th STEM Period 2"
+  createdAt DateTime @default(now()) @map("created_at")
+
+  teacher   User     @relation("TeacherClasses", fields: [teacherId], references: [id])
+  students  ClassStudent[]
+  sessions  Session[]
+
+  @@map("classes")
+}
+
+model ClassStudent {
+  classId String @map("class_id") @db.Uuid
+  userId  String @map("user_id") @db.Uuid
+
+  class   Class  @relation(fields: [classId], references: [id], onDelete: Cascade)
+  user    User   @relation(fields: [userId], references: [id])
+
+  @@id([classId, userId])
+  @@map("class_students")
 }
 
 // --- Activities (imported from registry YAML) ---
@@ -92,6 +120,7 @@ model Activity {
 model Session {
   id         String        @id @default(uuid()) @db.Uuid
   teacherId  String        @map("teacher_id") @db.Uuid
+  classId    String?       @map("class_id") @db.Uuid
   activityId String        @map("activity_id") @db.Uuid
   status     SessionStatus @default(setup)
   config     Json          @default("{}") // {difficulty_mode, phase_timer, etc.}
@@ -100,6 +129,7 @@ model Session {
   closedAt   DateTime?     @map("closed_at")
 
   teacher    User          @relation(fields: [teacherId], references: [id])
+  class      Class?        @relation(fields: [classId], references: [id])
   activity   Activity      @relation(fields: [activityId], references: [id])
   groups     Group[]
   scaffolds  Scaffold[]

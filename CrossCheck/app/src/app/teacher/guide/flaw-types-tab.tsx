@@ -59,7 +59,7 @@ export function FlawTypesTab() {
 
       {/* How flaws manifest */}
       <section>
-        <h2 className="text-lg font-semibold text-gray-900 mb-2">How Flaws Appear in Activities</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-2">How Flaws Appear in Transcripts</h2>
         <div className="overflow-x-auto">
           <table className="w-full text-sm border border-gray-200 rounded-lg overflow-hidden">
             <thead className="bg-gray-50">

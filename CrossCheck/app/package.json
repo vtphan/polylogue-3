@@ -7,7 +7,8 @@
     "dev:next": "next dev",
     "build": "next build",
     "start": "tsx server.ts",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:reset": "tsx scripts/db-reset.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.2",
@@ -21,7 +22,8 @@
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "socket.io": "^4.8.3",
-    "socket.io-client": "^4.8.3"
+    "socket.io-client": "^4.8.3",
+    "yaml": "^2.8.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

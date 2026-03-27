@@ -25,6 +25,7 @@ export async function GET() {
     const sessions = await prisma.session.findMany({
       where: { teacherId: session.user.id },
       include: {
+        class: { select: { id: true, name: true } },
         activity: {
           select: { topic: true, type: true, scenarioId: true, agents: true },
         },
@@ -75,17 +76,26 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { activityId, groups, config } = body as {
+  const { classId, activityId, groups, config } = body as {
+    classId: string;
     activityId: string;
     groups: { name: string; studentIds: string[]; difficultyMode?: string; modeConfig?: Record<string, string> }[];
     config?: Record<string, unknown>;
   };
 
-  if (!activityId || !groups || groups.length === 0) {
+  if (!classId || !activityId || !groups || groups.length === 0) {
     return NextResponse.json(
-      { error: "activityId and groups required" },
+      { error: "classId, activityId, and groups required" },
       { status: 400 }
     );
+  }
+
+  // Validate class belongs to this teacher
+  const cls = await prisma.class.findFirst({
+    where: { id: classId, teacherId: session.user.id },
+  });
+  if (!cls) {
+    return NextResponse.json({ error: "Class not found" }, { status: 404 });
   }
 
   // Validate difficulty modes and knob configs
@@ -107,6 +117,7 @@ export async function POST(request: NextRequest) {
   const newSession = await prisma.session.create({
     data: {
       teacherId: session.user.id,
+      classId,
       activityId,
       status: "setup",
       config: config || {},

@@ -427,7 +427,7 @@ Single server, three processes (Nginx, Node, Postgres). No containers required, 
 | **Backend** | Next.js API routes | REST endpoints for CRUD operations. Runs in the same Node process as the frontend. |
 | **Real-time** | Socket.IO | WebSocket-based live updates: annotation sync, scaffold delivery, phase transitions. Runs in the same Node process. At 30 concurrent users, this is trivial. |
 | **Database** | PostgreSQL | Stores activities, sessions, annotations, scaffolds, events. JSONB for transcript and evaluation data. |
-| **Auth** | NextAuth.js (credentials provider) | Username/password authentication. Teacher creates student accounts — no email required (COPPA-friendly). Role-based access in API middleware. |
+| **Auth** | NextAuth.js (credentials provider) | Display-name login for all users. Students log in by name only (no password). Teachers and researchers log in by display name (e.g., "Ms. Johnson") + password. Teacher creates student accounts within classes — no email required (COPPA-friendly). Role-based access in API middleware. |
 | **Process manager** | PM2 | Keeps Node.js alive, handles restarts, log rotation. |
 | **Reverse proxy** | Nginx | HTTPS termination, static file caching, WebSocket proxying to Node. |
 
@@ -443,11 +443,13 @@ Single server, three processes (Nginx, Node, Postgres). No containers required, 
 ### Database Schema
 
 ```
-┌─────────────┐     ┌──────────────┐     ┌──────────────┐
-│ activities   │────▶│ sessions     │────▶│ groups       │
-│ (from YAML)  │     │ (teacher     │     │ (students    │
-│              │     │  creates)    │     │  assigned)   │
-└─────────────┘     └──────────────┘     └──────────────┘
+┌─────────────┐     ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│ activities   │────▶│ sessions     │────▶│ groups       │     │ classes      │
+│ (from YAML)  │     │ (teacher     │     │ (students    │     │ (teacher     │
+│              │     │  creates)    │     │  assigned)   │     │  creates)    │
+└─────────────┘     └──────┬───────┘     └──────────────┘     └──────┬───────┘
+                           │                                         │
+                           └──────────── class_id ──────────────────┘
                                                │
                           ┌────────────────────┤
                           ▼                    ▼
@@ -462,9 +464,11 @@ Core tables:
 
 | Table | Key Fields |
 |-------|-----------|
-| `users` | id, username, display_name, role (student/teacher/researcher), research_consent, created_by |
+| `users` | id, display_name (unique per role, used for login), role (student/teacher/researcher), password_hash (nullable — students have none), research_consent, created_by |
 | `activities` | id, scenario_id, type (presentation/discussion), topic, transcript (JSONB), evaluation (JSONB), metadata (JSONB) |
-| `sessions` | id, teacher_id, activity_id, status (setup/active/reviewing/closed), config (JSONB: practice modes, phase timers), created_at |
+| `classes` | id, teacher_id, name, created_at |
+| `class_students` | class_id, user_id (composite PK) |
+| `sessions` | id, teacher_id, class_id, activity_id, status (setup/active/reviewing/closed), config (JSONB: practice modes, phase timers), created_at |
 | `groups` | id, session_id, name |
 | `group_members` | group_id, user_id |
 | `annotations` | id, group_id, user_id, location (section_id/turn_id + text range as JSONB), flaw_type, severity, explanation, is_group_answer, created_at |
@@ -484,7 +488,7 @@ CrossCheck/
 │   ├── src/
 │   │   ├── app/
 │   │   │   ├── student/       # Student routes
-│   │   │   ├── teacher/       # Teacher routes
+│   │   │   ├── teacher/       # Teacher routes (classes/, activities/, guide/, classes/[id]/sessions/)
 │   │   │   ├── researcher/    # Researcher routes (v2)
 │   │   │   ├── auth/          # Login
 │   │   │   └── api/           # API routes

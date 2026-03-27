@@ -173,17 +173,13 @@ Out of scope. Research consent is handled externally (IRB process), not within t
 
 **Problem:** Creating 30 students one at a time is tedious.
 
-**Solution:** Batch creation form — enter multiple names at once.
-
-**Files to modify:**
-- `src/app/teacher/students/new/page.tsx` — add batch mode
+**Solution:** Bulk add students within the class creation / add-students flow. This is no longer a standalone students page — students are managed within classes (Teacher -> Classes -> add students to class).
 
 **Design:**
-- Toggle between "Add one" (current form) and "Add batch"
-- Batch mode: textarea where teacher enters one name per line
-- System auto-generates usernames and passwords for all
-- All credentials shown in the green results box with "Copy all" button
-- API: extend `POST /api/users` to accept an array, or create `POST /api/users/batch`
+- When creating or editing a class, teacher can add multiple students at once
+- Textarea where teacher enters one name per line
+- Students are automatically enrolled in the class
+- No separate `/teacher/students` page — student management lives within the class context
 
 ---
 

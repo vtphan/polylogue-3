@@ -50,9 +50,11 @@ function getGroupLetter(index: number) {
 export function CreateSessionForm({
   activities,
   students,
+  classId,
 }: {
   activities: Activity[];
   students: Student[];
+  classId?: string;
 }) {
   const router = useRouter();
   const [activityId, setActivityId] = useState("");
@@ -152,6 +154,7 @@ export function CreateSessionForm({
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        classId,
         activityId,
         groups: groups.map((g) => ({
           name: g.name,

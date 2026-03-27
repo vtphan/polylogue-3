@@ -23,10 +23,10 @@ export default async function TeacherActivitiesPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Activities</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">Transcripts</h1>
 
       {activities.length === 0 ? (
-        <p className="text-sm text-gray-500">No activities available yet.</p>
+        <p className="text-sm text-gray-500">No transcripts available yet.</p>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {activities.map((activity) => {

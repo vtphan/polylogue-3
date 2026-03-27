@@ -1,0 +1,16 @@
+# CrossCheck seed data
+# Teachers and researchers who can log in to the system.
+# Students are added by teachers via the UI.
+#
+# Everyone logs in with their name. Teachers/researchers also need a password.
+# Passwords are stored as bcrypt hashes — plaintext here is fine for a school deployment.
+
+teachers:
+  - name: Ms. Johnson
+    password: teacher123
+  - name: Mr. Davis
+    password: teacher123
+
+researchers:
+  - name: Dr. Chen
+    password: researcher123

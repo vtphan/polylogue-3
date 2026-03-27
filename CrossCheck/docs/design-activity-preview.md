@@ -2,7 +2,7 @@
 
 ## Problem
 
-Teachers select activities from a dropdown when creating sessions, but have no easy way to understand what students will encounter. The current preview is a two-column layout (raw transcript + dense evaluation panel) with no persona context and no connection between who's speaking and why what they say is flawed.
+Teachers select activities from a dropdown when creating sessions (the nav label for the activities page is now **Transcripts**), but have no easy way to understand what students will encounter. The current preview is a two-column layout (raw transcript + dense evaluation panel) with no persona context and no connection between who's speaking and why what they say is flawed.
 
 Teachers need a **pedagogical briefing** before creating a session: What will students read? Who are these AI personas and how do they behave? Where are the flaws and what makes them hard or easy to detect? This context drives every instructional decision — which mode for each group, what scaffolds to prepare, and how to lead the debrief.
 

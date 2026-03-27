@@ -6,28 +6,30 @@ How students, teachers, and researchers use CrossCheck in practice. Each workflo
 
 ## Before Class
 
-### Teacher: Add Students
+### Teacher: Create a Class and Add Students
 
 1. Log in as teacher (name + password).
-2. Go to **Students** (top nav).
-3. Click **Add Students**.
-4. Choose **Batch** mode. Enter one name per line (e.g., "Maya Johnson").
-5. Click **Add N Students**. Usernames are auto-generated from names.
-6. Note: Students log in by entering their name — no passwords to distribute.
+2. Go to **Classes** (top nav).
+3. Click **New Class** (`/teacher/classes/new`).
+4. Name the class (e.g., "6th STEM Period 2").
+5. Add students during class creation: enter one name per line (e.g., "Maya Johnson").
+6. Click **Create Class**. Students can also be added later from the class detail page (`/teacher/classes/[classId]/students/add`).
+7. Note: Students log in by entering their name — no passwords, no usernames to distribute.
 
 ### Teacher: Preview an Activity
 
-1. Go to **Sessions** (top nav) → **New Session**.
-2. Select an activity from the dropdown.
-3. Click the **Preview** link next to the dropdown.
+1. Go to **Transcripts** (top nav) to browse available activities (`/teacher/activities`).
+2. Select an activity from the list.
+3. Click the **Preview** link next to the activity.
 4. Review the transcript (what students will see) and the reference evaluation (the "answer key" — all flaws with descriptions, evidence, and explanations).
 5. Decide if this activity is appropriate for the class.
 
 ### Teacher: Create a Session
 
-1. From **New Session**, select the activity.
-2. Create groups (e.g., "Group A", "Group B"). Assign students to each group.
-3. Set the practice mode per group. Four session modes, ordered by independence (how much the system does for the student):
+1. From the class detail page (`/teacher/classes/[classId]`), click **New Session** (`/teacher/classes/[classId]/sessions/new`).
+2. Select the activity. Students are automatically scoped to the class roster.
+3. Create groups (e.g., "Group A", "Group B"). Assign students to each group.
+4. Set the practice mode per group. Four session modes, ordered by independence (how much the system does for the student):
    - **Recognize** — Pre-highlighted transcript with inline quizzes. Students identify the flaw type of each highlighted passage (includes false positive passages). Read-only — no annotation. The default for new groups. Knob: response format (A/B choice or multiple choice).
    - **Locate** — Hint cards tell students the flaw type and which section to look in. Students flag the exact text (includes false positive hint cards). Knob: hint scope (sentence or section).
    - **Classify** — Open search. Students read the full transcript and flag flaws. Knob: categorization level (detect only / assisted / full — controls whether and how students categorize). "Show Hint" button always available.
@@ -36,7 +38,7 @@ How students, teachers, and researchers use CrossCheck in practice. Each workflo
    **Learn** is a standalone vocabulary primer accessible from the nav bar — not a session mode.
 
    The selected mode's description and granularity knob appear below the pills. Different groups in the same session can use different modes — choose based on what your students need to practice.
-4. Click **Create Session**. Session starts in **Setup** phase.
+5. Click **Create Session**. Session starts in **Setup** phase.
 
 ---
 
@@ -44,7 +46,7 @@ How students, teachers, and researchers use CrossCheck in practice. Each workflo
 
 ### Teacher: Start the Session
 
-1. Open the session from the **Sessions** list.
+1. Open the session from the class detail page.
 2. The dashboard shows all groups in a grid. Each group card shows: group name, student names, annotation count, sections touched.
 3. Click **Start Session**. Phase changes to **Individual**.
 4. Students are notified on their devices that the session has started.
@@ -163,7 +165,7 @@ How students, teachers, and researchers use CrossCheck in practice. Each workflo
 1. Add **session notes** (free-text field at the bottom of the dashboard, auto-saves on blur).
 2. The session can be **reopened** (Reviewing → Group) if the teacher advanced too early. Students are notified and can annotate again.
 3. Click **Close Session** when done.
-4. Closed sessions remain visible on the Sessions list for future reference.
+4. Closed sessions remain visible on the class detail page for future reference.
 5. Sessions in Setup or Closed status can be **deleted** (with confirmation).
 
 ---
@@ -230,6 +232,6 @@ These happen automatically — no user action needed:
 | WiFi drops briefly | Socket.IO auto-reconnects. Annotations made via HTTP still save. Real-time updates resume on reconnect. |
 | Teacher reopens session | Phase goes from Reviewing back to Group. Students are notified and can annotate again. Feedback view is hidden until teacher releases again. |
 | Teacher deletes session | All groups, annotations, scaffolds, and events are cascaded-deleted. Students see the session disappear from their list. |
-| Multiple teachers | Each teacher sees only sessions they own. Multiple teachers can run sessions simultaneously on different activities. |
+| Multiple teachers | Each teacher has their own classes. Students can be in multiple classes (e.g., same student in "6th STEM" and "6th Humanities"). Multiple teachers can run sessions simultaneously on different activities. |
 | Student in multiple sessions | The home page lists all active sessions. The student picks which one to work on. |
 | No group answers exist | Feedback compares all annotations (not just confirmed ones) against the reference evaluation. |

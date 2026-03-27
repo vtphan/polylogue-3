@@ -1,55 +1,80 @@
 /**
- * Seed test user accounts for development.
+ * Seed user accounts from seed.yaml.
  *
  * Usage: npx tsx scripts/seed-users.ts
  *
- * Students log in by name only (no password).
- * Teachers and researchers require a password.
+ * Everyone logs in by name. Teachers/researchers also need a password.
  */
 
 import "dotenv/config";
+import { readFileSync } from "fs";
+import { resolve } from "path";
 import bcrypt from "bcryptjs";
+import YAML from "yaml";
 import { PrismaClient } from "../src/generated/prisma/client";
 
 const prisma = new PrismaClient();
 
-const testUsers = [
-  { username: "teacher1", displayName: "Ms. Johnson", role: "teacher" as const, password: "teacher123" },
-  { username: "student1", displayName: "Alex", role: "student" as const },
-  { username: "student2", displayName: "Jordan", role: "student" as const },
-  { username: "student3", displayName: "Sam", role: "student" as const },
-  { username: "student4", displayName: "Taylor", role: "student" as const },
-  { username: "researcher1", displayName: "Dr. Chen", role: "researcher" as const, password: "researcher123" },
-];
+interface SeedConfig {
+  teachers?: { name: string; password: string }[];
+  researchers?: { name: string; password: string }[];
+}
+
+function toUsername(name: string): string {
+  return name.toLowerCase().replace(/\s+/g, ".").replace(/[^a-z0-9.]/g, "");
+}
 
 async function main() {
-  for (const user of testUsers) {
-    const passwordHash = user.password
-      ? await bcrypt.hash(user.password, 10)
-      : null;
+  const configPath = resolve(__dirname, "../seed.yaml");
+  const raw = readFileSync(configPath, "utf-8");
+  const config: SeedConfig = YAML.parse(raw);
 
-    const created = await prisma.user.upsert({
-      where: { username: user.username },
+  const teachers = config.teachers || [];
+  const researchers = config.researchers || [];
+
+  for (const t of teachers) {
+    const passwordHash = await bcrypt.hash(t.password, 10);
+    const user = await prisma.user.upsert({
+      where: { username: toUsername(t.name) },
       create: {
-        username: user.username,
-        displayName: user.displayName,
-        role: user.role,
+        username: toUsername(t.name),
+        displayName: t.name,
+        role: "teacher",
         passwordHash,
       },
       update: {
-        displayName: user.displayName,
-        role: user.role,
+        displayName: t.name,
         passwordHash,
       },
     });
-
-    console.log(`  ${created.role.padEnd(12)} ${created.username.padEnd(15)} "${created.displayName}"`);
+    console.log(`  teacher     ${user.displayName}`);
   }
 
-  console.log("\nDone. Login:");
-  console.log("  teacher1 / teacher123");
-  console.log("  Students: enter name only (Alex, Jordan, Sam, Taylor)");
-  console.log("  researcher1 / researcher123");
+  for (const r of researchers) {
+    const passwordHash = await bcrypt.hash(r.password, 10);
+    const user = await prisma.user.upsert({
+      where: { username: toUsername(r.name) },
+      create: {
+        username: toUsername(r.name),
+        displayName: r.name,
+        role: "researcher",
+        passwordHash,
+      },
+      update: {
+        displayName: r.name,
+        passwordHash,
+      },
+    });
+    console.log(`  researcher  ${user.displayName}`);
+  }
+
+  console.log("\nDone. Login with name + password:");
+  for (const t of teachers) {
+    console.log(`  ${t.name} / ${t.password}`);
+  }
+  for (const r of researchers) {
+    console.log(`  ${r.name} / ${r.password}`);
+  }
 }
 
 main()

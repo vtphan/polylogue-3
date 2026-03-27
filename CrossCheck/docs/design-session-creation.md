@@ -6,11 +6,13 @@ The current session creation form repeats the full student roster inside every g
 
 ## Current State
 
-**Route:** `/teacher/sessions/new`
+**Route:** `/teacher/classes/[classId]/sessions/new`
 
 **Current layout per group:** Group name (editable) + full student roster as pills (blue = in this group, gray = in another group, white = unassigned) + practice mode pills + knob selector. Each group is a tall card. The page grows with `groups × students`.
 
-**File:** `CrossCheck/app/src/app/teacher/sessions/new/create-session-form.tsx`
+**Student roster:** Scoped to the class roster (students enrolled in this class), not all students in the system.
+
+**File:** `CrossCheck/app/src/app/teacher/classes/[classId]/sessions/new/create-session-form.tsx`
 
 ## Design: Select-then-assign
 
@@ -145,7 +147,7 @@ Single responsive grid of all students, rendered **once**.
 
 ### Modified file
 
-`CrossCheck/app/src/app/teacher/sessions/new/create-session-form.tsx` — full rewrite of the form component. The server component (`page.tsx`) and API endpoint stay unchanged.
+`CrossCheck/app/src/app/teacher/classes/[classId]/sessions/new/create-session-form.tsx` — full rewrite of the form component. The student roster is fetched from the class membership, not all users.
 
 ### Key state changes
 
@@ -179,7 +181,6 @@ function autoAssign(students: Student[], groups: GroupDraft[]): GroupDraft[] {
 ## What This Does NOT Change
 
 - Activity selection (same dropdown + preview link)
-- API endpoint (`POST /api/sessions`) — same request shape
-- Server component (`page.tsx`) — same data fetching
+- API endpoint (`POST /api/sessions`) — request body now includes `classId` in addition to `activityId` and `groups`
 - Mode/knob options — same pills, same values
 - Validation rules — same constraints

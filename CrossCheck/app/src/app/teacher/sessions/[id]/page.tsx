@@ -18,6 +18,7 @@ export default async function SessionPage({ params }: PageProps) {
   const classSession = await prisma.session.findUnique({
     where: { id },
     include: {
+      class: { select: { id: true, name: true } },
       activity: true,
       groups: {
         where: { name: { not: { startsWith: "solo_" } } },
@@ -73,8 +74,11 @@ export default async function SessionPage({ params }: PageProps) {
 
   return (
     <div>
-      <a href="/teacher" className="text-sm text-blue-600 hover:text-blue-800">
-        &larr; Back to sessions
+      <a
+        href={classSession.class ? `/teacher/classes/${classSession.class.id}` : "/teacher"}
+        className="text-sm text-blue-600 hover:text-blue-800"
+      >
+        &larr; Back to {classSession.class?.name || "classes"}
       </a>
       <SessionDashboard session={JSON.parse(JSON.stringify(classSession))} />
     </div>

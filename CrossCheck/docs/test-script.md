@@ -8,9 +8,8 @@ All commands must be run from `CrossCheck/app/` (not `CrossCheck/`):
 
 ```bash
 cd CrossCheck/app
-npx tsx scripts/seed-test-classroom.ts    # 1 teacher + 20 students + 1 researcher
-npx tsx scripts/ingest-registry.ts --all  # Load both activities
-npm run dev                               # Start server with Socket.IO
+npm run db:reset    # Resets DB, seeds users from seed.yaml, ingests activities
+npm run dev          # Start server with Socket.IO
 ```
 
 Open two browser windows:
@@ -19,10 +18,11 @@ Open two browser windows:
 
 ---
 
-## Part 1: Teacher — Activities & Guide
+## Part 1: Teacher — Transcripts & Guide
 
-### 1.1 Activities page
-- **Window T**: Click **Activities** in the nav bar
+### 1.1 Transcripts page
+- **Window T**: Log in with display name `Ms. Johnson`, password `teacher123`
+- Click **Transcripts** in the nav bar
 - **Verify**: Grid of activity cards (at least 2 if both scenarios ingested)
 - **Verify**: Each card shows: topic, type badge (presentation/discussion), agent count, flaw severity counts
 - Click any activity card
@@ -62,10 +62,15 @@ Open two browser windows:
 - Click **Guide** in the nav bar
 - **Verify**: "Teacher Guide" heading, two tabs (Methodology, Flaw Types)
 - **Verify**: Methodology tab is active by default
-- **Verify**: Practice Modes table with 4 rows (Recognize, Locate, Classify, Explain) showing: what students do, what system provides, teacher control
-- **Verify**: Independence gradient visual (blue bar from "More support" to "More independence")
-- **Verify**: Session Phases section with 5 numbered steps (Setup → Individual → Group → Reviewing → Closed) and descriptions
-- **Verify**: Scaffolding section with 6 levels, each showing: level number, label, description, 2 example templates
+- **Verify**: Practice Modes heading with intro text
+- **Verify**: "Before starting" note about vocabulary primer (flaw type definitions + quiz)
+- **Verify**: 4 horizontal mode cards in 1 row on desktop (Recognize, Locate, Classify, Explain) — no numbering, no Bloom's verbs
+- **Verify**: Each card shows: mode name, description, knob label with option pills, and knob tip
+- **Verify**: No independence gradient bar, no "More support"/"More independence" visual
+- **Verify**: No Session Phases section (removed entirely)
+- **Verify**: Scaffolding section with compact 2-column table (Type, What it does) — 6 rows
+- **Verify**: No expanded cards, no level numbers, no example templates in scaffolding section
+- **Verify**: Note below table: "Pre-written templates are available for each type when sending scaffolds during a session."
 
 ### 1.7 Guide page — Flaw Types tab
 - Click **Flaw Types** tab
@@ -75,24 +80,42 @@ Open two browser windows:
 
 ---
 
-## Part 2: Teacher — Session Setup
+## Part 2: Teacher — Class & Session Setup
 
 ### 2.1 Login as teacher
-- **Window T**: Enter username `teacher1`, password `teacher123`
-- Verify: lands on teacher dashboard with session list
+- **Window T**: Enter display name `Ms. Johnson`, password `teacher123`
+- **Verify**: Lands on teacher dashboard showing classes (not sessions)
 
-### 2.2 Create a session with differentiated practice modes
-- Click **New Session**
+### 2.2 Create a class
+- Click **New Class** (or equivalent button on the classes page)
+- Enter a class name (e.g., "6th Grade STEM — Period 3")
+- **Verify**: Class is created and you land on the class detail page
+
+### 2.3 Add students to the class
+- On the class detail page, add the following 20 students:
+
+| Students |
+|----------|
+| Maya Johnson, DeAndre Williams, Sophia Chen, Jaylen Brooks, Aaliyah Mitchell |
+| Carlos Ramirez, Emma Thompson, Malik Harris, Chloe Patterson, Isaiah Davis |
+| Lily Nguyen, Marcus Jackson, Ava Washington, Tyler Lee, Jasmine King |
+| Noah Garcia, Brianna Smith, Ethan Moore, Zara Ahmed, Liam Foster |
+
+- **Verify**: All 20 students appear in the class roster
+
+### 2.4 Create a session with differentiated practice modes
+- From the class detail page, click **New Session**
+- **Verify**: Route is `/teacher/classes/[classId]/sessions/new`
 - Select the **plastic pollution** activity (presentation type)
 - Click **Preview** — verify the transcript and evaluation load
-- Create 4 groups:
+- Create 4 groups (students are scoped to this class's roster):
 
 | Group | Students | Practice Mode |
 |-------|----------|--------------|
 | Group A | Maya Johnson, DeAndre Williams, Sophia Chen, Jaylen Brooks, Aaliyah Mitchell | Classify |
 | Group B | Carlos Ramirez, Emma Thompson, Malik Harris, Chloe Patterson, Isaiah Davis | Locate |
 | Group C | Lily Nguyen, Marcus Jackson, Ava Washington, Tyler Lee, Jasmine King | Recognize |
-| Group D | Noah Garcia, Brianna Smith, Ethan Moore, Zara Ahmed, Liam Foster | Learn |
+| Group D | Noah Garcia, Brianna Smith, Ethan Moore, Zara Ahmed, Liam Foster | Explain |
 
 - **Verify**: Each group shows a "Practice Mode" label with the selected mode pill highlighted
 - **Verify**: Below the pills, the mode description is visible (not just a tooltip)
@@ -101,24 +124,23 @@ Open two browser windows:
 
 ---
 
-## Part 3: Student — Learn Mode (Group D)
+## Part 3: Student — Vocabulary Primer
 
-### 3.1 Login as a Group D student
+### 3.1 Login as a student and access Learn
 - **Window S**: Enter name `Noah Garcia`
-- Click the active session
-- **Verify**: Sees the **definitions screen** (4 flaw type cards with examples), NOT the transcript
+- Click **Learn** in the top nav bar
+- **Verify**: Sees the **definitions screen** (4 flaw type cards with examples)
 - **Verify**: No bottom bar, no sidebar
 
 ### 3.2 Take the quiz
 - Click **Start Quiz**
 - Answer a few questions — verify immediate feedback (green/red + explanation)
-- **Navigate away** (click "Activities" in nav)
-- Come back to the session
+- **Navigate away** (click "Transcripts" in nav)
+- Come back to the Learn page
 - **Verify**: Quiz resumes at the same question (not reset)
 
-### 3.3 Standalone Learn page
-- Click **Learn** in the top nav bar
-- **Verify**: Shows the same definitions + quiz experience
+### 3.3 Learn results
+- Complete the quiz
 - **Verify**: Results saved to student's active group with "(self)" tag on teacher dashboard
 
 ---
@@ -155,7 +177,7 @@ Open two browser windows:
 
 ### 5.2 Monitor the dashboard
 - **Verify**: 4 group cards visible, each showing the practice mode badge
-- **Verify**: Group D shows "Learn", Group C shows "Recognize", Group B shows "Locate", Group A shows "Classify"
+- **Verify**: Group D shows "Explain", Group C shows "Recognize", Group B shows "Locate", Group A shows "Classify"
 - **Verify**: Connection dots update as students connect
 
 ---
@@ -281,7 +303,7 @@ Open two browser windows:
 | WiFi drop during annotation | Annotation saves via HTTP; Socket.IO auto-reconnects |
 | Teacher clicks mode badge in setup/closed phase | Badge is not clickable (no hover effect, no dropdown) |
 | Student signs out on shared tablet | All crosscheck: localStorage cleared, next student starts fresh |
-| Activities page with no activities ingested | Shows "No activities available yet." message |
+| Transcripts page with no activities ingested | Shows "No activities available yet." message |
 | Activity preview with null metadata (no profiles) | Meet the Team tab shows agent names/roles only with "Profile data not available" |
 | Activity preview with null evaluation | Overview tab shows "Evaluation pending — check back shortly." |
 | Flaw popover near bottom of viewport | Popover flips above the highlight instead of below |
@@ -292,4 +314,7 @@ Open two browser windows:
 | Cross-section flaw popover "Also in" link | Closes popover, scrolls to other section |
 | Overview tab flaw click → Transcript tab | Switches tab, scrolls to section, opens popover |
 | Meet the Team "See in transcript →" click | Switches tab, scrolls to section, opens popover |
-| Guide page scaffold templates | All 6 levels shown with 2 examples each (12 templates total) |
+| Guide page scaffolding table | 6 rows, compact table with Type and What it does columns |
+| Teacher creates class then deletes it | Class and all associated sessions/groups cascade-deleted |
+| Teacher creates session without a class | Not allowed — session creation requires navigating from a class detail page |
+| Student logs in before teacher creates class | Student sees no active sessions (not pre-seeded) |

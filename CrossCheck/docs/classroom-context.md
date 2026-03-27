@@ -127,7 +127,7 @@ Students sit in groups of ~5. During the group phase, they discuss physically (f
 
 ### Student Login
 
-Students log in by name only — no passwords. This was a deliberate design choice for middle school: it minimizes friction (no "I forgot my password" interruptions) while the app runs on a local network behind school authentication. Teachers create student accounts in advance using batch import.
+Students log in by display name only — no passwords. This was a deliberate design choice for middle school: it minimizes friction (no "I forgot my password" interruptions) while the app runs on a local network behind school authentication. Teachers and researchers also log in by display name (e.g., "Ms. Johnson") but with a password. Teachers create student accounts within classes.
 
 ---
 

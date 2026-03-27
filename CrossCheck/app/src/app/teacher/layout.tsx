@@ -22,10 +22,9 @@ export default async function TeacherLayout({
             <div className="flex items-center gap-6">
               <Link href="/teacher" className="font-bold text-lg">CrossCheck</Link>
               <div className="flex items-center gap-4 text-sm">
-                <Link href="/teacher" className="text-gray-600 hover:text-gray-900">Sessions</Link>
-                <Link href="/teacher/activities" className="text-gray-600 hover:text-gray-900">Activities</Link>
+                <Link href="/teacher" className="text-gray-600 hover:text-gray-900">Classes</Link>
+                <Link href="/teacher/activities" className="text-gray-600 hover:text-gray-900">Transcripts</Link>
                 <Link href="/teacher/guide" className="text-gray-600 hover:text-gray-900">Guide</Link>
-                <Link href="/teacher/students" className="text-gray-600 hover:text-gray-900">Students</Link>
               </div>
             </div>
             <div className="flex items-center gap-4">

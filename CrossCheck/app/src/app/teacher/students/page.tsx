@@ -37,14 +37,11 @@ export default async function StudentsPage() {
       {students.length > 0 && (
         <div className="mb-8">
           <h2 className="text-sm font-medium text-gray-500 mb-3">Your students</h2>
-          <div className="bg-white rounded-lg border border-gray-200 divide-y divide-gray-100">
+          <div className="flex flex-wrap gap-2">
             {students.map((s) => (
-              <div key={s.id} className="px-4 py-3 flex items-center justify-between">
-                <div>
-                  <span className="font-medium text-gray-900">{s.displayName}</span>
-                  <span className="text-sm text-gray-400 ml-2">{s.username}</span>
-                </div>
-              </div>
+              <span key={s.id} className="text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-full px-3 py-1">
+                {s.displayName}
+              </span>
             ))}
           </div>
         </div>
@@ -53,14 +50,11 @@ export default async function StudentsPage() {
       {otherStudents.length > 0 && (
         <div>
           <h2 className="text-sm font-medium text-gray-500 mb-3">Other students</h2>
-          <div className="bg-white rounded-lg border border-gray-200 divide-y divide-gray-100">
+          <div className="flex flex-wrap gap-2">
             {otherStudents.map((s) => (
-              <div key={s.id} className="px-4 py-3 flex items-center justify-between">
-                <div>
-                  <span className="font-medium text-gray-900">{s.displayName}</span>
-                  <span className="text-sm text-gray-400 ml-2">{s.username}</span>
-                </div>
-              </div>
+              <span key={s.id} className="text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-full px-3 py-1">
+                {s.displayName}
+              </span>
             ))}
           </div>
         </div>

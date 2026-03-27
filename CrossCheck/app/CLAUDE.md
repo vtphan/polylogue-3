@@ -10,7 +10,7 @@ CrossCheck serves AI-generated presentations and discussions (from the Polylogue
 
 - **Next.js 16.2.1** (App Router only). `params` and `searchParams` are Promises — must `await`. Middleware is `proxy.ts` not `middleware.ts`.
 - **Prisma 6.19** — Client generated to `src/generated/prisma/client`. Import from `../src/generated/prisma/client` in scripts.
-- **NextAuth v5 beta** — JWT strategy, credentials provider. Students log in by name only (no password). Teachers/researchers require password.
+- **NextAuth v5 beta** — JWT strategy, credentials provider. All users log in by display name (case-insensitive). Single `findFirst` by `displayName` with mode `insensitive`. Students need no password; teachers/researchers require password.
 - **Socket.IO 4** — Custom server in `server.ts`. Auth via httpOnly cookie JWT decoding. Rooms: `session:{id}` + `group:{id}`.
 - **PostgreSQL 15** — Database `crosscheck` on localhost:5432.
 
@@ -30,6 +30,9 @@ npm run dev:next     # Plain Next.js without Socket.IO (fallback)
 - **Dual annotation model**: `/api/annotations` creates solo session/group per user (Phase 1 individual practice). `/api/annotations/session` uses real session groups with membership + phase validation.
 - **Group consensus**: `PATCH /api/annotations/[id]` with `{ action: "confirm" | "unconfirm" }`. Threshold: 2 confirmations. `isGroupAnswer` and `confirmedBy` fields.
 - **Cascading deletes**: All child relations have `onDelete: Cascade`. Session delete is a single `prisma.session.delete()`.
+- **Data model hierarchy**: Teacher → Classes → Sessions → Groups. `Class` and `ClassStudent` models manage rosters. `Session.classId` is nullable (null for solo practice, required for teacher-created sessions).
+- **Teacher nav**: `Classes | Transcripts | Guide`. "Transcripts" was formerly "Activities".
+- **Teacher routes**: `/teacher` shows class grid. `/teacher/classes/new` creates a class. `/teacher/classes/[classId]` shows class detail (roster + sessions). `/teacher/classes/[classId]/sessions/new` creates a session scoped to a class. `/teacher/sessions/[id]` is the session dashboard.
 
 ## Session Phases
 
@@ -55,9 +58,15 @@ Room joins are validated against the database (teacher ownership / student group
 ## Database Reset
 
 ```bash
-npx prisma migrate reset
-npx tsx scripts/seed-users.ts
-npx tsx scripts/ingest-registry.ts --all
+npm run db:reset    # migrate reset + seed from seed.yaml + ingest registry activities
 ```
 
-Test accounts: teacher1/teacher123, researcher1/researcher123. Students: enter name only (Alex, Jordan, Sam, Taylor).
+Seed data is configured in `seed.yaml` at the app root. Contains teacher/researcher names + passwords. No students (teachers add those via UI). Test accounts: Ms. Johnson / teacher123, Mr. Davis / teacher123, Dr. Chen / researcher123.
+
+## API Routes
+
+- `GET/POST /api/classes` — list / create classes
+- `GET/PATCH/DELETE /api/classes/[id]` — class detail / update / delete
+- `POST/DELETE /api/classes/[id]/students` — add / remove students from a class
+- `POST /api/sessions` — create session (accepts `classId`)
+- `POST /api/users` — create user (only needs `displayName`, username auto-derived)

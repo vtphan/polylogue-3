@@ -8,13 +8,17 @@ Separately, flaw details in the transcript view appear as expanding cards that p
 
 ## Changes
 
-### 1. Add two nav items: Activities and Guide
+### 1. Redesigned teacher nav
 
-Current nav: `Sessions | Students`
+Previous nav: `Sessions | Students`
 
-New nav: `Sessions | Activities | Guide | Students`
+New nav: `Classes | Transcripts | Guide`
 
-### 2. Activities page (`/teacher/activities`)
+"Students" is no longer a standalone nav item — students are managed within classes. "Sessions" is replaced by "Classes" (teachers create classes, then sessions within classes). "Activities" is labeled "Transcripts" in the nav (URL remains `/teacher/activities`).
+
+### 2. Transcripts page (`/teacher/activities`)
+
+Nav label: **Transcripts**. URL: `/teacher/activities` (unchanged).
 
 A browsable list of all available activities. Currently, activities are only visible inside the session creation dropdown. Teachers need to explore activities independently — understanding what's available before deciding what to assign.
 
@@ -96,7 +100,7 @@ Replace expanding flaw detail cards with pop-ups (popovers) that appear anchored
 
 | File | Change |
 |------|--------|
-| `src/app/teacher/layout.tsx` | Add "Activities" and "Guide" nav links |
+| `src/app/teacher/layout.tsx` | Update nav to `Classes | Transcripts | Guide` |
 | `src/app/teacher/activities/[id]/transcript-tab.tsx` | Replace expanding cards with positioned popovers |
 
 ### Unchanged
