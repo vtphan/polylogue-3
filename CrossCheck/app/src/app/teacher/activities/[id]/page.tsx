@@ -2,7 +2,7 @@ import { prisma } from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { notFound, redirect } from "next/navigation";
 import { ActivityPreview } from "./activity-preview";
-import type { Agent } from "@/lib/types";
+import type { AgentProfile } from "./flaw-annotations";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -22,12 +22,20 @@ export default async function TeacherActivityPreviewPage({ params }: PageProps) 
 
   if (!activity) notFound();
 
+  // Extract profiles from metadata — teachers see profiles only, not full metadata
+  const metadata = activity.metadata as { profiles?: AgentProfile[] } | null;
+  const profiles = metadata?.profiles ?? null;
+  const { metadata: _metadata, ...activityData } = activity;
+
   return (
     <div>
       <a href="/teacher/sessions/new" className="text-sm text-blue-600 hover:text-blue-800">
         &larr; Back to create session
       </a>
-      <ActivityPreview activity={JSON.parse(JSON.stringify(activity))} />
+      <ActivityPreview
+        activity={JSON.parse(JSON.stringify(activityData))}
+        profiles={profiles ? JSON.parse(JSON.stringify(profiles)) : null}
+      />
     </div>
   );
 }

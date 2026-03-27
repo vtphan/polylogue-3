@@ -19,13 +19,69 @@ Open two browser windows:
 
 ---
 
-## Part 1: Teacher — Session Setup
+## Part 1: Teacher — Activities & Guide
 
-### 1.1 Login as teacher
+### 1.1 Activities page
+- **Window T**: Click **Activities** in the nav bar
+- **Verify**: Grid of activity cards (at least 2 if both scenarios ingested)
+- **Verify**: Each card shows: topic, type badge (presentation/discussion), agent count, flaw severity counts
+- Click any activity card
+- **Verify**: Opens `/teacher/activities/[id]` with 3-tab preview (Overview, Meet the Team, Transcript)
+
+### 1.2 Activity preview — Overview tab
+- **Verify**: Flaw distribution horizontal bars (Reasoning, Epistemic, Completeness, Coherence) with counts
+- **Verify**: Severity line ("N major · N moderate · N minor")
+- **Verify**: Key Patterns prose block
+- **Verify**: All Flaws list with type badge (R/E/Cp/Co), severity, description
+- Click any flaw card — **verify**: switches to Transcript tab and popover opens on the highlighted passage
+
+### 1.3 Activity preview — Meet the Team tab
+- Click **Meet the Team**
+- **Verify**: Agent cards in 2-column grid, ordered by first transcript appearance
+- **Verify**: Each card shows: avatar, name, role, "Speaks in" (section names for presentations, stage names for discussions)
+- **Verify**: Disposition pills (confidence, engagement style, expressiveness) + reactive tendency quote
+- **Verify**: Expected Flaws section with type badge and description
+- **Verify**: Matched expected flaws show "See in transcript →" link; unmatched show "Not detected in transcript" (dimmed)
+- Click "See in transcript →" — **verify**: switches to Transcript tab, scrolls to section, popover opens
+
+### 1.4 Activity preview — Transcript tab (Teacher View)
+- Click **Transcript**
+- **Verify**: Default is "Teacher View" (toggle at top)
+- **Verify**: Transcript sections show flaw type badges (R/E/Cp/Co) in the header
+- **Verify**: Flaw evidence passages are highlighted with type-colored backgrounds
+- Click a highlighted passage — **verify**: Popover appears near the highlight with type badge, severity, description, evidence quote, explanation
+- Click elsewhere or press Escape — **verify**: Popover closes
+- Click a different highlight — **verify**: Previous popover closes, new one opens
+- For cross-section flaws: **verify** popover shows "Also in: [section]" link; clicking it closes popover and scrolls to the other section
+
+### 1.5 Activity preview — Transcript tab (Student View)
+- Toggle to **Student View**
+- **Verify**: Clean transcript with no highlights, no badges, no popover on click
+
+### 1.6 Guide page — Methodology tab
+- Click **Guide** in the nav bar
+- **Verify**: "Teacher Guide" heading, two tabs (Methodology, Flaw Types)
+- **Verify**: Methodology tab is active by default
+- **Verify**: Practice Modes table with 4 rows (Recognize, Locate, Classify, Explain) showing: what students do, what system provides, teacher control
+- **Verify**: Independence gradient visual (blue bar from "More support" to "More independence")
+- **Verify**: Session Phases section with 5 numbered steps (Setup → Individual → Group → Reviewing → Closed) and descriptions
+- **Verify**: Scaffolding section with 6 levels, each showing: level number, label, description, 2 example templates
+
+### 1.7 Guide page — Flaw Types tab
+- Click **Flaw Types** tab
+- **Verify**: 4 color-coded cards (Reasoning=red, Epistemic=amber, Completeness=blue, Coherence=purple)
+- **Verify**: Each card shows: abbreviation + label in header, definition, 2 example passages with explanations
+- **Verify**: "How Flaws Appear in Activities" table at bottom with columns for Presentations and Discussions
+
+---
+
+## Part 2: Teacher — Session Setup
+
+### 2.1 Login as teacher
 - **Window T**: Enter username `teacher1`, password `teacher123`
 - Verify: lands on teacher dashboard with session list
 
-### 1.2 Create a session with differentiated practice modes
+### 2.2 Create a session with differentiated practice modes
 - Click **New Session**
 - Select the **plastic pollution** activity (presentation type)
 - Click **Preview** — verify the transcript and evaluation load
@@ -45,31 +101,31 @@ Open two browser windows:
 
 ---
 
-## Part 2: Student — Learn Mode (Group D)
+## Part 3: Student — Learn Mode (Group D)
 
-### 2.1 Login as a Group D student
+### 3.1 Login as a Group D student
 - **Window S**: Enter name `Noah Garcia`
 - Click the active session
 - **Verify**: Sees the **definitions screen** (4 flaw type cards with examples), NOT the transcript
 - **Verify**: No bottom bar, no sidebar
 
-### 2.2 Take the quiz
+### 3.2 Take the quiz
 - Click **Start Quiz**
 - Answer a few questions — verify immediate feedback (green/red + explanation)
 - **Navigate away** (click "Activities" in nav)
 - Come back to the session
 - **Verify**: Quiz resumes at the same question (not reset)
 
-### 2.3 Standalone Learn page
+### 3.3 Standalone Learn page
 - Click **Learn** in the top nav bar
 - **Verify**: Shows the same definitions + quiz experience
 - **Verify**: Results saved to student's active group with "(self)" tag on teacher dashboard
 
 ---
 
-## Part 3: Student — Recognize Mode (Group C)
+## Part 4: Student — Recognize Mode (Group C)
 
-### 3.1 Login as a Group C student
+### 4.1 Login as a Group C student
 - **Window S**: Log out, enter name `Lily Nguyen`
 - Click the active session
 - **Verify**: Sees the transcript with **yellow highlighted sentences** within each section (not the whole section)
@@ -78,7 +134,7 @@ Open two browser windows:
 - **Verify**: No bottom bar (read-only — no text selection)
 - **Verify**: Score tracker visible
 
-### 3.2 Answer response cards
+### 4.2 Answer response cards
 - Click a highlighted sentence badge
 - **Verify**: A **centered popup** appears with a semi-transparent backdrop
 - **Verify**: Popup shows "What type of problem is this?" with 4 **color-coded buttons with definitions** (e.g., "Reasoning — The logic doesn't hold up...")
@@ -90,23 +146,23 @@ Open two browser windows:
 
 ---
 
-## Part 4: Teacher — Start Session + Monitor
+## Part 5: Teacher — Start Session + Monitor
 
-### 4.1 Start the session
+### 5.1 Start the session
 - **Window T**: Open the session dashboard
 - Click **Start Session** (transitions to Individual phase)
 - **Verify**: Student windows show the session content (may need to refresh if opened before start)
 
-### 4.2 Monitor the dashboard
+### 5.2 Monitor the dashboard
 - **Verify**: 4 group cards visible, each showing the practice mode badge
 - **Verify**: Group D shows "Learn", Group C shows "Recognize", Group B shows "Locate", Group A shows "Classify"
 - **Verify**: Connection dots update as students connect
 
 ---
 
-## Part 5: Student — Locate Mode (Group B)
+## Part 6: Student — Locate Mode (Group B)
 
-### 5.1 Login as a Group B student
+### 6.1 Login as a Group B student
 - **Window S**: Log out, enter name `Carlos Ramirez`
 - Click the active session
 - **Verify**: Sees a **hint card** at top (flaw type badge + section name + reading strategy)
@@ -114,45 +170,45 @@ Open two browser windows:
 - **Verify**: Previous/Next buttons for navigating hints
 - **Verify**: Bottom bar shows single **"Flag This"** button (not 4 type buttons)
 
-### 5.2 Annotate
+### 6.2 Annotate
 - Select text in the highlighted (non-dimmed) section
 - Click **Flag This**
 - **Verify**: Annotation appears as underline
 - **Verify**: Sidebar shows the flag in "Your Flags" list
 
-### 5.3 Reference
+### 6.3 Reference
 - In Locate mode, the **hint card** itself serves as the scaffold (flaw type + reading strategy)
 - The Flaw Field Guide is available in **Spot and Classify** modes, not Locate (hint card replaces it)
 - Students can always access the standalone **Learn** page from the nav bar for full definitions
 
 ---
 
-## Part 6: Student — Classify Mode (Group A)
+## Part 7: Student — Classify Mode (Group A)
 
-### 6.1 Login as a Group A student
+### 7.1 Login as a Group A student
 - **Window S**: Log out, enter name `Maya Johnson`
 - Click the active session
 - **Verify**: Full transcript, no dimming, no hints
 - **Verify**: Bottom bar shows **4 flaw type buttons** (Reasoning, Epistemic, Completeness, Coherence)
 - **Verify**: Flaw Field Guide in sidebar
 
-### 6.2 Annotate
+### 7.2 Annotate
 - Select text, click a flaw type button
 - **Verify**: Annotation appears with color matching the flaw type
 - Click **Undo** — verify last annotation removed
 
 ---
 
-## Part 7: Teacher — Mid-Session Mode Change
+## Part 8: Teacher — Mid-Session Mode Change
 
-### 7.1 Change Group B's mode
+### 8.1 Change Group B's mode
 - **Window T**: On the dashboard, find Group B's card
 - Click the **"Locate"** mode badge
 - **Verify**: A dropdown appears with all 6 practice modes
 - Select **Spot**
 - **Verify**: Badge updates to "Spot"
 
-### 7.2 Verify student sees the change
+### 8.2 Verify student sees the change
 - **Window S** (logged in as Carlos Ramirez): Page should **auto-refresh**
 - **Verify**: Hint card is gone, sections are no longer dimmed
 - **Verify**: Bottom bar still shows single "Flag This" button (Spot mode)
@@ -160,9 +216,9 @@ Open two browser windows:
 
 ---
 
-## Part 8: Teacher — Scaffolding
+## Part 9: Teacher — Scaffolding
 
-### 8.1 Send a scaffold
+### 9.1 Send a scaffold
 - **Window T**: Click **Send scaffold** on Group A's card
 - Pick a template or type a custom message
 - Click **Send**
@@ -171,13 +227,13 @@ Open two browser windows:
 
 ---
 
-## Part 9: Group Phase
+## Part 10: Group Phase
 
-### 9.1 Advance to Group Phase
+### 10.1 Advance to Group Phase
 - **Window T**: Click **Group Phase**
 - **Verify**: Student windows show notification "Group Phase — discuss with your team!"
 
-### 9.2 Student group experience
+### 10.2 Student group experience
 - **Window S** (any annotating student):
 - **Verify**: Can see other group members' annotations
 - **Verify**: Each annotation has **Confirm** / **Unconfirm** buttons
@@ -185,32 +241,32 @@ Open two browser windows:
 
 ---
 
-## Part 10: Review Phase
+## Part 11: Review Phase
 
-### 10.1 Release evaluation
+### 11.1 Release evaluation
 - **Window T**: Click **Release Evaluation**
 - **Verify**: Students transition to feedback view
 
-### 10.2 Student feedback view
+### 11.2 Student feedback view
 - **Window S**:
 - **Verify**: Three tabs — Transcript, Your Annotations, Reference Flaws
 - **Verify**: Annotations show match colors (green = exact, blue = wrong type, red = false positive)
 - **Verify**: Summary stats at top (found X of Y flaws)
 
-### 10.3 Class view
+### 11.3 Class view
 - **Window T**: Click **Class View**
 - **Verify**: Projectable screen with aggregate results
 
 ---
 
-## Part 11: Student Progress
+## Part 12: Student Progress
 
 - **Window S**: Click **Progress** in nav
 - **Verify**: Shows the session just completed with detection rate and flaw type breakdown
 
 ---
 
-## Part 12: Edge Cases
+## Part 13: Edge Cases
 
 | Test | Expected |
 |------|----------|
@@ -225,3 +281,15 @@ Open two browser windows:
 | WiFi drop during annotation | Annotation saves via HTTP; Socket.IO auto-reconnects |
 | Teacher clicks mode badge in setup/closed phase | Badge is not clickable (no hover effect, no dropdown) |
 | Student signs out on shared tablet | All crosscheck: localStorage cleared, next student starts fresh |
+| Activities page with no activities ingested | Shows "No activities available yet." message |
+| Activity preview with null metadata (no profiles) | Meet the Team tab shows agent names/roles only with "Profile data not available" |
+| Activity preview with null evaluation | Overview tab shows "Evaluation pending — check back shortly." |
+| Flaw popover near bottom of viewport | Popover flips above the highlight instead of below |
+| Flaw popover near right edge of viewport | Popover shifts left to stay within viewport |
+| Click highlighted passage, then click elsewhere | Popover closes |
+| Click highlighted passage, then press Escape | Popover closes |
+| Click highlighted passage, then click a different highlight | First popover closes, second opens |
+| Cross-section flaw popover "Also in" link | Closes popover, scrolls to other section |
+| Overview tab flaw click → Transcript tab | Switches tab, scrolls to section, opens popover |
+| Meet the Team "See in transcript →" click | Switches tab, scrolls to section, opens popover |
+| Guide page scaffold templates | All 6 levels shown with 2 examples each (12 templates total) |

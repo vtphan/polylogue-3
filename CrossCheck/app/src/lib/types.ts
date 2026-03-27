@@ -148,27 +148,31 @@ export const MODE_KNOB_INFO: Record<SessionMode, {
 };
 
 // Flaw type display info
-export const FLAW_TYPES: Record<FlawType, { label: string; color: string; bgColor: string; description: string }> = {
+export const FLAW_TYPES: Record<FlawType, { label: string; abbrev: string; color: string; bgColor: string; description: string }> = {
   reasoning: {
     label: "Reasoning",
+    abbrev: "R",
     color: "text-red-700",
     bgColor: "bg-red-100",
     description: "The logic doesn't hold up — bad arguments, jumping to conclusions, or circular thinking.",
   },
   epistemic: {
     label: "Epistemic",
+    abbrev: "E",
     color: "text-amber-700",
     bgColor: "bg-amber-100",
     description: "Treating guesses as facts, cherry-picking evidence, or being way too confident.",
   },
   completeness: {
     label: "Completeness",
+    abbrev: "Cp",
     color: "text-blue-700",
     bgColor: "bg-blue-100",
     description: "Something important is missing — key people, tradeoffs, or obvious counterpoints.",
   },
   coherence: {
     label: "Coherence",
+    abbrev: "Co",
     color: "text-purple-700",
     bgColor: "bg-purple-100",
     description: "Team members contradict each other, or the conclusion doesn't match the evidence.",
