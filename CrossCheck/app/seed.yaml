@@ -1,7 +1,4 @@
 # CrossCheck seed data
-# Teachers and researchers who can log in to the system.
-# Students are added by teachers via the UI.
-#
 # Everyone logs in with their name. Teachers/researchers also need a password.
 # Passwords are stored as bcrypt hashes — plaintext here is fine for a school deployment.
 
@@ -14,3 +11,112 @@ teachers:
 researchers:
   - name: Dr. Chen
     password: researcher123
+
+# Classes with student rosters (for testing).
+# Students log in by name only — no password needed.
+# A student listed in multiple classes will belong to both.
+
+classes:
+  - name: 6th STEM Period 2
+    teacher: Ms. Johnson
+    students:
+      - Maya Johnson
+      - DeAndre Williams
+      - Sophia Chen
+      - Jaylen Brooks
+      - Aaliyah Mitchell
+      - Carlos Ramirez
+      - Emma Thompson
+      - Malik Harris
+      - Chloe Patterson
+      - Isaiah Davis
+      - Lily Nguyen
+      - Marcus Jackson
+      - Ava Washington
+      - Tyler Lee
+      - Jasmine King
+      - Noah Garcia
+      - Brianna Smith
+      - Ethan Moore
+      - Zara Ahmed
+      - Liam Foster
+
+  - name: 6th Humanities Period 3
+    teacher: Ms. Johnson
+    students:
+      # 12 shared with 6th STEM (same grade, different subject)
+      - Maya Johnson
+      - DeAndre Williams
+      - Sophia Chen
+      - Jaylen Brooks
+      - Aaliyah Mitchell
+      - Carlos Ramirez
+      - Emma Thompson
+      - Malik Harris
+      - Chloe Patterson
+      - Isaiah Davis
+      - Lily Nguyen
+      - Marcus Jackson
+      # 8 different students
+      - Amara Okafor
+      - Diego Santos
+      - Hannah Kim
+      - Jordan Taylor
+      - Kayla Robinson
+      - Mia Patel
+      - Owen Murphy
+      - Sadie Brooks
+
+  - name: 7th STEM Period 1
+    teacher: Mr. Davis
+    students:
+      - Ava Washington
+      - Tyler Lee
+      - Jasmine King
+      - Noah Garcia
+      - Brianna Smith
+      - Ethan Moore
+      - Zara Ahmed
+      - Liam Foster
+      - Caleb Brown
+      - Destiny Coleman
+      - Elijah Wright
+      - Faith Henderson
+      - Gabriel Martinez
+      - Hailey Tran
+      - Isaac Simmons
+      - Jade Cooper
+      - Kendall Price
+      - Layla Richardson
+      - Mason Reed
+      - Nadia Osei
+      - Oscar Vega
+      - Priya Sharma
+
+  - name: 7th Humanities Period 4
+    teacher: Mr. Davis
+    students:
+      # 14 shared with 7th STEM (same grade, different subject)
+      - Ava Washington
+      - Tyler Lee
+      - Jasmine King
+      - Noah Garcia
+      - Brianna Smith
+      - Ethan Moore
+      - Zara Ahmed
+      - Liam Foster
+      - Caleb Brown
+      - Destiny Coleman
+      - Elijah Wright
+      - Faith Henderson
+      - Gabriel Martinez
+      - Hailey Tran
+      # 8 different students
+      - Ruby Dawson
+      - Sienna James
+      - Theo Nakamura
+      - Violet Park
+      - Wesley Dunn
+      - Ximena Cruz
+      - Yasmin Ali
+      - Zion Campbell

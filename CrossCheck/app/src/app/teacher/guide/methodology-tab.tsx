@@ -33,23 +33,7 @@ function PracticeModes() {
         {MODES.map((mode) => (
           <div key={mode.id} className="bg-white rounded-lg border border-gray-200 px-4 py-3 flex flex-col">
             <span className="text-sm font-semibold text-gray-900 mb-1">{mode.name}</span>
-            <p className="text-xs text-gray-600 leading-relaxed mb-3 flex-1">{mode.description}</p>
-            <div>
-              <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wide">
-                {mode.knobLabel}
-              </span>
-              <div className="flex flex-wrap items-center gap-1 mt-1">
-                {mode.knobOptions.map((opt) => (
-                  <span
-                    key={opt.label}
-                    className="text-[11px] px-2 py-0.5 rounded border border-gray-200 bg-gray-50 text-gray-600"
-                  >
-                    {opt.label}
-                  </span>
-                ))}
-              </div>
-              <p className="text-[11px] text-gray-400 mt-1">{mode.knobTip}</p>
-            </div>
+            <p className="text-xs text-gray-600 leading-relaxed flex-1">{mode.description}</p>
           </div>
         ))}
       </div>
@@ -62,50 +46,25 @@ const MODES = [
     id: "recognize",
     name: "Recognize",
     description:
-      "Flaws are pre-highlighted. Students identify what type each one is. False positives are mixed in.",
-    knobLabel: "Format",
-    knobOptions: [
-      { label: "A/B choice" },
-      { label: "Multiple choice" },
-    ],
-    knobTip: "A/B for groups that are guessing",
+      "Flaws are pre-highlighted with false positives mixed in. Students choose the flaw type for each one. Practices comprehension — understanding what makes something a flaw. Difficulty: A/B choice (easier) or multiple choice.",
   },
   {
     id: "locate",
     name: "Locate",
     description:
-      "A hint card names the flaw type and target section. Students pinpoint the exact passage. One false-positive hint included.",
-    knobLabel: "Hint scope",
-    knobOptions: [
-      { label: "Sentence" },
-      { label: "Section" },
-    ],
-    knobTip: "Sentence narrows the search area",
+      "Hint cards give the flaw type and general area. Students find the exact passage. Practices directed search — reading closely with a purpose. Difficulty: sentence-level hints (easier) or section-level.",
   },
   {
     id: "classify",
     name: "Classify",
     description:
-      "No hints or highlights. Students search the full transcript, flag flaws, and categorize them. A Field Guide sidebar and on-demand hints are available.",
-    knobLabel: "Categorization",
-    knobOptions: [
-      { label: "Detect only" },
-      { label: "Assisted" },
-      { label: "Full" },
-    ],
-    knobTip: "Detect only = flag without categorizing",
+      "No hints or highlights. Students search the full transcript and flag what they find. Practices independent analysis. Difficulty: flag only (easier), assisted categorization, or full categorization.",
   },
   {
     id: "explain",
     name: "Explain",
     description:
-      "Open search like Classify, plus students judge severity (minor/moderate/major) and write a justification for each flaw.",
-    knobLabel: "Explanation",
-    knobOptions: [
-      { label: "Guided" },
-      { label: "Free text" },
-    ],
-    knobTip: "Guided gives a sentence template",
+      "Same open search as Classify, plus students judge severity and justify each flaw in writing. Practices evaluation and reasoning. Difficulty: guided template (easier) or free text.",
   },
 ];
 
