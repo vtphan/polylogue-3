@@ -29,8 +29,8 @@ export default async function TeacherActivityPreviewPage({ params }: PageProps) 
 
   return (
     <div>
-      <a href="/teacher/sessions/new" className="text-sm text-blue-600 hover:text-blue-800">
-        &larr; Back to create session
+      <a href="/teacher/activities" className="text-sm text-blue-600 hover:text-blue-800">
+        &larr; Back to transcripts
       </a>
       <ActivityPreview
         activity={JSON.parse(JSON.stringify(activityData))}

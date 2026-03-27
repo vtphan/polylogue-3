@@ -6,11 +6,8 @@ import { FLAW_TYPES } from "@/lib/types";
 import type { FlawType } from "@/lib/types";
 
 const STATUS_COLORS: Record<string, string> = {
-  setup: "bg-gray-100 text-gray-600",
-  individual: "bg-blue-100 text-blue-700",
-  group: "bg-yellow-100 text-yellow-700",
-  reviewing: "bg-purple-100 text-purple-700",
-  closed: "bg-gray-100 text-gray-500",
+  active: "bg-green-100 text-green-700",
+  complete: "bg-gray-100 text-gray-500",
 };
 
 export default async function ResearcherSessionsPage() {

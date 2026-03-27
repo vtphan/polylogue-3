@@ -4,11 +4,8 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 
 const STATUS_BADGES: Record<string, { label: string; color: string }> = {
-  setup: { label: "Setup", color: "bg-gray-100 text-gray-600" },
-  individual: { label: "Individual", color: "bg-blue-100 text-blue-700" },
-  group: { label: "Group", color: "bg-yellow-100 text-yellow-700" },
-  reviewing: { label: "Reviewing", color: "bg-purple-100 text-purple-700" },
-  closed: { label: "Closed", color: "bg-gray-100 text-gray-500" },
+  active: { label: "Active", color: "bg-green-100 text-green-700" },
+  complete: { label: "Complete", color: "bg-gray-100 text-gray-500" },
 };
 
 interface PageProps {
@@ -105,7 +102,7 @@ export default async function ClassDetailPage({ params }: PageProps) {
         ) : (
           <div className="space-y-3">
             {cls.sessions.map((s) => {
-              const statusInfo = STATUS_BADGES[s.status] || STATUS_BADGES.setup;
+              const statusInfo = STATUS_BADGES[s.status] || STATUS_BADGES.active;
               const totalStudents = s.groups.reduce((sum, g) => sum + g._count.members, 0);
               const totalAnnotations = s.groups.reduce((sum, g) => sum + g._count.annotations, 0);
 
