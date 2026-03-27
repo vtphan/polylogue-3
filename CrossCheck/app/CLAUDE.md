@@ -34,12 +34,16 @@ npm run dev:next     # Plain Next.js without Socket.IO (fallback)
 - **Teacher nav**: `Classes | Transcripts | Guide`. "Transcripts" was formerly "Activities".
 - **Teacher routes**: `/teacher` shows class grid. `/teacher/classes/new` creates a class. `/teacher/classes/[classId]` shows class detail (roster + sessions). `/teacher/classes/[classId]/sessions/new` creates a session scoped to a class. `/teacher/sessions/[id]` is the session dashboard.
 
-## Session Phases
+## Session & Group Phases
 
-`setup` → `individual` → `group` → `reviewing` → `closed`
+Session lifecycle: `active` → `complete` (no setup phase — sessions start active)
 
+Group learning phases (per-group, independent): `individual` → `group` → `reviewing`
+
+- Teacher advances each group independently via `PATCH /api/groups/[id]/phase`
 - `reviewing` → `group` allowed (reopen with confirmation)
-- Delete allowed in `setup`/`closed` only
+- Student readiness signals via `POST /api/groups/[id]/ready` (informational, teacher decides)
+- Delete allowed when session is `active` or `complete`
 - Individual phase: API filters annotations to own userId for students
 
 ## Socket.IO Events
@@ -51,7 +55,8 @@ npm run dev:next     # Plain Next.js without Socket.IO (fallback)
 | `annotation:confirmed` | PATCH /api/annotations/[id] | group + session (via .except) |
 | `scaffold:sent` | POST /api/scaffolds | group + session (via .except) |
 | `scaffold:acknowledged` | PATCH /api/scaffolds/[id] | session only |
-| `session:phase_changed` | PATCH /api/sessions/[id] | session only |
+| `group:phase_changed` | PATCH /api/groups/[id]/phase | group + session |
+| `group:ready_changed` | POST /api/groups/[id]/ready | session only |
 
 Room joins are validated against the database (teacher ownership / student group membership).
 
@@ -69,4 +74,6 @@ Seed data is configured in `seed.yaml` at the app root. Contains teacher/researc
 - `GET/PATCH/DELETE /api/classes/[id]` — class detail / update / delete
 - `POST/DELETE /api/classes/[id]/students` — add / remove students from a class
 - `POST /api/sessions` — create session (accepts `classId`)
+- `PATCH /api/groups/[id]/phase` — advance group phase (teacher only)
+- `POST /api/groups/[id]/ready` — student readiness toggle
 - `POST /api/users` — create user (only needs `displayName`, username auto-derived)
