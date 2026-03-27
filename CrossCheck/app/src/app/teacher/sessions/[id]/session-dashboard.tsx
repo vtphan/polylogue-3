@@ -252,6 +252,31 @@ export function SessionDashboard({ session: initialSession }: { session: Session
     setConnectedUsers(new Map(roster.map((r) => [r.userId, r.groupId])));
   }, []);
 
+  const onGroupPhaseChanged = useCallback((event: { groupId: string; phase: string }) => {
+    setSession((prev) => ({
+      ...prev,
+      groups: prev.groups.map((g) =>
+        g.id === event.groupId ? { ...g, phase: event.phase, readySignals: [] } : g
+      ),
+    }));
+  }, []);
+
+  const onGroupReadyChanged = useCallback((event: { groupId: string; userId: string; ready: boolean }) => {
+    setSession((prev) => ({
+      ...prev,
+      groups: prev.groups.map((g) =>
+        g.id === event.groupId
+          ? {
+              ...g,
+              readySignals: event.ready
+                ? [...g.readySignals.filter((r) => r.userId !== event.userId), { userId: event.userId }]
+                : g.readySignals.filter((r) => r.userId !== event.userId),
+            }
+          : g
+      ),
+    }));
+  }, []);
+
   const { isConnected } = useSessionSocket(session.id, null, {
     onAnnotationCreated,
     onAnnotationDeleted,
@@ -259,6 +284,8 @@ export function SessionDashboard({ session: initialSession }: { session: Session
     onScaffoldSent,
     onScaffoldAcknowledged,
     onPhaseChanged,
+    onGroupPhaseChanged,
+    onGroupReadyChanged,
     onUserConnected,
     onUserDisconnected,
     onConnectionRoster,
@@ -432,27 +459,7 @@ export function SessionDashboard({ session: initialSession }: { session: Session
         </div>
       )}
 
-      {/* Phase indicator */}
-      <div className="flex items-center gap-1 mb-6">
-        {STATUS_FLOW.map((s, i) => (
-          <div key={s} className="flex items-center">
-            <div
-              className={`text-xs px-2 py-1 rounded ${
-                s === session.status
-                  ? "bg-blue-600 text-white font-medium"
-                  : i < currentStatusIndex
-                    ? "bg-blue-100 text-blue-700"
-                    : "bg-gray-100 text-gray-400"
-              }`}
-            >
-              {STATUS_LABELS[s] || s}
-            </div>
-            {i < STATUS_FLOW.length - 1 && (
-              <div className={`w-4 h-px mx-0.5 ${i < currentStatusIndex ? "bg-blue-300" : "bg-gray-200"}`} />
-            )}
-          </div>
-        ))}
-      </div>
+      {/* No session-level phase bar — phase is per-group now */}
 
       {/* Groups + Detail: side-by-side */}
       <div className="flex flex-col md:flex-row gap-4 mb-6">
@@ -563,9 +570,17 @@ export function SessionDashboard({ session: initialSession }: { session: Session
                     )}
                   </div>
                 </div>
-                <div className="flex items-center gap-3 mt-1 text-xs text-gray-400">
+                <div className="flex items-center gap-2 mt-1 text-[11px] text-gray-400">
+                  <span className={`font-medium ${
+                    group.phase === "reviewing" ? "text-purple-600" : group.phase === "group" ? "text-amber-600" : "text-blue-600"
+                  }`}>
+                    {group.phase === "individual" ? "Individual" : group.phase === "group" ? "Group" : "Reviewing"}
+                  </span>
                   <span>{statText}</span>
                   {matchText && <span className="text-green-600 font-medium">{matchText}</span>}
+                  {group.phase !== "reviewing" && group.readySignals.length > 0 && (
+                    <span className="text-green-500">{group.readySignals.length}/{group.members.length} ready</span>
+                  )}
                 </div>
               </div>
             );
@@ -610,6 +625,23 @@ export function SessionDashboard({ session: initialSession }: { session: Session
               onSendScaffold={sendScaffold}
               sendingScaffold={sending}
               sessionStatus={session.status}
+              connectedUsers={connectedUsers}
+              onAdvancePhase={async (groupId, phase) => {
+                setActionError(null);
+                try {
+                  const res = await fetch(`/api/groups/${groupId}/phase`, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ phase }),
+                  });
+                  if (!res.ok) {
+                    const data = await res.json().catch(() => ({}));
+                    setActionError(data.error || "Failed to advance phase");
+                  }
+                } catch {
+                  setActionError("Network error — please try again");
+                }
+              }}
             />
           ) : (
             <div className="bg-white border border-gray-200 rounded-lg p-8 text-center text-sm text-gray-400">
@@ -683,6 +715,12 @@ export function SessionDashboard({ session: initialSession }: { session: Session
   );
 }
 
+const PHASE_LABELS: Record<string, string> = { individual: "Individual", group: "Group", reviewing: "Reviewing" };
+const NEXT_PHASE: Record<string, { phase: string; label: string }> = {
+  individual: { phase: "group", label: "Start Group Work" },
+  group: { phase: "reviewing", label: "Show Results" },
+};
+
 function GroupDetail({
   group,
   flawIndex,
@@ -694,6 +732,8 @@ function GroupDetail({
   onSendScaffold,
   sendingScaffold,
   sessionStatus,
+  connectedUsers,
+  onAdvancePhase,
 }: {
   group: GroupData;
   flawIndex: { flaw_id: string; locations: string[]; flaw_type: string }[];
@@ -705,23 +745,56 @@ function GroupDetail({
   onSendScaffold: () => void;
   sendingScaffold: boolean;
   sessionStatus: string;
+  connectedUsers: Map<string, string | null>;
+  onAdvancePhase: (groupId: string, phase: string) => void;
 }) {
+  const [showAnnotations, setShowAnnotations] = useState(false);
   const [showTranscript, setShowTranscript] = useState(false);
+
+  const mode = group.config?.difficulty_mode;
+  const isResponseMode = mode === "learn" || mode === "recognize";
 
   // Match annotations against flaw index
   const matchedFlaws = new Set<string>();
   for (const ann of group.annotations) {
     for (const flaw of flawIndex) {
-      if (
-        flaw.locations.includes(ann.location.item_id) &&
-        flaw.flaw_type === ann.flawType
-      ) {
+      if (flaw.locations.includes(ann.location.item_id) && flaw.flaw_type === ann.flawType) {
         matchedFlaws.add(flaw.flaw_id);
       }
     }
   }
 
-  // Convert annotations for the transcript viewer
+  // Per-user stats: learn quiz + activity (annotations or responses)
+  const learnByUser = new Map<string, { total: number; correct: number; selfInitiated: boolean }>();
+  for (const r of group.flawResponses.filter((r) => r.flawId.startsWith("learn:") || r.flawId.startsWith("self-learn:"))) {
+    const e = learnByUser.get(r.userId) || { total: 0, correct: 0, selfInitiated: false };
+    e.total++; if (r.typeCorrect) e.correct++;
+    if (r.flawId.startsWith("self-learn:")) e.selfInitiated = true;
+    learnByUser.set(r.userId, e);
+  }
+
+  const activityByUser = new Map<string, { count: number; confirmed: number }>();
+  if (isResponseMode) {
+    const resps = mode === "learn"
+      ? group.flawResponses.filter((r) => r.flawId.startsWith("learn:") || r.flawId.startsWith("self-learn:"))
+      : group.flawResponses.filter((r) => !r.flawId.startsWith("learn:") && !r.flawId.startsWith("self-learn:"));
+    for (const r of resps) {
+      const e = activityByUser.get(r.userId) || { count: 0, confirmed: 0 };
+      e.count++; if (r.typeCorrect) e.confirmed++;
+      activityByUser.set(r.userId, e);
+    }
+  } else {
+    for (const a of group.annotations) {
+      const e = activityByUser.get(a.userId) || { count: 0, confirmed: 0 };
+      e.count++; if (a.isGroupAnswer) e.confirmed++;
+      activityByUser.set(a.userId, e);
+    }
+  }
+
+  const nextPhase = NEXT_PHASE[group.phase];
+  const readySet = new Set(group.readySignals.map((r) => r.userId));
+
+  // Annotation viewer data
   const viewerAnnotations: Annotation[] = group.annotations.map((a) => ({
     id: a.id,
     location: a.location as AnnotationLocation,
@@ -729,85 +802,76 @@ function GroupDetail({
     createdAt: a.createdAt,
   }));
 
-  const mode = group.config?.difficulty_mode;
-  const isResponseMode = mode === "learn" || mode === "recognize";
-
-  // Learn quiz stats (assigned + self-initiated) — shown for ALL groups
-  const allLearnResponses = group.flawResponses.filter((r) => r.flawId.startsWith("learn:") || r.flawId.startsWith("self-learn:"));
-  const learnByUser = new Map<string, { total: number; correct: number; selfInitiated: boolean }>();
-  for (const r of allLearnResponses) {
-    const entry = learnByUser.get(r.userId) || { total: 0, correct: 0, selfInitiated: false };
-    entry.total++;
-    if (r.typeCorrect) entry.correct++;
-    if (r.flawId.startsWith("self-learn:")) entry.selfInitiated = true;
-    learnByUser.set(r.userId, entry);
-  }
-
-  // For Learn/Recognize modes: compute quiz stats from flawResponses
-  const learnResponses = group.flawResponses.filter((r) => r.flawId.startsWith("learn:") || r.flawId.startsWith("self-learn:"));
-  const recognizeResponses = group.flawResponses.filter((r) => !r.flawId.startsWith("learn:") && !r.flawId.startsWith("self-learn:"));
-  const responses = mode === "learn" ? learnResponses : mode === "recognize" ? recognizeResponses : [];
-  const responsesByUser = new Map<string, { total: number; correct: number }>();
-  for (const r of responses) {
-    const entry = responsesByUser.get(r.userId) || { total: 0, correct: 0 };
-    entry.total++;
-    if (r.typeCorrect) entry.correct++;
-    responsesByUser.set(r.userId, entry);
-  }
-
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-5">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="font-semibold text-gray-900">
-          {group.name} — Detail
-        </h3>
-        {!isResponseMode && (
-          <button
-            onClick={() => setShowTranscript(!showTranscript)}
-            className="text-xs text-blue-600 hover:text-blue-800"
-          >
-            {showTranscript ? "Hide transcript" : "View on transcript"}
-          </button>
-        )}
+    <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-4">
+      {/* Section 1: Header — name + mode + phase + advance */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <h3 className="font-semibold text-gray-900">{group.name}</h3>
+          {mode && (
+            <span className="text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">
+              {DIFFICULTY_MODE_INFO[mode as DifficultyMode]?.label || mode}
+            </span>
+          )}
+          <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${
+            group.phase === "reviewing" ? "bg-purple-100 text-purple-700"
+              : group.phase === "group" ? "bg-amber-100 text-amber-700"
+              : "bg-blue-100 text-blue-700"
+          }`}>
+            {PHASE_LABELS[group.phase] || group.phase}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          {group.phase === "reviewing" && sessionStatus === "active" && (
+            <button
+              onClick={() => {
+                if (confirm("Reopen this group? Students will return to group work.")) {
+                  onAdvancePhase(group.id, "group");
+                }
+              }}
+              className="text-xs text-gray-500 hover:text-gray-700"
+            >
+              Reopen
+            </button>
+          )}
+          {nextPhase && sessionStatus === "active" && (
+            <button
+              onClick={() => onAdvancePhase(group.id, nextPhase.phase)}
+              className="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors"
+            >
+              {nextPhase.label}
+              {readySet.size > 0 && (
+                <span className="ml-1 text-blue-200">{readySet.size}/{group.members.length}</span>
+              )}
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* Scaffold form — always visible for active sessions */}
-      {sessionStatus !== "complete" && (
-        <div className="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-3">
+      {/* Section 2: Scaffold */}
+      {sessionStatus === "active" && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
           <div className="flex flex-wrap gap-1 mb-2">
             {SCAFFOLD_TEMPLATES.map((t, i) => (
-              <button
-                key={i}
-                onClick={() => onScaffoldTextChange(t.text)}
+              <button key={i} onClick={() => onScaffoldTextChange(t.text)}
                 className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded hover:bg-blue-200 transition-colors"
-                title={`Level ${t.level}: ${t.text}`}
-              >
-                {t.label}
-              </button>
+                title={`Level ${t.level}: ${t.text}`}>{t.label}</button>
             ))}
           </div>
           <div className="flex gap-2">
-            <input
-              value={scaffoldText}
-              onChange={(e) => onScaffoldTextChange(e.target.value)}
+            <input value={scaffoldText} onChange={(e) => onScaffoldTextChange(e.target.value)}
               placeholder="Type a hint or pick a template..."
               className="flex-1 text-sm border border-blue-200 rounded px-3 py-1.5 bg-white focus:outline-none focus:border-blue-400"
-              onKeyDown={(e) => e.key === "Enter" && onSendScaffold()}
-            />
-            <button
-              onClick={onSendScaffold}
-              disabled={!scaffoldText.trim() || sendingScaffold}
-              className="bg-blue-600 text-white text-sm px-4 py-1.5 rounded hover:bg-blue-700 disabled:opacity-50 transition-colors"
-            >
-              {sendingScaffold ? "..." : "Send"}
-            </button>
+              onKeyDown={(e) => e.key === "Enter" && onSendScaffold()} />
+            <button onClick={onSendScaffold} disabled={!scaffoldText.trim() || sendingScaffold}
+              className="bg-blue-600 text-white text-sm px-4 py-1.5 rounded hover:bg-blue-700 disabled:opacity-50 transition-colors">
+              {sendingScaffold ? "..." : "Send"}</button>
           </div>
           {group.scaffolds.length > 0 && (
             <div className="mt-2 pt-2 border-t border-blue-200">
               {group.scaffolds.slice(0, 3).map((s) => (
                 <div key={s.id} className="text-xs text-blue-700 truncate">
-                  {s.text}
-                  {s.acknowledgedAt && <span className="text-green-600 ml-1">&#10003;</span>}
+                  {s.text}{s.acknowledgedAt && <span className="text-green-600 ml-1">&#10003;</span>}
                 </div>
               ))}
             </div>
@@ -815,163 +879,96 @@ function GroupDetail({
         </div>
       )}
 
-      {/* Transcript with annotations overlaid (not for Learn/Recognize) */}
-      {!isResponseMode && showTranscript && (
-        <div className="mb-4 border border-gray-100 rounded-lg p-3 bg-gray-50 max-h-96 overflow-y-auto">
-          {activityType === "presentation" ? (
-            <PresentationView
-              sections={(transcript as PresentationTranscript).sections}
-              agents={agents}
-              annotations={viewerAnnotations}
-              onTextSelected={() => {}}
-              onAnnotationClick={() => {}}
-            />
-          ) : (
-            <DiscussionView
-              turns={(transcript as DiscussionTranscript).turns}
-              agents={agents}
-              annotations={viewerAnnotations}
-              onTextSelected={() => {}}
-              onAnnotationClick={() => {}}
-            />
-          )}
-        </div>
-      )}
-
-      {isResponseMode ? (
-        /* Learn/Recognize mode: show quiz stats per student */
-        <div>
-          <div className="grid grid-cols-2 gap-4 mb-4 text-center">
-            <div className="bg-blue-50 rounded p-3">
-              <div className="text-2xl font-bold text-blue-700">
-                {responsesByUser.size}
-              </div>
-              <div className="text-xs text-blue-600">
-                {responsesByUser.size === 1 ? "Student responded" : "Students responded"}
-              </div>
-            </div>
-            <div className="bg-green-50 rounded p-3">
-              <div className="text-2xl font-bold text-green-700">
-                {responses.length > 0
-                  ? Math.round((responses.filter((r) => r.typeCorrect).length / responses.length) * 100)
-                  : 0}%
-              </div>
-              <div className="text-xs text-green-600">Accuracy</div>
-            </div>
-          </div>
-
-          {/* Per-student breakdown */}
-          <div className="space-y-2">
-            {group.members.map((m) => {
-              const stats = responsesByUser.get(m.user.id);
-              return (
-                <div key={m.user.id} className="flex items-center justify-between text-sm py-1.5 border-b border-gray-50 last:border-0">
-                  <span className="text-gray-700">{m.user.displayName}</span>
-                  {stats ? (
-                    <span className="text-xs text-gray-500">
-                      {stats.correct}/{stats.total} correct
-                    </span>
-                  ) : (
-                    <span className="text-xs text-gray-300">Not started</span>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-
-          {/* For Recognize groups: also show Learning Progress if students self-learned */}
-          {mode === "recognize" && learnByUser.size > 0 && (
-            <div className="mt-4 pt-4 border-t border-gray-100">
-              <h4 className="text-xs font-medium text-gray-500 mb-2">Learning Progress</h4>
-              <div className="space-y-1.5">
-                {group.members.map((m) => {
-                  const stats = learnByUser.get(m.user.id);
-                  return (
-                    <div key={m.user.id} className="flex items-center justify-between text-xs py-1">
-                      <span className="text-gray-600">{m.user.displayName}</span>
-                      {stats ? (
-                        <span className="text-gray-500">
-                          {stats.correct}/{stats.total} correct
-                          {stats.selfInitiated && (
-                            <span className="ml-1 text-blue-500" title="Self-initiated practice">(self)</span>
-                          )}
-                        </span>
-                      ) : (
-                        <span className="text-gray-300">Not learned yet</span>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </div>
-      ) : (
-        /* Annotation modes: show flaw matching stats */
-        <>
-          <div className="grid grid-cols-3 gap-4 mb-4 text-center">
-            <div className="bg-green-50 rounded p-3">
-              <div className="text-2xl font-bold text-green-700">
-                {matchedFlaws.size}
-              </div>
-              <div className="text-xs text-green-600">Flaws found</div>
-            </div>
-            <div className="bg-yellow-50 rounded p-3">
-              <div className="text-2xl font-bold text-yellow-700">
-                {flawIndex.length - matchedFlaws.size}
-              </div>
-              <div className="text-xs text-yellow-600">Flaws missed</div>
-            </div>
-            <div className="bg-gray-50 rounded p-3">
-              <div className="text-2xl font-bold text-gray-700">
-                {group.annotations.length}
-              </div>
-              <div className="text-xs text-gray-600">Total annotations</div>
-            </div>
-            {group.annotations.some((a) => a.hinted) && (
-              <div className="bg-amber-50 rounded p-3">
-                <div className="text-2xl font-bold text-amber-600">
-                  {group.annotations.filter((a) => a.hinted).length}
-                </div>
-                <div className="text-xs text-amber-600">Hint-assisted</div>
-              </div>
+      {/* Section 3: Group stats */}
+      <div className="flex items-center gap-4 text-xs text-gray-500">
+        {isResponseMode ? (
+          <>
+            <span>{activityByUser.size}/{group.members.length} responded</span>
+            {group.flawResponses.length > 0 && (
+              <span className="text-green-600 font-medium">
+                {Math.round((group.flawResponses.filter((r) => r.typeCorrect).length / group.flawResponses.length) * 100)}% accuracy
+              </span>
             )}
-          </div>
+          </>
+        ) : (
+          <>
+            <span>{group.annotations.length} annotations</span>
+            <span>{matchedFlaws.size}/{flawIndex.length} flaws found</span>
+            <span>{new Set(group.annotations.map((a) => a.location.item_id)).size} sections</span>
+            {group.annotations.some((a) => a.hinted) && (
+              <span className="text-amber-500">{group.annotations.filter((a) => a.hinted).length} hinted</span>
+            )}
+          </>
+        )}
+      </div>
 
-          {/* Annotation list */}
-          <div className="space-y-2">
-            {group.annotations.map((ann) => (
-              <AnnotationCard key={ann.id} ann={ann} group={group} />
-            ))}
-          </div>
+      {/* Section 4: Individual student stats — one row per student */}
+      <div className="space-y-0.5">
+        {group.members.map((m) => {
+          const connected = connectedUsers.has(m.user.id);
+          const learn = learnByUser.get(m.user.id);
+          const activity = activityByUser.get(m.user.id);
+          const ready = readySet.has(m.user.id);
 
-          {/* Learning progress — shown for annotation groups when students have Learn quiz data */}
-          {learnByUser.size > 0 && (
-            <div className="mt-4 pt-4 border-t border-gray-100">
-              <h4 className="text-xs font-medium text-gray-500 mb-2">Learning Progress</h4>
-              <div className="space-y-1.5">
-                {group.members.map((m) => {
-                  const stats = learnByUser.get(m.user.id);
-                  return (
-                    <div key={m.user.id} className="flex items-center justify-between text-xs py-1">
-                      <span className="text-gray-600">{m.user.displayName}</span>
-                      {stats ? (
-                        <span className="text-gray-500">
-                          {stats.correct}/{stats.total} correct
-                          {stats.selfInitiated && (
-                            <span className="ml-1 text-blue-500" title="Self-initiated practice">(self)</span>
-                          )}
-                        </span>
-                      ) : (
-                        <span className="text-gray-300">Not learned yet</span>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+          return (
+            <div key={m.user.id} className="flex items-center gap-2 text-xs py-1 border-b border-gray-50 last:border-0">
+              <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${connected ? "bg-green-400" : "bg-gray-300"}`} />
+              <span className="text-gray-700 w-32 truncate">{m.user.displayName}</span>
+              <span className="text-gray-400 tabular-nums">
+                {learn ? `Quiz ${learn.correct}/${learn.total}` : "Quiz —"}
+              </span>
+              <span className="text-gray-400 tabular-nums">
+                {isResponseMode
+                  ? (activity ? `${activity.confirmed}/${activity.count} correct` : "—")
+                  : (activity ? `${activity.count} ann` : "0 ann")}
+              </span>
+              {!isResponseMode && group.phase !== "individual" && activity && activity.confirmed > 0 && (
+                <span className="text-green-500 tabular-nums">{activity.confirmed} confirmed</span>
+              )}
+              {ready && group.phase !== "reviewing" && (
+                <span className="text-green-500">&#10003;</span>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Section 5: Annotation list + transcript (collapsible) */}
+      {!isResponseMode && group.annotations.length > 0 && (
+        <div className="border-t border-gray-100 pt-3">
+          <div className="flex items-center justify-between">
+            <button onClick={() => setShowAnnotations(!showAnnotations)}
+              className="text-xs text-gray-500 hover:text-gray-700">
+              {showAnnotations ? "▾" : "▸"} Annotations ({group.annotations.length})
+            </button>
+            <button onClick={() => setShowTranscript(!showTranscript)}
+              className="text-xs text-blue-600 hover:text-blue-800">
+              {showTranscript ? "Hide transcript" : "View on transcript"}
+            </button>
+          </div>
+          {showAnnotations && (
+            <div className="mt-2 space-y-1.5">
+              {group.annotations.map((ann) => (
+                <AnnotationCard key={ann.id} ann={ann} group={group} />
+              ))}
             </div>
           )}
-        </>
+          {showTranscript && (
+            <div className="mt-2 border border-gray-100 rounded-lg p-3 bg-gray-50 max-h-96 overflow-y-auto">
+              {activityType === "presentation" ? (
+                <PresentationView
+                  sections={(transcript as PresentationTranscript).sections}
+                  agents={agents} annotations={viewerAnnotations}
+                  onTextSelected={() => {}} onAnnotationClick={() => {}} />
+              ) : (
+                <DiscussionView
+                  turns={(transcript as DiscussionTranscript).turns}
+                  agents={agents} annotations={viewerAnnotations}
+                  onTextSelected={() => {}} onAnnotationClick={() => {}} />
+              )}
+            </div>
+          )}
+        </div>
       )}
     </div>
   );
