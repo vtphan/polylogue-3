@@ -60,6 +60,19 @@ export interface PhaseChangedEvent {
   to: string;
 }
 
+export interface GroupPhaseChangedEvent {
+  groupId: string;
+  phase: string;
+}
+
+export interface GroupReadyChangedEvent {
+  groupId: string;
+  userId: string;
+  ready: boolean;
+  readyCount: number;
+  totalMembers: number;
+}
+
 export interface ModeChangedEvent {
   sessionId: string;
   groupId: string;
@@ -88,6 +101,8 @@ export interface SessionSocketHandlers {
   onScaffoldSent?: (event: ScaffoldSentEvent) => void;
   onScaffoldAcknowledged?: (event: ScaffoldAcknowledgedEvent) => void;
   onPhaseChanged?: (event: PhaseChangedEvent) => void;
+  onGroupPhaseChanged?: (event: GroupPhaseChangedEvent) => void;
+  onGroupReadyChanged?: (event: GroupReadyChangedEvent) => void;
   onModeChanged?: (event: ModeChangedEvent) => void;
   onUserConnected?: (event: UserConnectionEvent) => void;
   onUserDisconnected?: (event: UserConnectionEvent) => void;
@@ -128,6 +143,8 @@ export function useSessionSocket(
     on("scaffold:sent", handlers.onScaffoldSent as never);
     on("scaffold:acknowledged", handlers.onScaffoldAcknowledged as never);
     on("session:phase_changed", handlers.onPhaseChanged as never);
+    on("group:phase_changed", handlers.onGroupPhaseChanged as never);
+    on("group:ready_changed", handlers.onGroupReadyChanged as never);
     on("session:mode_changed", handlers.onModeChanged as never);
     on("user:connected", handlers.onUserConnected as never);
     on("user:disconnected", handlers.onUserDisconnected as never);
@@ -147,6 +164,8 @@ export function useSessionSocket(
     handlers.onScaffoldSent,
     handlers.onScaffoldAcknowledged,
     handlers.onPhaseChanged,
+    handlers.onGroupPhaseChanged,
+    handlers.onGroupReadyChanged,
     handlers.onModeChanged,
     handlers.onUserConnected,
     handlers.onUserDisconnected,
