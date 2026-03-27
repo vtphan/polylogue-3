@@ -100,7 +100,7 @@ export function SessionDashboard({ session: initialSession }: { session: Session
   const [session, setSession] = useState(initialSession);
   const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
   const [scaffoldText, setScaffoldText] = useState("");
-  const [scaffoldGroupId, setScaffoldGroupId] = useState<string | null>(null);
+  // scaffoldGroupId removed — scaffold always targets selectedGroup
   const [sending, setSending] = useState(false);
   const [showEvaluation, setShowEvaluation] = useState(false);
   const [notes, setNotes] = useState(initialSession.notes || "");
@@ -331,7 +331,7 @@ export function SessionDashboard({ session: initialSession }: { session: Session
   }, [session.id, nextStatus]);
 
   const sendScaffold = useCallback(async () => {
-    if (!scaffoldGroupId || !scaffoldText.trim() || sending) return;
+    if (!selectedGroup || !scaffoldText.trim() || sending) return;
     setSending(true);
     setActionError(null);
     try {
@@ -340,7 +340,7 @@ export function SessionDashboard({ session: initialSession }: { session: Session
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           sessionId: session.id,
-          groupId: scaffoldGroupId,
+          groupId: selectedGroup,
           text: scaffoldText.trim(),
           level: 1,
           type: "general",
@@ -348,7 +348,6 @@ export function SessionDashboard({ session: initialSession }: { session: Session
       });
       if (res.ok) {
         setScaffoldText("");
-        setScaffoldGroupId(null);
       } else {
         setActionError("Failed to send scaffold");
       }
@@ -356,7 +355,7 @@ export function SessionDashboard({ session: initialSession }: { session: Session
       setActionError("Network error — please try again");
     }
     setSending(false);
-  }, [session.id, scaffoldGroupId, scaffoldText, sending]);
+  }, [session.id, selectedGroup, scaffoldText, sending]);
 
   const flawIndex = (session.activity.flawIndex || []) as { flaw_id: string; locations: string[]; flaw_type: string; severity: string }[];
   const totalFlaws = flawIndex.length;
@@ -478,300 +477,170 @@ export function SessionDashboard({ session: initialSession }: { session: Session
         ))}
       </div>
 
-      {/* Group overview grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-6">
-        {session.groups.map((group) => {
-          const flawCounts = (Object.keys(FLAW_TYPES) as FlawType[]).reduce(
-            (acc, type) => {
-              acc[type] = group.annotations.filter((a) => a.flawType === type).length;
-              return acc;
-            },
-            {} as Record<FlawType, number>
-          );
-          const totalAnnotations = group.annotations.length;
-          const sectionsFound = new Set(
-            group.annotations.map((a) => a.location.item_id)
-          ).size;
-          const isSelected = selectedGroup === group.id;
+      {/* Groups + Detail: side-by-side */}
+      <div className="flex flex-col md:flex-row gap-4 mb-6">
+        {/* Left: compact group chips */}
+        <div className="md:w-56 md:shrink-0 space-y-1.5">
+          {session.groups.map((group) => {
+            const totalAnnotations = group.annotations.length;
+            const isSelected = selectedGroup === group.id;
+            const mode = group.config?.difficulty_mode;
+            const isResponseMode = mode === "learn" || mode === "recognize";
 
-          return (
-            <div
-              key={group.id}
-              onClick={() => setSelectedGroup(isSelected ? null : group.id)}
-              className={`p-4 bg-white rounded-lg border cursor-pointer transition-all ${
-                isSelected
-                  ? "border-blue-400 ring-2 ring-blue-100"
-                  : "border-gray-200 hover:border-gray-300"
-              }`}
-            >
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <h3 className="font-semibold text-gray-900">{group.name}</h3>
-                  {/* Connection status dot */}
-                  {(() => {
-                    const status = groupConnectionStatus.get(group.id) || "disconnected";
-                    const dot = status === "active"
-                      ? "bg-green-400" : status === "partial"
-                      ? "bg-orange-400" : "bg-gray-300";
-                    const label = status === "active"
-                      ? "All connected" : status === "partial"
-                      ? "Some connected" : "Disconnected";
-                    return <span className={`w-2 h-2 rounded-full ${dot}`} title={label} />;
-                  })()}
-                </div>
-                <div className="flex items-center gap-2">
-                  {group.config?.difficulty_mode && (
-                    <div className="relative">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (!["setup", "closed"].includes(session.status)) {
-                            setModePickerGroupId(modePickerGroupId === group.id ? null : group.id);
-                          }
-                        }}
-                        className={`text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded ${
-                          !["setup", "closed"].includes(session.status) ? "hover:bg-blue-50 hover:text-blue-600 cursor-pointer" : ""
-                        }`}
-                        title={["setup", "closed"].includes(session.status) ? undefined : "Change practice mode"}
-                      >
-                        {DIFFICULTY_MODE_INFO[group.config.difficulty_mode as DifficultyMode]?.label || group.config.difficulty_mode}
-                      </button>
-                      {modePickerGroupId === group.id && (
-                        <div className="absolute right-0 top-full mt-1 z-20 bg-white border border-gray-200 rounded-lg shadow-lg p-2 w-48">
-                          <p className="text-xs font-medium text-gray-500 mb-1.5 px-1">Practice Mode</p>
-                          <div className="space-y-0.5">
-                            {SESSION_MODES.map((value) => ({ value, info: DIFFICULTY_MODE_INFO[value] })).map(({ value, info }) => (
-                              <button
-                                key={value}
-                                onClick={async (e) => {
-                                  e.stopPropagation();
-                                  setModePickerGroupId(null);
-                                  if (value === group.config?.difficulty_mode) return;
-                                  // Optimistic update
-                                  setSession((prev) => ({
-                                    ...prev,
-                                    groups: prev.groups.map((g) =>
-                                      g.id === group.id
-                                        ? { ...g, config: { ...g.config, difficulty_mode: value } }
-                                        : g
-                                    ),
-                                  }));
-                                  await fetch(`/api/sessions/${session.id}`, {
-                                    method: "PATCH",
-                                    headers: { "Content-Type": "application/json" },
-                                    body: JSON.stringify({ action: "change_mode", groupId: group.id, difficultyMode: value }),
-                                  });
-                                }}
-                                className={`w-full text-left text-xs px-2 py-1.5 rounded transition-colors ${
-                                  value === group.config?.difficulty_mode
-                                    ? "bg-blue-50 text-blue-700 font-medium"
-                                    : "text-gray-600 hover:bg-gray-50"
-                                }`}
-                              >
-                                <span className="font-medium">{info.label}</span>
-                                <span className="text-gray-400 ml-1">{info.desc}</span>
-                              </button>
-                            ))}
+            // Summary stat
+            let statText: string;
+            if (isResponseMode) {
+              const correct = group.flawResponses.filter((r) => r.typeCorrect).length;
+              statText = group.flawResponses.length > 0
+                ? `${correct}/${group.flawResponses.length} correct`
+                : "No responses";
+            } else {
+              statText = `${totalAnnotations} annotations`;
+            }
+
+            // Match stats in reviewing
+            let matchText: string | null = null;
+            if (isReviewing && groupMatchResults.has(group.id)) {
+              const mr = groupMatchResults.get(group.id)!;
+              matchText = `${mr.summary.found}/${flawIndex.length} found`;
+            }
+
+            return (
+              <div
+                key={group.id}
+                onClick={() => { setSelectedGroup(isSelected ? null : group.id); setScaffoldText(""); }}
+                className={`px-3 py-2.5 bg-white rounded-lg border cursor-pointer transition-all ${
+                  isSelected
+                    ? "border-blue-400 ring-2 ring-blue-100"
+                    : "border-gray-200 hover:border-gray-300"
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    {/* Connection dot */}
+                    {(() => {
+                      const status = groupConnectionStatus.get(group.id) || "disconnected";
+                      const dot = status === "active"
+                        ? "bg-green-400" : status === "partial"
+                        ? "bg-orange-400" : "bg-gray-300";
+                      return <span className={`w-1.5 h-1.5 rounded-full ${dot}`} />;
+                    })()}
+                    <span className="text-sm font-medium text-gray-900">{group.name}</span>
+                    <span className="text-xs text-gray-400">{group.members.length}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {mode && (
+                      <div className="relative">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (!["setup", "closed"].includes(session.status)) {
+                              setModePickerGroupId(modePickerGroupId === group.id ? null : group.id);
+                            }
+                          }}
+                          className={`text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded ${
+                            !["setup", "closed"].includes(session.status) ? "hover:bg-blue-50 hover:text-blue-600 cursor-pointer" : ""
+                          }`}
+                        >
+                          {DIFFICULTY_MODE_INFO[mode as DifficultyMode]?.label || mode}
+                        </button>
+                        {modePickerGroupId === group.id && (
+                          <div className="absolute right-0 top-full mt-1 z-20 bg-white border border-gray-200 rounded-lg shadow-lg p-2 w-48">
+                            <p className="text-xs font-medium text-gray-500 mb-1.5 px-1">Practice Mode</p>
+                            <div className="space-y-0.5">
+                              {SESSION_MODES.map((value) => ({ value, info: DIFFICULTY_MODE_INFO[value] })).map(({ value, info }) => (
+                                <button
+                                  key={value}
+                                  onClick={async (e) => {
+                                    e.stopPropagation();
+                                    setModePickerGroupId(null);
+                                    if (value === group.config?.difficulty_mode) return;
+                                    setSession((prev) => ({
+                                      ...prev,
+                                      groups: prev.groups.map((g) =>
+                                        g.id === group.id
+                                          ? { ...g, config: { ...g.config, difficulty_mode: value } }
+                                          : g
+                                      ),
+                                    }));
+                                    await fetch(`/api/sessions/${session.id}`, {
+                                      method: "PATCH",
+                                      headers: { "Content-Type": "application/json" },
+                                      body: JSON.stringify({ action: "change_mode", groupId: group.id, difficultyMode: value }),
+                                    });
+                                  }}
+                                  className={`w-full text-left text-xs px-2 py-1.5 rounded transition-colors ${
+                                    value === group.config?.difficulty_mode
+                                      ? "bg-blue-50 text-blue-700 font-medium"
+                                      : "text-gray-600 hover:bg-gray-50"
+                                  }`}
+                                >
+                                  <span className="font-medium">{info.label}</span>
+                                  <span className="text-gray-400 ml-1">{info.desc}</span>
+                                </button>
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  <span className="text-xs text-gray-400">
-                    {group.config?.difficulty_mode === "learn" || group.config?.difficulty_mode === "recognize"
-                      ? `${group.flawResponses.length} responses`
-                      : `${totalAnnotations} annotations`}
-                  </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 mt-1 text-xs text-gray-400">
+                  <span>{statText}</span>
+                  {matchText && <span className="text-green-600 font-medium">{matchText}</span>}
                 </div>
               </div>
+            );
+          })}
 
-              {/* Members */}
-              <div className="flex flex-wrap gap-1 mb-3">
-                {group.members.map((m) => (
-                  <span
-                    key={m.user.id}
-                    className="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded"
-                  >
-                    {m.user.displayName}
-                  </span>
+          {/* Live activity feed — compact, below group chips */}
+          {activityFeed.length > 0 && (
+            <div className="bg-white border border-gray-200 rounded-lg p-3 mt-3">
+              <h3 className="text-xs font-medium text-gray-500 mb-1.5">Live Activity</h3>
+              <div className="space-y-1 max-h-32 overflow-y-auto">
+                {activityFeed.slice(0, 10).map((item) => (
+                  <div key={`${item.id}-${item.timestamp.getTime()}`} className="flex items-center gap-1.5 text-[11px]">
+                    <span className="text-gray-400 shrink-0">
+                      {item.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    </span>
+                    <span className="font-medium text-gray-500">{item.groupName}</span>
+                    {item.type === "annotation" && item.flawType && (
+                      <span className={`px-1 rounded ${FLAW_TYPES[item.flawType as FlawType]?.bgColor || ""} ${FLAW_TYPES[item.flawType as FlawType]?.color || ""}`}>
+                        {FLAW_TYPES[item.flawType as FlawType]?.label || item.flawType}
+                      </span>
+                    )}
+                    <span className="text-gray-400 truncate">{item.text}</span>
+                  </div>
                 ))}
               </div>
-
-              {group.config?.difficulty_mode === "learn" || group.config?.difficulty_mode === "recognize" ? (
-                /* Learn/Recognize: show response accuracy */
-                <div>
-                  {group.flawResponses.length > 0 ? (
-                    <div className="flex items-center gap-2 text-xs">
-                      <span className="text-green-600 font-medium">
-                        {group.flawResponses.filter((r) => r.typeCorrect).length}/{group.flawResponses.length} correct
-                      </span>
-                      <span className="text-gray-400">
-                        ({Math.round((group.flawResponses.filter((r) => r.typeCorrect).length / group.flawResponses.length) * 100)}%)
-                      </span>
-                    </div>
-                  ) : (
-                    <div className="text-xs text-gray-300">No responses yet</div>
-                  )}
-                </div>
-              ) : (
-                /* Annotation modes: show flaw type counts */
-                <>
-                  <div className="flex gap-2">
-                    {(Object.keys(FLAW_TYPES) as FlawType[]).map((type) => (
-                      <div
-                        key={type}
-                        className={`text-xs px-1.5 py-0.5 rounded ${FLAW_TYPES[type].bgColor} ${FLAW_TYPES[type].color}`}
-                        title={FLAW_TYPES[type].label}
-                      >
-                        {flawCounts[type]}
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="text-xs text-gray-400 mt-2">
-                    {sectionsFound} sections touched
-                  </div>
-
-                  {/* Learning progress indicator for non-Learn groups */}
-                  {(() => {
-                    const learnResps = group.flawResponses.filter((r) => r.flawId.startsWith("learn:") || r.flawId.startsWith("self-learn:"));
-                    if (learnResps.length === 0) return null;
-                    const learnUsers = new Set(learnResps.map((r) => r.userId));
-                    return (
-                      <div className="text-xs text-blue-500 mt-1">
-                        {learnUsers.size}/{group.members.length} learned
-                      </div>
-                    );
-                  })()}
-                </>
-              )}
-
-              {/* Match stats in reviewing mode */}
-              {isReviewing && groupMatchResults.has(group.id) && (() => {
-                const mr = groupMatchResults.get(group.id)!;
-                return (
-                  <div className="flex items-center gap-2 mt-2 text-xs">
-                    <span className="text-green-600 font-medium">{mr.summary.found} found</span>
-                    <span className="text-yellow-600">{mr.summary.missed} missed</span>
-                    <span className="text-gray-400">
-                      {Math.round(mr.summary.detectionRate * 100)}%
-                    </span>
-                  </div>
-                );
-              })()}
-
-              {/* Scaffold button */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setScaffoldGroupId(group.id);
-                }}
-                className="mt-3 text-xs text-blue-600 hover:text-blue-800"
-              >
-                Send scaffold
-              </button>
-
-              {/* Recent scaffolds */}
-              {group.scaffolds.length > 0 && (
-                <div className="mt-2 border-t border-gray-100 pt-2">
-                  <p className="text-xs text-gray-400 mb-1">
-                    Recent scaffolds:
-                  </p>
-                  {group.scaffolds.slice(0, 2).map((s) => (
-                    <div key={s.id} className="text-xs text-gray-500 truncate">
-                      {s.text}
-                      {s.acknowledgedAt && (
-                        <span className="text-green-500 ml-1">&#10003;</span>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
-          );
-        })}
-      </div>
-
-      {/* Live activity feed */}
-      {activityFeed.length > 0 && (
-        <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6">
-          <h3 className="text-sm font-medium text-gray-700 mb-2">Live Activity</h3>
-          <div className="space-y-1.5 max-h-40 overflow-y-auto">
-            {activityFeed.map((item) => (
-              <div key={`${item.id}-${item.timestamp.getTime()}`} className="flex items-center gap-2 text-xs">
-                <span className="text-gray-400 shrink-0">
-                  {item.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                </span>
-                <span className="font-medium text-gray-600">{item.groupName}</span>
-                {item.type === "annotation" && item.flawType && (
-                  <span className={`px-1 py-0.5 rounded ${FLAW_TYPES[item.flawType as FlawType]?.bgColor || ""} ${FLAW_TYPES[item.flawType as FlawType]?.color || ""}`}>
-                    {FLAW_TYPES[item.flawType as FlawType]?.label || item.flawType}
-                  </span>
-                )}
-                <span className="text-gray-500 truncate">{item.text}</span>
-              </div>
-            ))}
-          </div>
+          )}
         </div>
-      )}
 
-      {/* Scaffold sending form */}
-      {scaffoldGroupId && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-blue-900">
-              Send scaffold to{" "}
-              {session.groups.find((g) => g.id === scaffoldGroupId)?.name}
-            </h3>
-            <button
-              onClick={() => setScaffoldGroupId(null)}
-              className="text-blue-400 hover:text-blue-600"
-            >
-              &times;
-            </button>
-          </div>
-          {/* Template quick-picks */}
-          <div className="flex flex-wrap gap-1 mb-2">
-            {SCAFFOLD_TEMPLATES.map((t, i) => (
-              <button
-                key={i}
-                onClick={() => setScaffoldText(t.text)}
-                className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded hover:bg-blue-200 transition-colors"
-                title={`Level ${t.level}: ${t.text}`}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
-          <div className="flex gap-2">
-            <input
-              value={scaffoldText}
-              onChange={(e) => setScaffoldText(e.target.value)}
-              placeholder="Type a hint or edit a template above..."
-              className="flex-1 text-sm border border-blue-200 rounded px-3 py-1.5 focus:outline-none focus:border-blue-400"
-              onKeyDown={(e) => e.key === "Enter" && sendScaffold()}
+        {/* Right: detail panel */}
+        <div className="flex-1 min-w-0">
+          {/* Group detail + scaffold */}
+          {selectedGroup ? (
+            <GroupDetail
+              group={session.groups.find((g) => g.id === selectedGroup)!}
+              flawIndex={flawIndex}
+              transcript={session.activity.transcriptContent}
+              activityType={session.activity.type}
+              agents={session.activity.agents as Agent[]}
+              scaffoldText={scaffoldText}
+              onScaffoldTextChange={setScaffoldText}
+              onSendScaffold={sendScaffold}
+              sendingScaffold={sending}
+              sessionStatus={session.status}
             />
-            <button
-              onClick={sendScaffold}
-              disabled={!scaffoldText.trim() || sending}
-              className="bg-blue-600 text-white text-sm px-4 py-1.5 rounded hover:bg-blue-700 disabled:opacity-50 transition-colors"
-            >
-              {sending ? "..." : "Send"}
-            </button>
-          </div>
+          ) : (
+            <div className="bg-white border border-gray-200 rounded-lg p-8 text-center text-sm text-gray-400">
+              Select a group to see details
+            </div>
+          )}
         </div>
-      )}
-
-      {/* Selected group detail */}
-      {selectedGroup && (
-        <GroupDetail
-          group={session.groups.find((g) => g.id === selectedGroup)!}
-          flawIndex={flawIndex}
-          transcript={session.activity.transcriptContent}
-          activityType={session.activity.type}
-          agents={session.activity.agents as Agent[]}
-        />
-      )}
+      </div>
 
       {/* Session notes */}
       <div className="mt-6">
@@ -843,12 +712,22 @@ function GroupDetail({
   transcript,
   activityType,
   agents,
+  scaffoldText,
+  onScaffoldTextChange,
+  onSendScaffold,
+  sendingScaffold,
+  sessionStatus,
 }: {
   group: GroupData;
   flawIndex: { flaw_id: string; locations: string[]; flaw_type: string }[];
   transcript: unknown;
   activityType: string;
   agents: Agent[];
+  scaffoldText: string;
+  onScaffoldTextChange: (text: string) => void;
+  onSendScaffold: () => void;
+  sendingScaffold: boolean;
+  sessionStatus: string;
 }) {
   const [showTranscript, setShowTranscript] = useState(false);
 
@@ -914,6 +793,50 @@ function GroupDetail({
           </button>
         )}
       </div>
+
+      {/* Scaffold form — always visible for active sessions */}
+      {!["setup", "closed"].includes(sessionStatus) && (
+        <div className="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-3">
+          <div className="flex flex-wrap gap-1 mb-2">
+            {SCAFFOLD_TEMPLATES.map((t, i) => (
+              <button
+                key={i}
+                onClick={() => onScaffoldTextChange(t.text)}
+                className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded hover:bg-blue-200 transition-colors"
+                title={`Level ${t.level}: ${t.text}`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+          <div className="flex gap-2">
+            <input
+              value={scaffoldText}
+              onChange={(e) => onScaffoldTextChange(e.target.value)}
+              placeholder="Type a hint or pick a template..."
+              className="flex-1 text-sm border border-blue-200 rounded px-3 py-1.5 bg-white focus:outline-none focus:border-blue-400"
+              onKeyDown={(e) => e.key === "Enter" && onSendScaffold()}
+            />
+            <button
+              onClick={onSendScaffold}
+              disabled={!scaffoldText.trim() || sendingScaffold}
+              className="bg-blue-600 text-white text-sm px-4 py-1.5 rounded hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            >
+              {sendingScaffold ? "..." : "Send"}
+            </button>
+          </div>
+          {group.scaffolds.length > 0 && (
+            <div className="mt-2 pt-2 border-t border-blue-200">
+              {group.scaffolds.slice(0, 3).map((s) => (
+                <div key={s.id} className="text-xs text-blue-700 truncate">
+                  {s.text}
+                  {s.acknowledgedAt && <span className="text-green-600 ml-1">&#10003;</span>}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Transcript with annotations overlaid (not for Learn/Recognize) */}
       {!isResponseMode && showTranscript && (
