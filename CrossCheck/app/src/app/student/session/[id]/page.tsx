@@ -146,7 +146,7 @@ export default async function StudentSessionPage({ params }: PageProps) {
 
   return (
     <div>
-      <ModeChangeListener sessionId={id} groupId={group.id} />
+      <ModeChangeListener sessionId={id} groupId={group.id} groupPhase={groupPhase} sessionActive={classSession.status === "active"} />
       <div className="mb-4">
         <a href="/student" className="text-sm text-blue-600 hover:text-blue-800">
           &larr; Back to activities
@@ -174,11 +174,13 @@ export default async function StudentSessionPage({ params }: PageProps) {
         }`}>
           {activity.type}
         </span>
-        {isReviewing && (
-          <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded font-medium">
-            Reviewing
-          </span>
-        )}
+        <span className={`text-xs px-2 py-0.5 rounded font-medium ${
+          groupPhase === "reviewing" ? "bg-purple-100 text-purple-700"
+            : groupPhase === "group" ? "bg-amber-100 text-amber-700"
+            : "bg-blue-100 text-blue-700"
+        }`}>
+          {groupPhase === "individual" ? "Working individually" : groupPhase === "group" ? "Group discussion" : "Reviewing results"}
+        </span>
       </div>
 
       {isReviewing && matchResult && evaluation ? (
