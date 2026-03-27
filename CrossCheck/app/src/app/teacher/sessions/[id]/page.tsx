@@ -26,6 +26,9 @@ export default async function SessionPage({ params }: PageProps) {
           members: {
             include: { user: { select: { id: true, displayName: true } } },
           },
+          readySignals: {
+            select: { userId: true },
+          },
           annotations: {
             select: {
               id: true,

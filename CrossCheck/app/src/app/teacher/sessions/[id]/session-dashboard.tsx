@@ -42,8 +42,10 @@ interface SessionData {
 interface GroupData {
   id: string;
   name: string;
+  phase: string;
   config: { difficulty_mode?: string } | null;
   members: { user: { id: string; displayName: string } }[];
+  readySignals: { userId: string }[];
   annotations: {
     id: string;
     flawType: string;
