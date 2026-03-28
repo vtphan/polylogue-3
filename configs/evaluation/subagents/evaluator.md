@@ -48,41 +48,36 @@ grade_band: "6" | "7" | "8"           # Grade level of target student audience
 
 ## Output
 
-Conforming to `configs/evaluation/schemas/evaluation.schema.yaml`:
+Output a single JSON object conforming to `configs/evaluation/schemas/evaluation.schema.yaml`. JSON is required because `append_evaluation.py` reads JSON from stdin and writes the final YAML to the registry.
 
-```yaml
-scenario_id: string
-activity: presentation | discussion
-evaluated_at: ISO 8601
-
-flaws:
-  - flaw_id: string                    # flaw_001, flaw_002, ...
-    location:
-      type: section | turn | cross_section | cross_turn
-      references:
-        - string                       # section name or turn_id
-    flaw_type: reasoning | epistemic | completeness | coherence
-    source: knowledge_driven | interaction_driven
-    severity: minor | moderate | major
-    description: string                # What the flaw is, plain language
-    evidence: string                   # Quote or reference from transcript
-    explanation: string                # Why this is a flaw and how it arose
-
-summary:
-  total_flaws: integer
-  by_type:
-    reasoning: integer
-    epistemic: integer
-    completeness: integer
-    coherence: integer
-  by_source:
-    knowledge_driven: integer
-    interaction_driven: integer
-  by_severity:
-    minor: integer
-    moderate: integer
-    major: integer
-  key_patterns: string                 # 2-3 sentences on main weaknesses
+```json
+{
+  "scenario_id": "string",
+  "activity": "presentation | discussion",
+  "evaluated_at": "ISO 8601",
+  "flaws": [
+    {
+      "flaw_id": "flaw_001",
+      "location": {
+        "type": "section | turn | cross_section | cross_turn",
+        "references": ["section name or turn_id"]
+      },
+      "flaw_type": "reasoning | epistemic | completeness | coherence",
+      "source": "knowledge_driven | interaction_driven",
+      "severity": "minor | moderate | major",
+      "description": "What the flaw is, plain language",
+      "evidence": "Quote or reference from transcript",
+      "explanation": "Why this is a flaw and how it arose"
+    }
+  ],
+  "summary": {
+    "total_flaws": 0,
+    "by_type": {"reasoning": 0, "epistemic": 0, "completeness": 0, "coherence": 0},
+    "by_source": {"knowledge_driven": 0, "interaction_driven": 0},
+    "by_severity": {"minor": 0, "moderate": 0, "major": 0},
+    "key_patterns": ["2-3 sentences on main weaknesses"]
+  }
+}
 ```
 
 ---

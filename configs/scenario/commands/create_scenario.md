@@ -34,12 +34,23 @@ Extract from arguments:
 - `context`: context description
 - `scenario_id`: provided or generated (kebab-case from topic)
 
+### Step 1b: Collect Reserved Agent Names
+
+Run:
+
+```
+python configs/agent/scripts/collect_existing_agent_ids.py
+```
+
+This returns a YAML list of every `agent_id` already in use by existing scenarios. Pass this list to the scenario-generator so it can avoid name collisions at the source.
+
 ### Step 2: Generate Scenario
 
 Delegate to the **scenario-generator** subagent.
 
 Provide the subagent with:
 - Topic, activity, grade_band, flaw emphasis, context
+- The `reserved_agent_ids` list from Step 1b
 
 The subagent reads the reference glossaries and scenario schema from `configs/` directly (see its Reference section) and produces a complete scenario YAML.
 

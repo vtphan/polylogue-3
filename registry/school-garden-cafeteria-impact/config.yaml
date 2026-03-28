@@ -1,0 +1,20 @@
+scenario_id: school-garden-cafeteria-impact
+grade_band: '6'
+created_at: '2026-03-28T10:30:00Z'
+topic: What should we grow in our school garden to have the biggest impact on the
+  school cafeteria?
+activity: discussion
+agents:
+- agent_id: terrence
+  name: Terrence
+- agent_id: keyla
+  name: Keyla
+- agent_id: jayla
+  name: Jayla
+- agent_id: deshawn
+  name: DeShawn
+discussion_state:
+  current_stage: converging
+  status: resolved
+  total_turns: 12
+  last_speaker: jayla

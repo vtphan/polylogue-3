@@ -27,10 +27,10 @@ context:
 activity: discussion
 
 agents:
-  - name: Marcus
+  - name: Terrence
     role: Tomato Grower
     knowledge_focus: >
-      Marcus wants to grow tomatoes because his grandmother grows them in her backyard and he
+      Terrence wants to grow tomatoes because his grandmother grows them in her backyard and he
       helped pick them once. He holds a causal misconception: he believes tomatoes are easy to
       grow because they get big, reasoning that bigger plants are stronger and need less care.
       In reality, tomatoes require staking, consistent watering, pest management, and specific
@@ -48,7 +48,7 @@ agents:
       - flaw: "Causal misconception — tomatoes are easy to grow because they get big and big plants are hardier"
         flaw_type: reasoning
         mechanism: >
-          Marcus believes that because tomato plants grow large, they must be strong and
+          Terrence believes that because tomato plants grow large, they must be strong and
           low-maintenance. This is a concrete, observational causal error typical of 6th grade:
           he reasons from visible size to invisible care requirements. When Keyla or Jayla
           question whether tomatoes are actually easy, he will defend this causal chain by
@@ -58,7 +58,7 @@ agents:
       - flaw: "No feasibility analysis — tomato growing requirements in a school setting"
         flaw_type: completeness
         mechanism: >
-          Marcus has a blind spot on what tomato growing actually requires: daily watering,
+          Terrence has a blind spot on what tomato growing actually requires: daily watering,
           staking or caging, pest monitoring, soil preparation, and a 60-90 day growing period.
           He proposes tomatoes without considering whether the school has the time, tools, or
           people to maintain them through summer break. A 6th grader can catch this by asking
@@ -195,15 +195,15 @@ notes: >
   too quickly on a feel-good plan without reality-checking practical constraints — a common
   pattern in early PBL groups.
 
-  Flaw emphasis is completeness (5 instances: two no-feasibility-analysis flaws from Marcus and
+  Flaw emphasis is completeness (5 instances: two no-feasibility-analysis flaws from Terrence and
   DeShawn, missing stakeholders from Keyla, and two ignored-constraints flaws from Jayla and
-  Marcus) and reasoning (4 instances: causal misconception from Marcus, appeal to authority from
-  Keyla, overgeneralization from Jayla, and the causal defense pattern when Marcus is challenged).
+  Terrence) and reasoning (4 instances: causal misconception from Terrence, appeal to authority from
+  Keyla, overgeneralization from Jayla, and the causal defense pattern when Terrence is challenged).
   Epistemic (3 instances: assumption-as-fact from Keyla, overstating evidence from DeShawn and
   Jayla's marigold claim area) and coherence (2 instances: goal-method mismatch from Jayla,
   superficial consensus from DeShawn) ensure all four flaw types are covered.
 
-  Marcus holds the causal misconception (big plants are hardier and easier to grow) that drives
+  Terrence holds the causal misconception (big plants are hardier and easier to grow) that drives
   reasoning flaws when defended. Keyla has genuine stakeholder contact but overweights it,
   creating appeal-to-authority reasoning flaws. Jayla has real aesthetic knowledge but a blind
   spot on the driving question, producing the primary coherence flaw. DeShawn's consensus-seeking
@@ -213,7 +213,7 @@ notes: >
   consensus during converging, as he combines ideas without probing. Keyla's collaborative
   disposition may trigger conformity — she may abandon her legitimate stakeholder insight (asking
   the cafeteria what they need) when the group's energy moves toward "let's do everything."
-  Marcus's tendency to repeat claims under pressure may trigger escalation if Jayla or Keyla
+  Terrence's tendency to repeat claims under pressure may trigger escalation if Jayla or Keyla
   question whether tomatoes are really easy.
 
   All flaws are calibrated for 6th-grade detection: they involve concrete, observable gaps

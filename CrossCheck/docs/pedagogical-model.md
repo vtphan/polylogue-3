@@ -1,6 +1,6 @@
 # CrossCheck — Pedagogical Model
 
-CrossCheck teaches middle school students to identify critical thinking flaws in AI-generated discourse. This document describes the pedagogical model: **a three-stage session flow (Recognize → Explain → Locate), demand-driven hints, collaborative writing, and structured disagreement**.
+CrossCheck teaches middle school students to identify critical thinking flaws in AI-generated discourse. This document describes the pedagogical model: **a five-stage session flow (Recognize → Explain → Collaborate → Locate → Results), demand-driven hints, collaborative writing, structured disagreement, and a motivation system built on visible progress and rewards**.
 
 ---
 
@@ -8,17 +8,18 @@ CrossCheck teaches middle school students to identify critical thinking flaws in
 
 ### 1.1 Independence Gradient — The Organizing Principle
 
-CrossCheck's three stages are organized by **how much the system does for the student**. Within a single session, students progress through increasing cognitive demand: Recognize → Explain → Locate. The system progressively withdraws support and the student takes on more cognitive work.
+CrossCheck's stages are organized by **how much the system does for the student**. Within a single session, students progress through increasing cognitive demand. The system progressively withdraws support and the student takes on more cognitive work.
 
 This is CrossCheck's own taxonomy. It mirrors Bloom's Revised Taxonomy (see Section 1.4) for academic audiences, but the teacher-facing UI never mentions Bloom's.
 
 | Stage | System gives | Student does | Social context |
 |-------|-------------|-------------|----------------|
-| **Recognize** | Highlighted turn + 4 flaw type choices | Identify flaw type from choices | Individual (iPad, solo) |
-| **Explain** | Turns where errors occurred + Recognize results | Identify flaw type, write justification collaboratively | Group (together, verbal + writing) |
-| **Locate** | Full transcript + count of missed flaws | Find flaws that the group missed | Group (together, searching) |
+| **Recognize** | Highlighted turn + flaw type choices + "No flaw" | Identify flaw type or clean turn | Individual (iPad, solo) |
+| **Explain** | Turns the group got right + correct type | Articulate *why* it's that flaw type | Group (teach back) |
+| **Collaborate** | Turns with errors + Recognize distribution | Resolve disagreement, identify correct type, write justification | Group (team building) |
+| **Locate** | Full transcript + count of missed flaws | Find flaws missed in previous stages | Group (detective challenge) |
 
-Every session runs this flow. The teacher does not select a mode — the session structure *is* the independence gradient.
+Every session runs this flow. The teacher does not select a mode — the session structure *is* the independence gradient. Teachers set pass thresholds per stage to calibrate difficulty (see Part 3).
 
 **Learn** is a standalone vocabulary primer (accessible from the nav bar, not a session stage). It provides the prerequisite knowledge for all stages.
 
@@ -36,7 +37,7 @@ Scaffolding (Wood, Bruner, & Ross, 1976) is temporary support that is contingent
 
 - **System scaffolding:** Decreases across stages. Recognize provides the most system support (choices, highlighting); Locate provides the least (full transcript, no guidance).
 - **On-demand hints:** Every stage has a progressive hint system. Hints unlock after a try-first period to encourage initial engagement. Hint usage is tracked — teachers see how much support each student needed after the fact.
-- **Social scaffolding:** Increases across stages. Recognize is individual; Explain and Locate are group activities. Peers provide scaffolding through verbal discussion and collaborative writing.
+- **Social scaffolding:** Increases across stages. Recognize is individual; Explain, Collaborate, and Locate are group activities. Peers provide scaffolding through verbal discussion and collaborative writing.
 - **Teacher interventions:** The scaffold system lets the teacher add support within any stage.
 
 The total scaffolding remains relatively stable across stages — it shifts from system-provided to peer-provided, keeping students in the ZPD throughout.
@@ -47,26 +48,37 @@ CLT (Sweller, 1988) says working memory is limited. Three types of cognitive loa
 
 - **Intrinsic load:** Inherent task difficulty. Managed by the stage progression — each stage adds cognitive demand incrementally, building on the previous stage's output.
 - **Extraneous load:** Unnecessary effort from poor design. Minimized by adapting the UI per stage — each stage shows only what's needed.
-- **Germane load:** Productive schema-building effort. Maximized by ZPD-calibrated scaffolding, false positives/productive failure, and the Explain stage's requirement to articulate reasoning.
+- **Germane load:** Productive schema-building effort. Maximized by ZPD-calibrated scaffolding, false positives, and the requirement to articulate reasoning in Explain and Collaborate.
 
 **Role in CrossCheck:** CLT governs two design decisions:
-1. **Turn-by-turn presentation** in Recognize and Explain keeps intrinsic load manageable.
-2. **Stage progression** ensures students build familiarity with the transcript content (Recognize) before being asked to reason about it (Explain) or search it (Locate). No stage asks the student to do something they haven't been prepared for.
+1. **Turn-by-turn presentation** in Recognize, Explain, and Collaborate keeps intrinsic load manageable.
+2. **Stage progression** ensures students build familiarity with the transcript content (Recognize), practice articulating what they understand (Explain), then tackle harder items with group support (Collaborate), before searching freely (Locate). No stage asks the student to do something they haven't been prepared for.
 
 ### 1.4 Bloom's Revised Taxonomy — The Task Dimension
 
 Bloom's Revised Taxonomy (Anderson & Krathwohl, 2001) describes six levels of cognitive processing. It provides the theoretical backbone of the independence gradient — each stage maps to a Bloom's level, which is why the stages are ordered the way they are.
 
-The teacher-facing UI does not mention Bloom's. The three-stage flow is the practitioner-facing translation of the same underlying structure.
+The teacher-facing UI does not mention Bloom's. The stage flow is the practitioner-facing translation of the same underlying structure.
 
 | Stage | Bloom's Level | Rationale |
 |-------|--------------|-----------|
 | Learn | Remember | Recall flaw type definitions and examples |
 | Recognize | Understand | Comprehend what makes a shown passage a flaw |
-| Explain | Evaluate | Make judgments, justify decisions with written reasoning |
-| Locate | Analyze + Apply | Independently identify flaws through directed search of the full transcript |
+| Explain | Apply | Articulate known understanding in one's own words |
+| Collaborate | Evaluate | Make judgments, resolve disagreement, justify decisions collaboratively |
+| Locate | Analyze | Independently identify flaws through directed search of the full transcript |
 
-### 1.5 The Integrated Model
+### 1.5 Self-Determination Theory — The Motivation Dimension
+
+SDT (Deci & Ryan, 1985) identifies three innate psychological needs that drive intrinsic motivation:
+
+- **Autonomy:** Feeling in control of one's actions. CrossCheck supports this through on-demand hints (student chooses when to ask for help), the "No flaw here" option (genuine agency in Recognize), and optional continuation past the pass threshold.
+- **Competence:** Feeling effective and capable. Supported by visible progress (goal bars), immediate positive feedback (coins for correct answers), the Explain stage (where students demonstrate what they *do* know), and achievable pass thresholds.
+- **Relatedness:** Feeling connected to others. Supported by group stages (Explain, Collaborate, Locate), the "teach back" framing (peer contribution), and group coin totals (shared success).
+
+The motivation system (coins, pass thresholds, goal bars) is designed to reinforce all three needs. Coins are earned for *learning behaviors* — correct identification, quality explanation, group consensus — not speed. There are no cross-group leaderboards.
+
+### 1.6 The Integrated Model
 
 ```
     Support provided by system                    Social scaffolding
@@ -75,10 +87,13 @@ The teacher-facing UI does not mention Bloom's. The three-stage flow is the prac
     |  Maximum     Recognize (individual)         |  None        Individual work on iPad
     |  support         |                          |                    |
     |                  |  Hints in every stage     |                    |
-    |  Moderate    Explain (group)                |  Moderate    Verbal discussion +
-    |  support         |                          |              collaborative writing
+    |  High        Explain (group, teach back)    |  Low         Articulate to peers
+    |  support         |                          |                    |
     |                  |                           |                    |
-    |  Minimal     Locate (group, conditional)    |  Maximum     Group search together
+    |  Moderate    Collaborate (group, resolve)   |  Moderate    Discussion + writing
+    |  support         |                          |                    |
+    |                  |                           |                    |
+    |  Minimal     Locate (group, search)         |  Maximum     Group search together
     |  support                                    |
     |                                             |
     +------------------------------------->        +------------------------------------->
@@ -87,17 +102,18 @@ The teacher-facing UI does not mention Bloom's. The three-stage flow is the prac
 
 | Framework | Role | How it manifests |
 |-----------|------|-----------------|
-| **Bloom's** (task dimension) | Defines the independence gradient — why stages are ordered the way they are | Stage progression (Recognize → Explain → Locate) |
+| **Bloom's** (task dimension) | Defines the independence gradient — why stages are ordered the way they are | Stage progression (Recognize → Explain → Collaborate → Locate) |
 | **ZPD** (support dimension) | Determines how much help the student gets within a stage | Shift from system scaffolding to social scaffolding + on-demand hints |
 | **CLT** (design constraint) | Governs the UI at each point — each stage shows only what's needed | Turn-by-turn in early stages, full transcript only in Locate |
+| **SDT** (motivation dimension) | Ensures students stay engaged across stages | Coins, goal bars, teach-back framing, achievable thresholds |
 
 The teacher makes zero mode decisions during session creation. The session structure itself enacts the independence gradient. Scaffolding within each stage is demand-driven — students self-scaffold via hints, and the teacher reads hint usage after the fact.
 
 ---
 
-## Part 2: The Three-Stage Session Flow
+## Part 2: The Five-Stage Session Flow
 
-Every session progresses through three stages. The first two always run; the third is conditional. **No per-stage teacher configuration.** Every stage starts at full difficulty; students request hints to reduce challenge incrementally.
+Every session progresses through up to four active stages plus a results view. Recognize, Explain, and Collaborate always run. Locate is conditional. **No per-stage teacher configuration** beyond pass thresholds. Every stage starts at full difficulty; students request hints to reduce challenge incrementally.
 
 ### Unit of Analysis: The Turn
 
@@ -105,6 +121,7 @@ All stages operate on **turns** — individual agent contributions in the transc
 
 - **Recognize** presents turns one at a time (system-controlled focus, individual).
 - **Explain** presents selected turns one at a time (system-controlled focus, group).
+- **Collaborate** presents selected turns one at a time (system-controlled focus, group).
 - **Locate** shows the full transcript (student-controlled focus, group).
 
 ### Session Flow Overview
@@ -113,35 +130,55 @@ All stages operate on **turns** — individual agent contributions in the transc
 +---------------------------------------------------------------------+
 |  Stage 1: RECOGNIZE (Individual)                                    |
 |  Each student on their own iPad, turn-by-turn                       |
-|  Pick flaw type from 4 choices. Productive failure on clean turns.  |
+|  Pick flaw type from 4 choices, or "No flaw here."                  |
+|  Coins for correct answers. Goal bar tracks progress.               |
 |  Teacher transitions when enough students are done.                 |
 +---------------------------------------------------------------------+
-|  Stage 2: EXPLAIN (Group)                                           |
-|  Students sit together, discuss verbally, write collaboratively     |
-|  System surfaces turns where errors occurred in Recognize.          |
-|  Step 1: select flaw type. Step 2: write justification.             |
-|  Multiple students can write explanations simultaneously.           |
+        |
+        v
 +---------------------------------------------------------------------+
-|  Stage 3: LOCATE (Group, Conditional)                               |
-|  Triggers only if flaws remain unidentified after Explain.          |
-|  Full transcript. Group searches for missed flaws together.         |
+|  Stage 2: EXPLAIN (Group — Teach Back)                              |
+|  Turns the group got unanimously correct in Recognize.              |
+|  Students articulate *why* — "Teach your group."                    |
+|  Builds confidence. Coins for explanations.                         |
++---------------------------------------------------------------------+
+        |
+        v
++---------------------------------------------------------------------+
+|  Stage 3: COLLABORATE (Group — Team Building)                       |
+|  Turns where any student was wrong in Recognize.                    |
+|  Recognize distribution shown. Resolve disagreement together.       |
+|  Step 1: select flaw type. Step 2: write justification.             |
+|  Coins for correct group answers.                                   |
++---------------------------------------------------------------------+
+        |
+        v  (conditional)
++---------------------------------------------------------------------+
+|  Stage 4: LOCATE (Group — Detective Challenge)                      |
+|  Triggers only if flaws remain unidentified after Collaborate.      |
+|  Full transcript. Group searches for missed flaws.                  |
 |  Student-targeted hints (tap section -> confirm/deny).              |
-|  If all flaws were caught: session ends after Explain.              |
+|  If all flaws were caught: session skips to Results.                |
++---------------------------------------------------------------------+
+        |
+        v
 +---------------------------------------------------------------------+
 |  RESULTS                                                            |
 |  End-of-session view showing the full journey across all stages.    |
 +---------------------------------------------------------------------+
 ```
 
-### Phase Transitions
+### Stage Transitions
 
 | Transition | Trigger | Mechanism |
 |------------|---------|-----------|
 | Recognize → Explain | Teacher-triggered | Dashboard shows "X/Y students complete." Teacher reads the room and presses "Move to Explain." |
-| Explain → Locate | Automatic, conditional | After the group completes Explain, the system checks: are there flaws that still have no correct identification from any student? If yes → Locate. If no → Results. |
-| Locate → Results | Group completes or teacher ends | Group flags remaining flaws, or teacher ends the session. |
+| Explain → Collaborate | Automatic | After the group completes all Explain turns, the system transitions to Collaborate. |
+| Collaborate → Locate | Automatic, conditional | After the group completes Collaborate, the system checks: are there flaws that still have no correct identification from any student (Recognize) or from the group (Collaborate)? If yes → Locate. If no → Results. |
+| Collaborate → Results | Automatic, conditional | If all flaws were caught across Recognize and Collaborate → skip Locate. |
+| Locate → Results | Group completes or teacher ends | Group finds remaining flaws, or teacher ends the session. |
 
-**Fast students in Recognize:** Students who finish early see a "Waiting for your group" screen. The teacher manages pacing — this is normal classroom practice with individual-pace activities.
+**Fast students in Recognize:** Students who finish early see a "Waiting for your group" screen with their individual stats and coins earned. The teacher manages pacing — this is normal classroom practice with individual-pace activities.
 
 ### Learn (Standalone)
 
@@ -163,66 +200,110 @@ All stages operate on **turns** — individual agent contributions in the transc
 |--------|--------------|
 | **Purpose** | Warm up. Build familiarity with the transcript. Form initial judgments about each turn |
 | **Social context** | Individual — each student on their own iPad |
-| **Student experience** | Transcript displayed turn by turn. Each turn is highlighted. Student picks from 4 flaw type choices. Some turns are **non-flawed** — all 4 choices are wrong for these turns (productive failure) |
-| **Starting state** | 4 flaw type choices (no "No flaw" option) |
+| **Student experience** | Transcript displayed turn by turn. Each turn is highlighted. Student picks from 4 flaw type choices or selects "No flaw here." Goal bar shows progress toward the teacher-set pass threshold |
+| **Starting state** | 4 flaw type choices + "No flaw here" button |
 | **Hints** | Each hint eliminates one incorrect choice. Minimum 2 choices remaining. Max 2 hints per turn. Try-first delay: ~18 seconds |
-| **Non-flawed turns** | When a turn has no flaw, every choice is wrong. The student selects one, gets feedback: "This turn is actually fine — not every statement has a problem. Knowing when something isn't flawed is part of critical thinking." Teaches discrimination through productive failure |
+| **Non-flawed turns** | When a turn has no flaw, the correct answer is "No flaw here." Selecting it earns coins and positive feedback: "Sharp eye! Not every statement has a problem." Selecting a flaw type triggers gentle correction: "This turn is actually fine — knowing when something isn't flawed is part of critical thinking" |
 | **Transcript** | Shown turn by turn. Current turn highlighted |
 | **Flaw Field Guide** | Not available (prevents lookup-table behavior; preserves pattern recognition) |
 | **Matching** | Per-turn: correct type = green. Multi-attempt with elimination |
-| **CLT** | Low intrinsic load (comprehension, not identification). Turn-by-turn focus directs attention. Non-flawed turns add productive germane load through surprise feedback |
+| **Coins** | Correct flaw type: 2 coins (3 if no hints used). Correct "No flaw": 2 coins (3 if no hints used). Wrong answer: 0 coins |
+| **CLT** | Low intrinsic load (comprehension, not identification). Turn-by-turn focus directs attention. Non-flawed turns add productive germane load |
 
 #### Recognize — Hint Progression
 
 | State | Choices shown | Student's task |
 |-------|--------------|----------------|
-| **Start** | 4 flaw types | Pick from 4 options |
-| **Hint 1** | 3 flaw types | Pick from 3 options (1 wrong type removed) |
-| **Hint 2** | 2 flaw types | Pick from 2 options (minimum) |
+| **Start** | 4 flaw types + "No flaw here" | Pick from 5 options |
+| **Hint 1** | 3 flaw types + "No flaw here" (or 4 flaw types if "No flaw" is eliminated) | Pick from 4 options (1 wrong option removed) |
+| **Hint 2** | 2 flaw types + possibly "No flaw here" | Pick from remaining options (minimum 2 total) |
 
-For non-flawed turns, hints still eliminate choices. After max hints, 2 choices remain — both wrong. Any selection triggers the productive failure feedback.
+For non-flawed turns, hints eliminate flaw type choices. "No flaw here" is never eliminated by a hint — it can only be removed if the turn *does* have a flaw. After max hints, the student still has a meaningful choice.
 
 #### What Recognize Produces
 
-Each student's per-turn flaw type selections become the input for Explain. The system uses this data to determine which turns the group needs to discuss.
+Each student's per-turn selections become the input for the Explain/Collaborate split. The system uses this data to:
+- **Explain:** Turns where *every* student selected the correct flaw type (unanimously correct).
+- **Collaborate:** Turns where *any* student selected the wrong type (any error).
 
 ---
 
-### Stage 2: Explain (Group)
+### Stage 2: Explain (Group — Teach Back)
 
 | Aspect | Specification |
 |--------|--------------|
-| **Purpose** | Discuss and articulate *why* passages are flawed. Build on Recognize results through verbal discussion and collaborative writing |
+| **Purpose** | Build confidence by articulating what the group already understands. Practice explaining *why* a passage is flawed. Earn coins for clear explanations |
+| **Framing** | "Teach your group — explain why this is a [flaw type] flaw" |
 | **Social context** | Group — students sit together, discuss verbally, each writes on their own iPad |
-| **Turn selection** | System surfaces turns where any student was wrong in Recognize. Turns where everyone was correct are skipped. The system does not reveal *which* errors triggered inclusion — the group just sees "discuss this turn" |
-| **Student experience** | Turns presented one at a time. For each turn: system shows the group's Recognize results (e.g., "2 said reasoning, 1 said epistemic, 1 said completeness"). **Step 1:** Group selects the flaw type (4 choices + "No flaw"). **Step 2:** Students write justifications collaboratively (see Collaborative Writing below) |
-| **Starting state** | Step 1: 4 flaw type choices + "No flaw," with Recognize distribution shown. Step 2: writing area showing all group members' explanations |
-| **Hints** | Hint 1: reveals the correct flaw type (completes Step 1). Hint 2: provides a guided template ("This is a [type] flaw because ___"). Max 2 hints per turn. Try-first delay: ~45 seconds (longer for group discussion). Any group member can request; visible to all |
-| **Non-flawed turns** | Not included. Productive failure in Recognize is the complete handling for non-flawed turns |
+| **Turn selection** | Turns where *every* student selected the correct flaw type in Recognize. If a turn was unanimously correct, it appears here. Non-flawed turns are excluded |
+| **Student experience** | Turns presented one at a time. The correct flaw type is shown (the group already knows it). Students write explanations of *why* it's that type. No type-selection step — they go straight to writing |
+| **Starting state** | Highlighted turn + correct flaw type badge + writing area |
+| **Hints** | Hint 1: guided template ("This is a [type] flaw because ___"). Max 1 hint per turn. Try-first delay: ~30 seconds |
 | **Transcript** | Shown turn by turn. Current turn highlighted |
 | **Flaw Field Guide** | Available (sidebar/drawer) |
+| **Coins** | Submitting an explanation: 1 coin per student. Group completes all Explain turns: 2 bonus coins per student |
+| **CLT** | Low-to-moderate intrinsic load. Students already know the answer — the cognitive work is articulation, not identification. The correct type is visible, removing the "blank page" problem |
+
+#### Why Explain Comes Before Collaborate
+
+1. **Confidence building.** Students start the group phase by demonstrating what they *do* know. Every item in Explain is one they got right. This creates positive momentum.
+2. **Vocabulary practice.** Articulating "why" on easy items builds the language students need for harder Collaborate items.
+3. **Social warmth.** The group's first shared activity is celebration of success, not confrontation of failure. This establishes psychological safety before Collaborate introduces disagreement.
+4. **SDT alignment.** Explain directly satisfies the competence need — students feel effective. It also satisfies relatedness — they contribute to the group's understanding.
+
+#### Collaborative Writing in Explain
+
+Multiple students write explanations simultaneously, each on their own iPad. The system tracks authorship.
+
+**Mechanic — Write-then-reveal:**
+1. **Individual writing period (~45–60 seconds).** Each student writes their explanation independently. Other students' writing is not visible yet.
+2. **Reveal.** All explanations become visible to the group simultaneously. Each explanation is attributed to its author.
+3. **Brief discussion.** Students can read each other's explanations and discuss verbally. Revisions are optional.
+
+**Advancing to next turn:** The group advances when at least one explanation has been submitted and the group marks the turn as discussed. The teacher sees contribution counts in the dashboard.
+
+#### What Explain Produces
+
+Written explanations (attributed per student). These are formative — not graded, but visible in Results and to the teacher. Explain does not change any flaw identifications.
+
+---
+
+### Stage 3: Collaborate (Group — Team Building)
+
+| Aspect | Specification |
+|--------|--------------|
+| **Purpose** | Work together to resolve errors from Recognize. Build on the confidence and vocabulary from Explain |
+| **Framing** | "These ones stumped some of us — let's figure them out together" |
+| **Social context** | Group — students sit together, discuss verbally, each writes on their own iPad |
+| **Turn selection** | Turns where *any* student selected the wrong flaw type in Recognize. This includes turns with disagreement and turns where everyone was wrong. The system does not reveal *which* students triggered inclusion |
+| **Student experience** | Turns presented one at a time. For each turn: system shows the group's Recognize distribution (e.g., "2 said reasoning, 1 said epistemic"). **Step 1:** Group selects the flaw type (4 choices + "No flaw here"). **Step 2:** Students write justifications collaboratively |
+| **Starting state** | Step 1: 4 flaw type choices + "No flaw here," with Recognize distribution shown. Step 2: writing area |
+| **Hints** | Hint 1: reveals the correct flaw type (completes Step 1). Hint 2: provides a guided template. Max 2 hints per turn. Try-first delay: ~45 seconds (longer for group discussion). Any group member can request; visible to all |
+| **Non-flawed turns** | Not included. "No flaw here" is available in Step 1 for cases where the group believes no student's Recognize answer was correct |
+| **Transcript** | Shown turn by turn. Current turn highlighted |
+| **Flaw Field Guide** | Available (sidebar/drawer) |
+| **Coins** | Correct group type selection: 2 coins per student (3 if no hints). Submitting an explanation: 1 coin per student |
 | **CLT** | Moderate intrinsic load. Step 1 provides a foothold (builds on Recognize). Social scaffolding from group discussion reduces individual cognitive burden. Collaborative writing distributes the articulation task |
 
-#### Explain — Hint Progression
+#### Collaborate — Hint Progression
 
 | State | Group sees | Group's task |
 |-------|-----------|-------------|
 | **Start** | Highlighted turn + Recognize distribution + Step 1 choices + Step 2 writing area | Discuss, select flaw type, write explanations |
 | **Hint 1** | Correct flaw type revealed (Step 1 completed) | Write explanations knowing the type |
-| **Hint 2** | Guided template shown ("This is a reasoning flaw because ___") | Fill in the template |
+| **Hint 2** | Guided template shown ("This is a [type] flaw because ___") | Fill in the template |
 
-#### Collaborative Writing
+#### Collaborative Writing in Collaborate
 
-Multiple students write explanations simultaneously, each on their own iPad. The system tracks authorship.
+Same write-then-reveal mechanic as Explain:
 
-**Mechanic — Hybrid write-then-reveal:**
-1. **Individual writing period (~60–90 seconds).** Each student writes their explanation independently. Other students' writing is not visible yet.
-2. **Reveal.** All explanations become visible to the group simultaneously. Each explanation is attributed to its author.
+1. **Individual writing period (~60–90 seconds).** Each student writes their explanation independently.
+2. **Reveal.** All explanations become visible simultaneously, attributed to their authors.
 3. **Discussion and revision.** Students discuss the revealed explanations verbally. Any student may revise their explanation or write a new one. Revisions are tracked.
 
 **Why write-then-reveal:** Prevents copying while preserving collaboration. The individual period ensures every student engages with the task. The reveal creates a natural discussion catalyst — "you wrote X but I wrote Y, let's talk about it." The revision period lets students improve their thinking based on peers' perspectives.
 
-**Advancing to next turn:** The group advances when at least one explanation has been submitted and the teacher or group marks the turn as discussed. No minimum per-student requirement — the teacher sees contribution counts in the dashboard.
+**Advancing to next turn:** The group advances when at least one explanation has been submitted and the group marks the turn as discussed. No minimum per-student requirement — the teacher sees contribution counts in the dashboard.
 
 #### Structured Disagreement
 
@@ -233,9 +314,9 @@ When the group's Recognize results show disagreement on a turn, the system facil
 3. **Perspective-taking.** After discussion, each student can optionally respond: "I now understand the other perspective because ___." This is captured but not required.
 4. **No forced consensus.** The group selects a flaw type for Step 1, but individual students retain their original Recognize answers in the data.
 
-Structured disagreement is a natural consequence of surfacing Recognize results — it doesn't require a separate phase or component. The disagreement *is* the discussion.
+Structured disagreement is a natural consequence of surfacing Recognize results — it doesn't require a separate component. The disagreement *is* the discussion.
 
-#### Why Two Steps in Explain
+#### Why Two Steps in Collaborate
 
 The two-step flow separates identification from articulation:
 - **Step 1 (select flaw type):** Builds directly on Recognize. The group already has individual opinions from Recognize; Step 1 asks them to converge (or discover they disagree).
@@ -243,20 +324,26 @@ The two-step flow separates identification from articulation:
 
 For middle schoolers, this separation is important. A student might perceive the flaw correctly but produce a weak written explanation — not because they lack critical thinking skill, but because written expression is hard at 12. Step 1 captures the thinking; Step 2 captures the articulation. The teacher can distinguish between the two.
 
+#### What Collaborate Produces
+
+Group flaw type selections and written explanations. These feed the Locate trigger: flaws that remain unidentified after both Recognize and Collaborate become Locate targets.
+
 ---
 
-### Stage 3: Locate (Group, Conditional)
+### Stage 4: Locate (Group — Detective Challenge, Conditional)
 
 | Aspect | Specification |
 |--------|--------------|
-| **Purpose** | Find flaws that the group missed in Recognize and Explain |
-| **Trigger** | Automatic: activates only if flaws remain unidentified (no student selected the correct type in Recognize, and the group did not correct it in Explain). If all flaws were caught, session proceeds directly to Results |
+| **Purpose** | Find flaws that the group missed in Recognize and Collaborate |
+| **Framing** | "X flaws are still hiding in the transcript — can your team find them?" |
+| **Trigger** | Automatic: activates only if flaws remain unidentified (no student selected the correct type in Recognize, and the group did not correct it in Collaborate). If all flaws were caught, session proceeds directly to Results |
 | **Social context** | Group — students search together, discuss where flaws might be |
-| **Student experience** | Full transcript displayed. System shows: "Your group missed X flaws — they're somewhere in the transcript. Find them." Students read and flag turns they believe contain missed flaws |
+| **Student experience** | Full transcript displayed. System shows the number of missed flaws. Students read and flag turns they believe contain missed flaws |
 | **Starting state** | Full transcript, no guidance. Number of missed flaws shown |
 | **Hints** | Student-targeted: a student taps a section they're searching, then requests a hint. Hint 1: confirms or denies a flaw is in that section. Hint 2: highlights the specific turn. Hint 3: reveals the flaw type. Max 3 hints per flaw. Try-first delay: ~18 seconds per interaction. Any group member can request; visible to all |
 | **Transcript** | Full transcript, no emphasis or dimming |
 | **Flaw Field Guide** | Available (sidebar/drawer) |
+| **Coins** | Finding a flaw independently: 3 coins. Finding with 1 hint: 2 coins. Finding with 2+ hints: 1 coin |
 | **CLT** | Highest intrinsic load (search across full transcript). Mitigated by: (a) students already read every turn in Recognize, so the content is familiar; (b) the number of missed flaws is known, giving a goal; (c) group discussion distributes the search; (d) student-targeted hints align with actual search behavior |
 
 #### Locate — Hint Progression
@@ -273,14 +360,81 @@ For middle schoolers, this separation is important. A student might perceive the
 #### Why Locate is Conditional
 
 Locate only triggers when the group missed flaws. This makes it:
-- **Earned, not assigned.** The group enters Locate because they missed something — a natural consequence, not a punishment.
-- **Gamified.** "You missed 2 flaws — find them" is a challenge, not an assignment.
-- **Efficient.** Strong groups that caught everything skip Locate entirely.
-- **Contextual.** Students have already read every turn (Recognize) and discussed error turns (Explain). Searching a familiar transcript is fundamentally different from cold-searching one they've never seen.
+- **Earned, not punishing.** The positive framing ("detective challenge") makes it aspirational. The group enters Locate with momentum from Explain and Collaborate — they've already succeeded at many items.
+- **Efficient.** Strong groups that caught everything skip Locate entirely — they earned their shortcut.
+- **Contextual.** Students have already read every turn (Recognize), articulated their understanding (Explain), and discussed errors (Collaborate). Searching a familiar transcript is fundamentally different from cold-searching one they've never seen.
 
 ---
 
-## Part 3: Cross-Cutting Features
+## Part 3: Motivation System
+
+### 3.1 Design Principles
+
+The motivation system serves three purposes:
+1. **Make progress visible.** Students see how far they've come, not just how far they have to go.
+2. **Create achievable win conditions.** Pass thresholds ensure most students experience success.
+3. **Reward learning behaviors.** Coins reinforce correct identification, quality articulation, and group collaboration — not speed.
+
+Three constraints:
+- **No cross-group competition.** No leaderboards, no group rankings. Coins are per-student and per-group only.
+- **No speed incentives.** Coins are never awarded for being first. The try-first delay on hints already prevents rushing.
+- **Continuation past threshold.** Hitting the pass threshold is celebrated but does not stop the student. They can keep going for more coins.
+
+### 3.2 Coins
+
+Coins are the primary reward unit. They are earned individually but contribute to a visible group total.
+
+| Stage | Action | Coins | Bonus |
+|-------|--------|-------|-------|
+| **Recognize** | Correct flaw type | 2 | +1 if no hints used |
+| **Recognize** | Correct "No flaw here" | 2 | +1 if no hints used |
+| **Recognize** | Wrong answer | 0 | — |
+| **Explain** | Submit explanation | 1 | — |
+| **Explain** | Group completes all turns | 2 per student | — |
+| **Collaborate** | Correct group type selection | 2 per student | +1 if no hints |
+| **Collaborate** | Submit explanation | 1 | — |
+| **Locate** | Find flaw independently | 3 | — |
+| **Locate** | Find flaw with 1 hint | 2 | — |
+| **Locate** | Find flaw with 2+ hints | 1 | — |
+
+Coins are displayed:
+- **Per turn:** Immediate feedback after each action ("+ 3 coins!")
+- **Running total:** Visible in the stage header (individual count and group count)
+- **Results view:** Final tally per stage with breakdown
+
+### 3.3 Pass Thresholds
+
+Teachers set a **pass threshold** for each stage at session creation. The threshold is the number of correct answers needed to "pass" the stage. It appears as a **goal bar** in the student UI.
+
+| Stage | Threshold unit | Example |
+|-------|---------------|---------|
+| **Recognize** | Correct identifications (including "No flaw") | "Get 7 of 15 correct" |
+| **Explain** | Explanations submitted | "Write 3 explanations" |
+| **Collaborate** | Correct group type selections | "Get 4 of 8 correct as a team" |
+| **Locate** | Flaws found | "Find 2 of 3 missed flaws" |
+
+**Defaults:** If the teacher does not set thresholds, the system uses sensible defaults (e.g., 50% for Recognize, 2 for Explain, 50% for Collaborate, 50% for Locate).
+
+**Behavior when threshold is reached:**
+- Goal bar fills and a brief celebration animation plays.
+- Student can continue working on remaining turns for more coins.
+- Threshold does not auto-advance the group — the teacher or system still controls stage transitions.
+
+**Why not auto-advance on threshold?** Some students want to keep going. The threshold is a milestone, not a gate. The teacher reads the room and decides when to move on.
+
+### 3.4 Goal Bar
+
+Each stage shows a **goal bar** — a horizontal progress indicator showing:
+- Current correct count / threshold (e.g., "5 / 7")
+- Visual fill proportional to progress
+- Color change when threshold is reached (gray → green)
+- Coin count alongside
+
+The goal bar is the student's primary sense of "how am I doing?" within a stage.
+
+---
+
+## Part 4: Cross-Cutting Features
 
 ### Universal Hint System
 
@@ -289,14 +443,15 @@ The hint system is the primary scaffolding mechanism across all stages. Four pri
 1. **Start at full difficulty.** Every student/group begins each turn/task at the hardest level for that stage.
 2. **Try first.** Hints unlock after a try-first period. The button is visible but disabled during the period, with a subtle countdown.
 3. **Self-scaffold on demand.** Students request hints when stuck. Each hint removes one layer of challenge.
-4. **Track everything.** Hint usage is recorded per student, per turn.
+4. **Track everything.** Hint usage is recorded per student, per turn. Hint usage reduces coin rewards.
 
 #### Try-First Delay
 
 | Stage | Delay | Rationale |
 |-------|-------|-----------|
 | Recognize (individual) | ~18 seconds | Time to read the turn and consider choices |
-| Explain (group) | ~45 seconds | Time for group discussion to begin before hinting |
+| Explain (group) | ~30 seconds | Shorter — students already know the answer, just need to articulate |
+| Collaborate (group) | ~45 seconds | Time for group discussion to begin before hinting |
 | Locate (group) | ~18 seconds | Per-interaction delay; group is already searching |
 
 #### Hint Framing
@@ -308,7 +463,8 @@ The hint button is labeled **"Narrow it down"** instead of "Hint." The teacher d
 | Stage | Hint 1 | Hint 2 | Hint 3 | Max hints |
 |-------|--------|--------|--------|-----------|
 | **Recognize** | Remove 1 wrong choice | Remove 1 more wrong choice | — | 2 per turn |
-| **Explain** | Reveal correct flaw type (complete Step 1) | Show guided template | — | 2 per turn |
+| **Explain** | Show guided template | — | — | 1 per turn |
+| **Collaborate** | Reveal correct flaw type (complete Step 1) | Show guided template | — | 2 per turn |
 | **Locate** | Confirm/deny flaw in tapped section | Highlight specific turn | Reveal flaw type | 3 per flaw |
 
 #### Hint Usage as Assessment Signal
@@ -321,13 +477,19 @@ Because scaffolding is demand-driven rather than preset, **hint count becomes th
 | 1–2 hints | Used strategic support |
 | Max hints | Needed heavy scaffolding |
 
-### False Positives and Productive Failure
+### False Positives and "No Flaw Here"
 
-**Recognize:** Non-flawed turns are included without a "No flaw" escape hatch. All 4 flaw type choices are wrong — selecting any one triggers productive failure feedback. This teaches discrimination through surprise rather than a pattern-matching shortcut.
+**Recognize:** Non-flawed turns are included alongside flawed turns. The student has 5 options: 4 flaw types + "No flaw here." Correctly selecting "No flaw here" on a clean turn earns coins and positive feedback. Incorrectly selecting a flaw type on a clean turn triggers correction: "This turn is actually fine — not every statement has a problem."
 
-**Explain:** Non-flawed turns are not included.
+**Why "No flaw here" instead of productive failure:** The original design (no escape hatch, forced productive failure) created confusion — students thought they got the question wrong when they selected any answer on a clean turn. "No flaw here" makes false-positive detection an *active skill* that students practice deliberately and earn coins for. It also aligns with SDT's autonomy need — students have genuine agency in every choice.
 
-**Locate:** Clean turns are naturally present in the full transcript.
+**Hints on non-flawed turns:** Hints eliminate flaw type choices but never eliminate "No flaw here" (unless the turn actually has a flaw). After max hints, the student has at minimum "No flaw here" and one flaw type — a meaningful 50/50 choice.
+
+**Explain:** Non-flawed turns are not included (students already practiced discrimination in Recognize).
+
+**Collaborate:** Non-flawed turns are not included.
+
+**Locate:** Clean turns are naturally present in the full transcript. No "No flaw here" mechanic — students flag turns they believe are flawed.
 
 **False positive ratio:** Approximately 1 non-flawed turn per 3–4 flawed turns in Recognize. Generated at render time with a deterministic seed (`hash(sessionId + groupId)`), consistent across page refreshes.
 
@@ -338,20 +500,22 @@ Because scaffolding is demand-driven rather than preset, **hint count becomes th
 | Learn | Yes | Supports vocabulary building |
 | Recognize | No | Prevents definition-matching; preserves pattern recognition |
 | Explain | Yes | Supports articulation — students can reference definitions while writing |
+| Collaborate | Yes | Supports articulation and disagreement resolution |
 | Locate | Yes | Supports search — students can review what they're looking for |
 
 ### Results View
 
 A single end-of-session view showing the group's journey across all stages:
 
-- **Recognize results (individual):** Per-student accuracy, productive failure turns, individual hint usage
-- **Explain results (group):** Per-turn flaw type selection, written explanations (attributed), disagreement resolution, hint usage, writing contribution counts
-- **Locate results (group, if triggered):** Missed flaw count, found count, hints needed per flaw
-- **Summary:** Total flaws, caught in Recognize, corrected in Explain, found in Locate, remaining unfound
+- **Recognize results (individual):** Per-student accuracy, coins earned, "No flaw" detection accuracy, individual hint usage
+- **Explain results (group):** Per-turn explanations (attributed), writing contribution counts, coins earned
+- **Collaborate results (group):** Per-turn flaw type selection, written explanations (attributed), disagreement resolution, hint usage, coins earned
+- **Locate results (group, if triggered):** Missed flaw count, found count, hints needed per flaw, coins earned
+- **Summary:** Total flaws, caught in Recognize, explained in Explain, corrected in Collaborate, found in Locate, remaining unfound. Total coins per student and per group
 
 ---
 
-## Part 4: Design Decisions and Rationale
+## Part 5: Design Decisions and Rationale
 
 ### Why a Single Flow (Not Teacher-Selected Modes)
 
@@ -361,52 +525,72 @@ Three problems with the previous mode-selection approach:
 2. **Individual→group mismatch.** Some modes produced only labels (no reasoning), making the group phase awkward.
 3. **Cross-session progression burden.** The teacher had to manually progress groups through modes across sessions.
 
-The three-stage flow eliminates all three problems. Every session runs the full gradient. The teacher's only session-level decision is which transcript to assign. The flow self-adapts: strong groups skip Locate; struggling groups get more time in Explain.
+The five-stage flow eliminates all three problems. Every session runs the full gradient. The teacher's only session-level decisions are which transcript to assign and what pass thresholds to set. The flow self-adapts: strong groups skip Locate; struggling groups get more time in Collaborate.
 
-### Why Recognize is Individual and Explain is Group
+### Why Recognize is Individual and Group Stages Follow
 
 Recognize is a warm-up — fast, low stakes, builds familiarity. Individual work ensures every student reads every turn and forms their own opinions before social influence.
 
-Explain requires articulation, which is harder. The group context provides social scaffolding: students can talk through their reasoning before writing. The collaborative writing mechanic distributes the cognitive load.
+Explain follows immediately and is group — but exclusively positive (teach back). This means the first group interaction is about demonstrating competence, not confronting failure. By the time Collaborate surfaces errors, the group has already established a pattern of productive collaboration.
 
-### Why Productive Failure (Not "No Flaw")
+### Why Explain and Collaborate are Separate Stages
 
-Including "No flaw" as a fifth choice in Recognize creates a pattern-matching escape hatch — students who are unsure select it as a safe default. Productive failure forces genuine engagement.
+A single "group discussion" stage that mixes correct and incorrect items has two problems:
 
-"No flaw" appears in Explain (Step 1) because the context is different: social cost of opting out is higher, and the Explain turns were surfaced because someone got them wrong.
+1. **Motivational:** Starting with items you got wrong is deflating. Students who struggled in Recognize walk into an error-focused discussion.
+2. **Pedagogical:** The cognitive task is different. Explaining *why you were right* (articulation) is fundamentally different from figuring out *where you went wrong* (error correction). Mixing them creates extraneous cognitive load.
 
-### Why Collaborative Writing (Not Single-Recorder)
+Separating them lets each stage have a clear framing and purpose. Explain is warm ("teach your group"). Collaborate is challenging but social ("figure this out together"). The transition from one to the other feels like progression, not punishment.
 
-Everyone writes on their own iPad. This preserves individual accountability within group work. The write-then-reveal mechanic prevents copying while enabling collaboration. The teacher sees who contributed.
+### Why "No Flaw Here" (Not Productive Failure)
+
+Including "No flaw here" as a fifth choice in Recognize makes three improvements:
+
+1. **Clarity.** Students understand what they're doing — actively identifying clean turns, not accidentally triggering a "gotcha."
+2. **Agency.** Every turn has a correct answer the student can select. No turns where every option is wrong.
+3. **Skill practice.** False-positive detection becomes a learnable, rewardable skill with its own coin value.
+
+### Why Coins (Not Grades or Points)
+
+Coins are deliberately informal. They are not grades, not percentages, not letter scores. Middle schoolers respond to concrete, immediate rewards. Coins make correct answers feel like achievements without creating test anxiety.
+
+Coins are earned for behaviors, not outcomes: submitting an explanation earns a coin even if the explanation isn't perfect. This encourages participation over perfectionism.
 
 ---
 
-## Part 5: Architecture Reference
+## Part 6: Architecture Reference
 
 ### Session Stage Values
 
 Stored in `group.stage`:
 - `"recognize"` — Stage 1 (individual)
-- `"explain"` — Stage 2 (group)
-- `"locate"` — Stage 3 (group, conditional)
+- `"explain"` — Stage 2 (group, teach back)
+- `"collaborate"` — Stage 3 (group, team building)
+- `"locate"` — Stage 4 (group, conditional)
 - `"results"` — Session complete, results view
 
-The teacher triggers Recognize → Explain. The system triggers Explain → Locate (or Explain → Results). The teacher or group triggers Locate → Results.
+The teacher triggers Recognize → Explain. The system triggers Explain → Collaborate. The system triggers Collaborate → Locate (or Collaborate → Results). The teacher or group triggers Locate → Results.
 
 ### Explain Turn Selection Logic
 
-After Recognize completes, the system selects turns for Explain:
+After Recognize completes, the system splits turns into two sets:
 
-1. For each flawed turn: check if *any* student selected the wrong flaw type. If yes → include in Explain.
-2. Non-flawed turns: exclude (productive failure already handled).
-3. Turns where every student was correct: skip (nothing to discuss).
-4. The system does not reveal *why* a turn was included.
+**Explain set** (unanimously correct):
+1. For each flawed turn: check if *every* student selected the correct flaw type. If yes → include in Explain.
+2. Non-flawed turns: exclude.
+
+**Collaborate set** (any error):
+1. For each flawed turn: check if *any* student selected the wrong flaw type. If yes → include in Collaborate.
+2. Non-flawed turns: exclude.
+3. The system does not reveal *which* errors triggered inclusion.
+
+These two sets are mutually exclusive and together cover all flawed turns.
 
 ### Locate Trigger Logic
 
-After Explain completes, the system checks:
+After Collaborate completes, the system checks:
 
-1. For each flaw in `activity.flawIndex[]`: did any student select the correct flaw type in Recognize, or did the group select the correct type in Explain?
+1. For each flaw in `activity.flawIndex[]`: did any student select the correct flaw type in Recognize, or did the group select the correct type in Collaborate?
 2. Flaws with no correct identification → Locate targets.
 3. If zero Locate targets → skip to Results.
 
@@ -415,7 +599,22 @@ After Explain completes, the system checks:
 | Parameter | Value | Rationale |
 |-----------|-------|-----------|
 | Hint try-first delay (Recognize) | ~18 seconds | Individual reading + consideration time |
-| Hint try-first delay (Explain) | ~45 seconds | Group discussion needs more time to start |
+| Hint try-first delay (Explain) | ~30 seconds | Students know the answer; just need to start writing |
+| Hint try-first delay (Collaborate) | ~45 seconds | Group discussion needs more time to start |
 | Hint try-first delay (Locate) | ~18 seconds | Per-interaction; group is already searching |
 | False positive ratio | ~1:3-4 (non-flawed : flawed turns) | Balances discrimination practice against confidence |
-| Write-then-reveal period | ~60-90 seconds | Long enough for a few sentences; short enough to maintain pace |
+| Write-then-reveal period (Explain) | ~45-60 seconds | Shorter — articulating a known answer |
+| Write-then-reveal period (Collaborate) | ~60-90 seconds | Longer — reasoning through uncertainty |
+| Default pass threshold (Recognize) | 50% of turns | Most students can reach this |
+| Default pass threshold (Explain) | 2 explanations | Low bar encourages participation |
+| Default pass threshold (Collaborate) | 50% of turns | Achievable with group support |
+| Default pass threshold (Locate) | 50% of missed flaws | Partial success is still success |
+| Coin: correct Recognize answer | 2 (3 independent) | Primary individual reward |
+| Coin: correct "No flaw" | 2 (3 independent) | Equal value to flaw detection |
+| Coin: Explain submission | 1 | Rewards participation |
+| Coin: Explain stage completion | 2 per student | Group milestone bonus |
+| Coin: correct Collaborate selection | 2 (3 independent) | Group achievement |
+| Coin: Collaborate submission | 1 | Rewards participation |
+| Coin: Locate find (independent) | 3 | Highest reward — hardest task |
+| Coin: Locate find (1 hint) | 2 | Partial independence |
+| Coin: Locate find (2+ hints) | 1 | Participation reward |

@@ -38,6 +38,10 @@ activity: presentation | discussion    # Activity type
 grade_band: "6" | "7" | "8"           # Grade level of target student audience
 flaw_emphasis: [string]                # Which flaw types to emphasize
 context: string                        # Context description
+
+reserved_agent_ids:                    # Agent IDs already in use by other scenarios
+  - agent_id: string
+    scenario_id: string
 ```
 
 ---
@@ -134,3 +138,4 @@ For discussions, ensure at least one agent holds a **causal or mechanistic misco
 - Each agent should have 1-3 expected flaws
 - `knowledge_focus`: 2-4 sentences covering what the agent knows well and where they're weak
 - `disposition_sketch`: 1-2 sentences on communication style
+- Agent names must be **globally unique across all scenarios**. The orchestrator provides a `reserved_agent_ids` list in your input — do not use any name whose kebab-case form appears in that list. If a natural name choice collides, choose a completely different name — never add suffixes.

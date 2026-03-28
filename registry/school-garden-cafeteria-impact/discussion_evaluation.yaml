@@ -1,0 +1,286 @@
+scenario_id: school-garden-cafeteria-impact
+activity: discussion
+grade_band: '6'
+evaluated_at: '2026-03-28T12:00:00Z'
+flaws:
+- flaw_id: flaw_001
+  flaw_type: reasoning
+  source: knowledge_driven
+  severity: moderate
+  agent: terrence
+  location:
+    type: turn
+    references:
+    - turn_001
+  description: Causal misconception that big plants are easy to grow
+  evidence: Plus tomato plants get super big and tall so they're not hard to grow
+    at all. My grandma grows them every summer and they do great.
+  explanation: Terrence links plant size to ease of growing, which is a causal misconception.
+    Being big and tall does not make a plant hardy or low-maintenance. He supports
+    this with a single anecdote (his grandma's garden) that does not transfer to a
+    school setting. A 6th grader can notice that 'big means easy' does not make sense.
+  expected_flaw_match: Causal misconception — tomatoes are easy because big plants
+    are hardier
+- flaw_id: flaw_002
+  flaw_type: reasoning
+  source: knowledge_driven
+  severity: moderate
+  agent: jayla
+  location:
+    type: turn
+    references:
+    - turn_003
+  description: Overgeneralization that marigolds repel all bugs
+  evidence: Plus marigolds keep all the bugs away so they're not just pretty, they're
+    actually protecting whatever else we plant too.
+  explanation: Jayla claims marigolds keep 'all the bugs away,' which is an overgeneralization.
+    Marigolds may deter some specific pests but do not repel all insects. A 6th grader
+    can question whether one type of flower really stops every single bug.
+  expected_flaw_match: Overgeneralization — marigolds keep ALL bugs away
+- flaw_id: flaw_003
+  flaw_type: coherence
+  source: knowledge_driven
+  severity: moderate
+  agent: jayla
+  location:
+    type: turn
+    references:
+    - turn_003
+  description: 'Goal-method mismatch: proposing flowers when the project goal is cafeteria
+    impact'
+  evidence: I was thinking we should do sunflowers and marigolds and zinnias — like
+    picture it, tall sunflowers in the back, bright zinnias along the edges, and marigolds
+    filling in the middle.
+  explanation: The driving question is about cafeteria impact. Jayla's proposal is
+    primarily about visual beauty and community engagement, not food. Sunflowers and
+    zinnias have no cafeteria use. A 6th grader can notice that flowers are not food
+    the cafeteria can use.
+  expected_flaw_match: Goal-method mismatch — flowers when goal is cafeteria impact
+- flaw_id: flaw_004
+  flaw_type: reasoning
+  source: knowledge_driven
+  severity: minor
+  agent: keyla
+  location:
+    type: turn
+    references:
+    - turn_002
+  description: Appeal to authority — treating a cafeteria worker's casual preference
+    as a decisive argument
+  evidence: I went and talked to Ms. Johnson and she said she would love fresh herbs.
+  explanation: Keyla uses Ms. Johnson's comment as the primary justification for growing
+    herbs, treating one person's polite expression of interest as if it settles the
+    question. She does not ask about quantities, feasibility, or other staff opinions.
+  expected_flaw_match: Appeal to authority — treating Ms. Johnson's casual comment
+    as firm commitment
+- flaw_id: flaw_005
+  flaw_type: epistemic
+  source: knowledge_driven
+  severity: minor
+  agent: keyla
+  location:
+    type: turn
+    references:
+    - turn_002
+  description: Assumption as fact that herbs are easy to grow
+  evidence: Herbs are small too so they're not even hard to grow
+  explanation: Keyla assumes herbs are easy because they are small, presenting this
+    as fact without evidence. Growing herbs requires attention to soil, sunlight,
+    and variety-specific needs. This mirrors Terrence's size-to-difficulty reasoning.
+  expected_flaw_match: Assumption as fact — herbs are easy, just scatter seeds
+- flaw_id: flaw_006
+  flaw_type: completeness
+  source: knowledge_driven
+  severity: moderate
+  agent: terrence
+  location:
+    type: turn
+    references:
+    - turn_005
+  description: Claims tomatoes need a lot of space while having no actual knowledge
+    of growing requirements
+  evidence: tomatoes need a LOT of space — like each plant spreads out and they need
+    room to breathe or they get all diseased and stuff.
+  explanation: Terrence argues for more space using vague claims but provides no concrete
+    growing requirements — space per plant, soil needs, watering, or whether a school
+    can maintain tomatoes over summer. A 6th grader can notice he never says actual
+    numbers or specifics.
+  expected_flaw_match: No feasibility analysis — tomato growing requirements in school
+    setting
+- flaw_id: flaw_007
+  flaw_type: reasoning
+  source: knowledge_driven
+  severity: moderate
+  agent: jayla
+  location:
+    type: turn
+    references:
+    - turn_006
+  description: Escalation of the marigold pest-control misconception when challenged
+  evidence: If we don't have marigolds and a bunch of bugs come and destroy everything,
+    then it doesn't matter how many tomatoes you planted because you're not gonna
+    have any left.
+  explanation: When challenged, Jayla escalates her marigold misconception to a catastrophic
+    scenario — all tomatoes destroyed without marigold protection. She treats marigolds
+    as the only defense against total crop failure, a significant overstatement.
+  expected_flaw_match: Overgeneralization — marigolds keep ALL bugs away
+- flaw_id: flaw_008
+  flaw_type: epistemic
+  source: knowledge_driven
+  severity: moderate
+  agent: deshawn
+  location:
+    type: turn
+    references:
+    - turn_011
+  description: Overstating evidence — treating group agreement as proof the plan will
+    work
+  evidence: I think this is a really good plan because literally everyone likes it,
+    so that means it'll work.
+  explanation: DeShawn equates group enthusiasm with plan quality. Everyone liking
+    a plan does not mean it is feasible or well-designed. A 6th grader can understand
+    that just because everyone agrees does not mean the plan will actually work.
+  expected_flaw_match: Overstating evidence — treating group enthusiasm as proof plan
+    will work
+- flaw_id: flaw_009
+  flaw_type: completeness
+  source: knowledge_driven
+  severity: moderate
+  agent: keyla
+  location:
+    type: turn
+    references:
+    - turn_002
+  description: Missing stakeholders — no consideration of quantity needs, food safety,
+    or other cafeteria staff
+  evidence: I went and talked to Ms. Johnson and she said she would love fresh herbs.
+    Like basil for the pizza and pasta, cilantro for salsa, stuff like that.
+  explanation: Keyla consulted one cafeteria worker but did not ask about quantities
+    needed, food safety requirements for student-grown produce, or what other staff
+    think. The gap between a casual comment and actually integrating garden produce
+    into meals is large and unexamined.
+  expected_flaw_match: Missing stakeholders — no check on quantity needs or food safety
+- flaw_id: flaw_010
+  flaw_type: completeness
+  source: knowledge_driven
+  severity: moderate
+  agent: jayla
+  location:
+    type: turn
+    references:
+    - turn_003
+  description: Ignored constraints — no consideration of space tradeoffs between flowers
+    and food crops
+  evidence: I was thinking we should do sunflowers and marigolds and zinnias — like
+    picture it, tall sunflowers in the back, bright zinnias along the edges, and marigolds
+    filling in the middle.
+  explanation: Jayla proposes three types of flowers filling the garden without acknowledging
+    that this space could grow food. She never addresses the tradeoff between aesthetic
+    goals and the project's stated purpose. A 6th grader can see that filling the
+    garden with flowers leaves less room for food.
+  expected_flaw_match: Ignored constraints — space tradeoff between flowers and food
+- flaw_id: flaw_011
+  flaw_type: coherence
+  source: interaction_driven
+  severity: major
+  agent: deshawn
+  location:
+    type: cross_turn
+    references:
+    - turn_004
+    - turn_007
+    - turn_011
+  description: Superficial consensus — combining all ideas without resolving underlying
+    tradeoffs
+  evidence: 'Turn 4: ''why do we have to pick just one?'' Turn 7: ''everybody''s idea
+    is in the plan and we''re all good.'' Turn 11: ''we all agree then! ...I think
+    this is a really good plan because literally everyone likes it.'''
+  explanation: 'DeShawn repeatedly frames the plan as successful because everyone''s
+    idea is included, but the group never resolves real tensions: How much space does
+    each section get? Is there enough room? Who maintains what and when? The plan
+    is a compromise that makes everyone feel heard without examining whether it actually
+    works. Major severity because this is the final plan and its feasibility is completely
+    unexamined.'
+  expected_flaw_match: Superficial consensus — combining all ideas without resolving
+    tradeoffs
+- flaw_id: flaw_012
+  flaw_type: completeness
+  source: interaction_driven
+  severity: major
+  agent: deshawn
+  location:
+    type: cross_turn
+    references:
+    - turn_004
+    - turn_007
+    - turn_011
+  description: No feasibility analysis — the group finalizes a plan with no space
+    measurements, budget, maintenance schedule, or timeline
+  evidence: 'Turn 7: ''We can figure out the exact spacing later.'' Turn 11: ''I wanna
+    figure out like how big each section actually is so we can tell Ms. Carter we''re
+    ready to go.'''
+  explanation: DeShawn drives the group toward a final plan without any concrete feasibility
+    check. The group never measures the garden, estimates costs, plans who will water
+    and when, or considers whether tomatoes can mature within the school year. For
+    6th graders, noticing that no one asked 'how big is the garden?' is concrete and
+    accessible.
+  expected_flaw_match: No feasibility analysis — no space measurement, budget, or
+    maintenance plan
+- flaw_id: flaw_013
+  flaw_type: completeness
+  source: interaction_driven
+  severity: moderate
+  agent: terrence
+  location:
+    type: cross_turn
+    references:
+    - turn_005
+    - turn_009
+  description: Abandonment — Terrence drops his space concern without it being resolved
+  evidence: 'Turn 5: ''If we squish them into one little corner... we''re not gonna
+    get nearly as many tomatoes.'' Turn 9: ''Okay fine, I guess we can do all three.'''
+  explanation: Terrence raises a legitimate concern about space being insufficient,
+    but under group pressure he concedes without the concern being addressed. No one
+    measures the space or determines whether all three crops can coexist. The concern
+    is abandoned rather than refuted.
+  expected_flaw_match: null
+- flaw_id: flaw_014
+  flaw_type: reasoning
+  source: knowledge_driven
+  severity: minor
+  agent: terrence
+  location:
+    type: turn
+    references:
+    - turn_009
+  description: False equivalence dismissal — claims herbs have no cafeteria value
+    compared to tomatoes
+  evidence: you can't make pizza sauce out of basil
+  explanation: Terrence dismisses herbs by comparing them unfavorably to tomatoes
+    using a narrow criterion (pizza sauce), ignoring that basil goes on pizza and
+    in pasta — the exact meals he cited earlier. Minor because the argument is selective
+    but does not undermine the overall discussion significantly.
+  expected_flaw_match: null
+summary:
+  total_flaws: 14
+  by_type:
+    reasoning: 5
+    epistemic: 2
+    completeness: 5
+    coherence: 2
+  by_source:
+    knowledge_driven: 10
+    interaction_driven: 4
+  by_severity:
+    minor: 3
+    moderate: 9
+    major: 2
+  key_patterns:
+  - 'Superficial consensus: DeShawn merges all ideas without the group examining feasibility,
+    producing a final plan with no space measurements, budget, or maintenance plan'
+  - 'Marigold misconception escalation: Jayla''s overgeneralization about marigolds
+    goes unchallenged and is ultimately adopted by the group as an unquestioned benefit'
+  - 'Size-based growing assumptions: Both Terrence (big means easy) and Keyla (small
+    means easy) use plant size to judge growing difficulty, and neither is challenged'
+  - 'Abandonment under social pressure: Terrence''s legitimate space concern is dropped
+    when outnumbered rather than investigated'

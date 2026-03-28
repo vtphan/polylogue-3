@@ -1,0 +1,280 @@
+scenario_id: school-garden-cafeteria-impact
+grade_band: '6'
+topic: What should we grow in our school garden to have the biggest impact on the
+  school cafeteria?
+activity: discussion
+created_at: '2026-03-28T10:30:00Z'
+agents:
+- agent_id: terrence
+  name: Terrence
+  role: Tomato Grower
+- agent_id: keyla
+  name: Keyla
+  role: Herb Specialist
+- agent_id: jayla
+  name: Jayla
+  role: Garden Designer
+- agent_id: deshawn
+  name: DeShawn
+  role: Project Planner
+config:
+  current_stage: converging
+  selection: responsive
+  max_turns: null
+turns:
+- turn_id: turn_001
+  speaker: terrence
+  role: Tomato Grower
+  stage: opening_up
+  content: Okay so I already know the answer to this — we gotta do tomatoes. Think
+    about it, tomatoes are in like everything the cafeteria makes. Pizza sauce, pasta,
+    salads, sandwiches. If we're trying to have the biggest impact, why would we grow
+    something they barely even use? Plus tomato plants get super big and tall so they're
+    not hard to grow at all. My grandma grows them every summer and they do great.
+  metadata:
+    knowledge_areas_engaged:
+    - area: tomato usage in cafeteria food
+      category: strong
+    - area: tomato plant hardiness
+      category: misconception
+    reactive_tendency_activated: false
+    rationale: Opens with high confidence, leading with cafeteria usage knowledge
+      and his misconception that big plants are easy plants. Uses grandmother as proof.
+  added_at: '2026-03-28T15:32:53.253976+00:00'
+- turn_id: turn_002
+  speaker: keyla
+  role: Herb Specialist
+  stage: opening_up
+  content: Okay but Terrence, did you actually ask the cafeteria what they want? Because
+    I did — I went and talked to Ms. Johnson and she said she would love fresh herbs.
+    Like basil for the pizza and pasta, cilantro for salsa, stuff like that. Herbs
+    are small too so they're not even hard to grow, and the cafeteria would actually
+    use them every day.
+  metadata:
+    knowledge_areas_engaged:
+    - area: cafeteria needs and preferences
+      category: strong
+    - area: herb culinary applications
+      category: strong
+    - area: herb growing requirements
+      category: shallow
+    reactive_tendency_activated: false
+    rationale: Leads with her strongest asset — she actually talked to Ms. Johnson.
+      Pushes back on Terrence by pointing out he did not consult the cafeteria, then
+      presents herbs with specific culinary examples. Her claim that herbs are not
+      hard to grow reflects shallow understanding.
+  added_at: '2026-03-28T15:33:23.903089+00:00'
+- turn_id: turn_003
+  speaker: jayla
+  role: Garden Designer
+  stage: opening_up
+  content: Okay but what about making the garden actually look good though? Because
+    I was thinking we should do sunflowers and marigolds and zinnias — like picture
+    it, tall sunflowers in the back, bright zinnias along the edges, and marigolds
+    filling in the middle. If the garden looks amazing, people are actually gonna
+    want to come help take care of it, and that's how the whole project stays going.
+    Plus marigolds keep all the bugs away so they're not just pretty, they're actually
+    protecting whatever else we plant too.
+  metadata:
+    knowledge_areas_engaged:
+    - area: garden aesthetics and layout design
+      category: strong
+    - area: community engagement through visual appeal
+      category: strong
+    - area: marigold pest-repellent properties
+      category: misconception
+    - area: connection between flowers and cafeteria impact
+      category: blind_spot
+    reactive_tendency_activated: false
+    rationale: Introduces her flower vision with vivid detail, drawing on strong aesthetics
+      knowledge and real experience that beautiful spaces attract volunteers. Invokes
+      marigold pest-repellent claim (misconception). Does not address whether flowers
+      feed the cafeteria (blind spot).
+  added_at: '2026-03-28T15:34:04.464607+00:00'
+- turn_id: turn_004
+  speaker: deshawn
+  role: Project Planner
+  stage: opening_up
+  content: Okay wait, I actually think we can do all three though. Like why do we
+    have to pick just one? We could put the tomatoes in the sunny part of the garden,
+    then do herbs in a smaller section next to them, and then Jayla's flowers can
+    go around the edges. If we make a plan and split up who's in charge of what, we
+    can totally make it all work.
+  metadata:
+    knowledge_areas_engaged:
+    - area: garden space planning
+      category: shallow
+    - area: group coordination
+      category: strong
+    reactive_tendency_activated: false
+    rationale: Combines everyone's ideas so nobody feels left out. Proposes dividing
+      the garden into sections without considering actual space, resource, or maintenance
+      constraints (shallow planning). Strong group coordination in validating each
+      contribution.
+  added_at: '2026-03-28T15:34:56.547001+00:00'
+- turn_id: turn_005
+  speaker: terrence
+  role: Tomato Grower
+  stage: working_through
+  content: Wait DeShawn, I hear you but that's not really fair to the tomatoes though.
+    You're saying give them just one section but tomatoes need a LOT of space — like
+    each plant spreads out and they need room to breathe or they get all diseased
+    and stuff. If we squish them into one little corner just so we can have flowers
+    and herbs too, we're not gonna get nearly as many tomatoes. And Jayla, no offense
+    but sunflowers don't even do anything for the cafeteria. At least my tomatoes
+    and Keyla's herbs are actual food.
+  metadata:
+    knowledge_areas_engaged:
+    - area: tomato space and growing requirements
+      category: blind_spot
+    - area: garden space allocation
+      category: blind_spot
+    reactive_tendency_activated: true
+    rationale: Pushes back on DeShawn's compromise, asserting tomatoes deserve the
+      majority of space. Makes vague claims about tomato space needs he doesn't actually
+      know. Challenges Jayla's flowers as not food. Reactive tendency activated —
+      repeating and escalating his position.
+  added_at: '2026-03-28T15:37:16.378133+00:00'
+- turn_id: turn_006
+  speaker: jayla
+  role: Garden Designer
+  stage: working_through
+  content: Okay but Terrence, I literally just said marigolds keep bugs away from
+    the garden though. So they're not just sitting there being pretty — they're actually
+    protecting YOUR tomatoes from getting eaten up by pests. If we don't have marigolds
+    and a bunch of bugs come and destroy everything, then it doesn't matter how many
+    tomatoes you planted because you're not gonna have any left. So really the flowers
+    are helping the cafeteria too, just in a different way.
+  metadata:
+    knowledge_areas_engaged:
+    - area: companion planting and pest control
+      category: misconception
+    - area: garden aesthetics and community engagement
+      category: strong
+    reactive_tendency_activated: true
+    rationale: Pivots to the marigold bug-repellent argument rather than addressing
+      whether flowers contribute to cafeteria impact. Overgeneralizes marigold pest
+      deterrence. Frames flowers as protecting Terrence's tomatoes — smart rhetorical
+      move but avoids the core question.
+  added_at: '2026-03-28T15:37:57.234813+00:00'
+- turn_id: turn_007
+  speaker: deshawn
+  role: Project Planner
+  stage: working_through
+  content: See, that's exactly what I'm saying though! Jayla's right, the marigolds
+    are literally helping the whole garden, so it's not like we're wasting space on
+    them. So if we just divide it up — tomatoes get the big sunny section, herbs get
+    their own spot, and marigolds go around the edges to protect everything — then
+    everybody's idea is in the plan and we're all good. We can figure out the exact
+    spacing later, let's just agree on the layout and start making a diagram.
+  metadata:
+    knowledge_areas_engaged:
+    - area: garden space allocation
+      category: shallow
+    - area: group coordination
+      category: strong
+    reactive_tendency_activated: true
+    rationale: Seizes on Jayla's marigold argument to reinforce do-all-three plan.
+      Smooths over Terrence-Jayla conflict by agreeing with last speaker. Pushes to
+      move forward without addressing space constraints — treats garden planning as
+      a simple diagram exercise.
+  added_at: '2026-03-28T15:38:33.922043+00:00'
+- turn_id: turn_008
+  speaker: keyla
+  role: Herb Specialist
+  stage: working_through
+  content: Yeah, I like that actually. And the herbs should definitely be in the plan
+    because Ms. Johnson literally said she wants them, so we know for a fact the cafeteria
+    will use those. I think DeShawn's layout thing makes sense — like tomatoes in
+    the big part, herbs in their own section, marigolds on the edges. We should probably
+    figure out which herbs to plant though, because Ms. Johnson mentioned basil and
+    cilantro specifically so we should start with those.
+  metadata:
+    knowledge_areas_engaged:
+    - area: cafeteria needs and preferences
+      category: strong
+    - area: herb varieties and culinary uses
+      category: strong
+    reactive_tendency_activated: true
+    rationale: Agrees with DeShawn's compromise (collaborative, conflict-averse) but
+      reasserts Ms. Johnson as validation. Adds specific herb names from her strong
+      knowledge to steer details toward her expertise.
+  added_at: '2026-03-28T15:39:07.738903+00:00'
+- turn_id: turn_009
+  speaker: terrence
+  role: Tomato Grower
+  stage: converging
+  content: Okay fine, I guess we can do all three. But the tomatoes better get the
+    biggest section for real, like way more than the herbs or the flowers. Because
+    tomatoes are what the cafeteria is actually gonna use the most — you can't make
+    pizza sauce out of basil. And the marigolds can go on the edges, that's fine,
+    but they better not be taking up space the tomatoes could use.
+  metadata:
+    knowledge_areas_engaged:
+    - area: tomato uses in cafeteria meals
+      category: strong
+    - area: garden space allocation
+      category: blind_spot
+    reactive_tendency_activated: true
+    rationale: Grudgingly concedes to the all-three plan but sets conditions — tomatoes
+      get the biggest section. Competitive tendency shows in framing tomatoes as highest-impact.
+      Strong cafeteria knowledge but blind spot on actual space needs.
+  added_at: '2026-03-28T15:42:13.162604+00:00'
+- turn_id: turn_010
+  speaker: jayla
+  role: Garden Designer
+  stage: converging
+  content: Okay cool, so the marigolds can line the edges and it'll actually look
+    really pretty, like a border around the whole garden. I don't need that much space
+    anyway, they grow kinda small. And then the tomatoes can have the big middle part
+    and the herbs can go on one side. I'm just glad we're not doing ONLY tomatoes
+    because that would look so boring.
+  metadata:
+    knowledge_areas_engaged:
+    - area: garden layout and aesthetics
+      category: strong
+    - area: plant spacing and space requirements
+      category: shallow
+    reactive_tendency_activated: false
+    rationale: Concedes on space since Terrence pushed hard, reframes edge placement
+      as a positive design choice. Emphasizes visual appeal. Gets a small dig in about
+      tomatoes-only being boring.
+  added_at: '2026-03-28T15:42:45.149196+00:00'
+- turn_id: turn_011
+  speaker: deshawn
+  role: Project Planner
+  stage: converging
+  content: Okay so we all agree then! Tomatoes in the big middle part, herbs on the
+    side, and Jayla's marigolds around the edges. I think this is a really good plan
+    because literally everyone likes it, so that means it'll work. Can we start drawing
+    the diagram now? I wanna figure out like how big each section actually is so we
+    can tell Ms. Carter we're ready to go.
+  metadata:
+    knowledge_areas_engaged:
+    - area: project planning and coordination
+      category: strong
+    - area: evaluating plan quality
+      category: shallow
+    reactive_tendency_activated: false
+    rationale: Summarizes agreed plan and pushes toward action. Equates group agreement
+      with plan quality — consensus does not mean the plan is feasible. Correctly
+      moves toward concrete next steps.
+  added_at: '2026-03-28T15:43:18.447953+00:00'
+- turn_id: turn_012
+  speaker: jayla
+  role: Garden Designer
+  stage: converging
+  content: Yes! Oh my gosh, can I draw it? I can already see it in my head — like
+    the tomatoes in the middle with the herbs on one side and then the marigolds going
+    all the way around like a border. It's gonna look so good AND keep the bugs off
+    everything. I'll grab the colored pencils!
+  metadata:
+    knowledge_areas_engaged:
+    - area: garden layout and visual design
+      category: strong
+    - area: marigolds as pest control
+      category: misconception
+    reactive_tendency_activated: false
+    rationale: Volunteers to draw the diagram — her visual strength. Repeats marigold
+      pest control misconception in passing as the group wraps up unchallenged.
+  added_at: '2026-03-28T15:43:53.394916+00:00'

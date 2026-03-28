@@ -105,13 +105,14 @@ Interactions are both **physical** (student discussion within each group, teache
 
 ### Student
 
-Read an AI-generated presentation or discussion, then identify critical thinking flaws through a three-stage session flow (Recognize, Explain, Locate). See the [Pedagogical Model](pedagogical-model.md) for details.
+Read an AI-generated presentation or discussion, then identify critical thinking flaws through a five-stage session flow (Recognize → Explain → Collaborate → Locate → Results). See the [Pedagogical Model](pedagogical-model.md) for details.
 
 | Feature | Description |
 |---------|-------------|
 | **Read transcript** | Presentation: sections with speakers. Discussion: chat-style turns grouped by stage. |
-| **Three-stage flow** | Recognize (individual, identify flaw types) → Explain (group, write justifications) → Locate (group, find missed flaws) |
+| **Five-stage flow** | Recognize (individual, identify flaw types) → Explain (group, teach back what you got right) → Collaborate (group, resolve errors together) → Locate (group, find missed flaws) → Results |
 | **On-demand hints** | "Narrow it down" button available at every stage. Unlocks after a try-first period. |
+| **Coins and goal bars** | Earn coins for correct answers, explanations, and flaw discoveries. Goal bar shows progress toward the teacher-set pass threshold. |
 | **Feedback view** | After teacher releases: matched flaws (green), wrong type (blue), false positives (red). |
 | **Growth tracking** | Individual accuracy trend across sessions (private). |
 | **Scaffold inbox** | Receive and acknowledge scaffolds from teacher. |
@@ -123,9 +124,9 @@ Set up sessions, monitor student groups in real time, send scaffolds, control st
 | Feature | Description |
 |---------|-------------|
 | **Class management** | Create classes, add students (bulk or individual). |
-| **Session creation** | Pick activity, assign groups. No mode selection — every session runs the three-stage flow. |
-| **Live dashboard** | Group cards with annotation counts, connection status, real-time activity feed. |
-| **Stage transitions** | Advance groups from Recognize → Explain. Explain → Locate triggers automatically. |
+| **Session creation** | Pick activity, assign groups, set pass thresholds per stage. Every session runs the five-stage flow. |
+| **Live dashboard** | Group cards with annotation counts, connection status, real-time activity feed, coin totals. |
+| **Stage transitions** | Advance groups from Recognize → Explain. Explain → Collaborate and Collaborate → Locate/Results trigger automatically. |
 | **Scaffolding** | 6 scaffold levels with 12 pre-loaded templates. Send to any group in real time. |
 | **Evaluation access** | Full answer key available at any phase. |
 | **Class view** | Projectable screen for whole-class debrief. |
@@ -196,12 +197,13 @@ University Server
 ## Design Philosophy
 
 - **Physical + digital balance.** The app handles what apps are good at (displaying text, capturing annotations, tracking state). Physical discussion handles what it's good at (nuance, negotiation, persuasion). The app creates conditions for good discussion and then gets out of the way.
-- **No gamification leaderboards.** Group progress indicators and individual growth tracking — but never cross-group competition.
-- **Formative, not summative.** CrossCheck does not produce grades. It produces detection rates, flaw type breakdowns, and matched/missed comparisons as formative feedback.
+- **Motivation without toxic competition.** Coins, goal bars, and pass thresholds give students visible progress and achievable win conditions. No cross-group leaderboards or rankings. Group coin totals celebrate shared success.
+- **Confidence before challenge.** The Explain stage (teach back) ensures every group's first collaborative activity is positive. Collaborate (error resolution) follows only after the group has built momentum.
+- **Formative, not summative.** CrossCheck does not produce grades. It produces detection rates, flaw type breakdowns, coin counts, and matched/missed comparisons as formative feedback.
 - **Privacy by design.** Opaque student IDs, research consent flags, COPPA-compliant auth, anonymized exports.
 
 ---
 
 ## Legacy Mode Support
 
-The app also supports a legacy v1 mode system (Recognize, Locate, Classify, Explain as independent teacher-selected modes) for sessions created before the three-stage flow was implemented. New sessions use the three-stage flow exclusively. Legacy support will be removed once all old sessions are migrated.
+The app also supports a legacy v1 mode system (Recognize, Locate, Classify, Explain as independent teacher-selected modes) for sessions created before the five-stage flow was implemented. New sessions use the five-stage flow exclusively. Legacy support will be removed once all old sessions are migrated.
