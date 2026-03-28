@@ -38,6 +38,13 @@ npm run dev:next     # Plain Next.js without Socket.IO (fallback)
 
 Session lifecycle: `active` → `complete` (no setup phase — sessions start active)
 
+Group stages (five-stage flow, per-group): `recognize` → `explain` → `collaborate` → `locate` → `results`
+
+- Recognize → Explain: teacher-triggered (advances group phase to "group")
+- Explain → Collaborate: always automatic (skipped if no unanimously-correct turns)
+- Collaborate → Locate/Results: automatic based on `getLocateTargets()` logic
+- Empty stages are skipped automatically by the server
+
 Group learning phases (per-group, independent): `individual` → `group` → `reviewing`
 
 - Teacher advances each group independently via `PATCH /api/groups/[id]/phase`
@@ -57,6 +64,11 @@ Group learning phases (per-group, independent): `individual` → `group` → `re
 | `scaffold:acknowledged` | PATCH /api/scaffolds/[id] | session only |
 | `group:phase_changed` | PATCH /api/groups/[id]/phase | group + session |
 | `group:ready_changed` | POST /api/groups/[id]/ready | session only |
+| `stage:transition` | PATCH /api/groups/[id]/stage | group + session |
+| `hint:used` | POST /api/hints | group + session |
+| `explanation:submitted` | POST /api/explanations | group + session |
+| `coins:awarded` | POST /api/explanations, POST /api/flaw-responses | group |
+| `session:mode_changed` | PATCH /api/sessions/[id] | session |
 
 Room joins are validated against the database (teacher ownership / student group membership).
 

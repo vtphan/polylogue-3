@@ -99,11 +99,6 @@ export interface ExplanationSubmittedEvent {
   authorId: string;
 }
 
-export interface ExplanationRevealedEvent {
-  groupId: string;
-  turnId: string;
-}
-
 export interface UserConnectionEvent {
   userId: string;
   groupId: string | null;
@@ -132,7 +127,6 @@ export interface SessionSocketHandlers {
   onStageTransition?: (event: StageTransitionEvent) => void;
   onHintUsed?: (event: HintUsedEvent) => void;
   onExplanationSubmitted?: (event: ExplanationSubmittedEvent) => void;
-  onExplanationRevealed?: (event: ExplanationRevealedEvent) => void;
   onUserConnected?: (event: UserConnectionEvent) => void;
   onUserDisconnected?: (event: UserConnectionEvent) => void;
   onConnectionRoster?: (roster: ConnectionRosterEntry[]) => void;
@@ -178,7 +172,6 @@ export function useSessionSocket(
     on("stage:transition", handlers.onStageTransition as never);
     on("hint:used", handlers.onHintUsed as never);
     on("explanation:submitted", handlers.onExplanationSubmitted as never);
-    on("explanation:revealed", handlers.onExplanationRevealed as never);
     on("user:connected", handlers.onUserConnected as never);
     on("user:disconnected", handlers.onUserDisconnected as never);
     on("connection:roster", handlers.onConnectionRoster as never);
@@ -189,7 +182,6 @@ export function useSessionSocket(
       }
     };
     // Re-subscribe when handlers change
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     handlers.onAnnotationCreated,
     handlers.onAnnotationDeleted,
@@ -203,7 +195,6 @@ export function useSessionSocket(
     handlers.onStageTransition,
     handlers.onHintUsed,
     handlers.onExplanationSubmitted,
-    handlers.onExplanationRevealed,
     handlers.onUserConnected,
     handlers.onUserDisconnected,
     handlers.onConnectionRoster,

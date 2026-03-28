@@ -56,11 +56,10 @@ export async function GET(
     }
 
     // During individual phase, students only see their own annotations
-    // TODO: phase is now per-group — need to check group.phase once groups include phase in the query
     const studentGroup = classSession.groups.find((g) =>
       g.members.some((m) => m.user.id === session.user.id)
     );
-    if (studentGroup && (studentGroup as unknown as { phase: string }).phase === "individual") {
+    if (studentGroup && studentGroup.phase === "individual") {
       return NextResponse.json({
         ...classSession,
         groups: classSession.groups.map((g) => ({

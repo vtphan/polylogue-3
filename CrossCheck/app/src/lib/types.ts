@@ -52,6 +52,11 @@ export interface Activity {
   transcript: Transcript;
 }
 
+// Enums matching Prisma schema
+export type Role = "student" | "teacher" | "researcher";
+export type GroupPhase = "individual" | "group" | "reviewing";
+export type Severity = "minor" | "moderate" | "major";
+
 // Annotation types
 export type FlawType = "reasoning" | "epistemic" | "completeness" | "coherence";
 
@@ -66,6 +71,9 @@ export interface Annotation {
   id: string;
   location: AnnotationLocation;
   flawType: FlawType;
+  severity?: Severity | null;
+  explanation?: string | null;
+  coins?: number;
   createdAt: string;
   hinted?: boolean;
   hintLevel?: number;
@@ -74,6 +82,65 @@ export interface Annotation {
   confirmedBy?: string[];
   userId?: string;
   comments?: { id: string; text: string; isBonus: boolean }[];
+}
+
+// --- Model interfaces matching Prisma schema ---
+
+export interface FlawResponse {
+  id: string;
+  groupId: string;
+  userId: string;
+  flawId: string;
+  typeAnswer: string;
+  typeCorrect: boolean;
+  reasonAnswer?: string | null;
+  reasonCorrect?: boolean | null;
+  hintLevel: number;
+  stage?: string | null;
+  coins: number;
+  createdAt: string;
+}
+
+export interface Explanation {
+  id: string;
+  turnId: string;
+  authorId: string;
+  groupId: string;
+  sessionId: string;
+  text: string;
+  stage?: string | null;
+  coins: number;
+  revisionOf?: string | null;
+  createdAt: string;
+}
+
+export interface Scaffold {
+  id: string;
+  sessionId: string;
+  groupId: string;
+  teacherId: string;
+  level: number;
+  type: string;
+  text: string;
+  targetLocation?: unknown;
+  contextAtSend: unknown;
+  outcome?: unknown;
+  createdAt: string;
+  deliveredAt?: string | null;
+  acknowledgedAt?: string | null;
+}
+
+export interface HintUsage {
+  id: string;
+  studentId: string;
+  sessionId: string;
+  groupId: string;
+  flawId?: string | null;
+  turnId: string;
+  hintLevel: number;
+  stage: string;
+  targetSection?: string | null;
+  createdAt: string;
 }
 
 // --- Session stages (five-stage flow) ---

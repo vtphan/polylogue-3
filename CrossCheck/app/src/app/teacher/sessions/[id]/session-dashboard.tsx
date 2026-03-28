@@ -383,8 +383,8 @@ export function SessionDashboard({ session: initialSession }: { session: Session
 
   const flawIndex = (session.activity.flawIndex || []) as { flaw_id: string; locations: string[]; flaw_type: string; severity: string }[];
   const totalFlaws = flawIndex.length;
-  // TODO: isReviewing is now per-group (group.phase === "reviewing"). For now, check if any group is reviewing or session is complete.
-  const isReviewing = session.status === "complete" || session.groups.some((g) => (g as unknown as { phase: string }).phase === "reviewing");
+  // Session-level reviewing: true when any group has reached reviewing or session is complete (used for Class View button and match results)
+  const isReviewing = session.status === "complete" || session.groups.some((g) => g.phase === "reviewing");
 
   // Compute match results per group (for reviewing mode)
   const groupMatchResults = useMemo(() => {
@@ -433,7 +433,6 @@ export function SessionDashboard({ session: initialSession }: { session: Session
               Class View
             </a>
           )}
-          {/* TODO: Reopen is now per-group (group phase endpoint). Will be added to group detail panel. */}
           {nextStatus && session.status !== "complete" && (
             <button
               onClick={advancePhase}
