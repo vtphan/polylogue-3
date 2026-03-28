@@ -1,6 +1,66 @@
 # CrossCheck — Roadmap
 
-Future improvements. None are blocking classroom deployment.
+---
+
+## Active: Five-Stage Flow and Motivation System
+
+### Five-Stage Session Flow
+
+**Problem:** The three-stage flow (Recognize → Explain → Locate) had structural motivation issues. Explain only surfaced errors, making it feel like punishment. Students who did well got less to do. The flow was subtractive rather than additive.
+
+**Solution:** Split into five stages: Recognize → Explain → Collaborate → Locate → Results.
+
+- **Explain** becomes "Teach Back" — only unanimously correct items. Students articulate *why* they were right. Positive framing, confidence building.
+- **Collaborate** is new — "Team Building." Takes over old Explain's error-correction role. Students resolve disagreement and work through items where anyone was wrong.
+- **Locate** reframed as "Detective Challenge" with positive framing.
+
+**Implementation scope:**
+- New `"collaborate"` stage value in `SessionStage` enum (Prisma + types)
+- Split `turn-selection.ts` into Explain set (unanimously correct) and Collaborate set (any error)
+- New `collaborate-stage.tsx` component (based on current `explain-stage.tsx`)
+- Simplify `explain-stage.tsx` (remove type selection step, show correct type, writing only)
+- Update `locate-trigger.ts` to check Collaborate responses instead of Explain
+- Update stage transition logic in `/api/groups/[id]/stage`
+- Update `session-activity-viewer.tsx` to render all five stages
+- Update Results view with Explain and Collaborate tabs
+
+### "No Flaw Here" Button
+
+**Problem:** In Recognize, non-flawed turns had no correct answer. All 4 choices were wrong, and any selection triggered "productive failure" feedback. Students were confused — they thought they got it wrong.
+
+**Solution:** Add a fifth option, "No flaw here." Correctly identifying a clean turn earns coins and positive feedback. Hints eliminate flaw type choices but never eliminate "No flaw here" (unless the turn has a flaw).
+
+**Implementation scope:**
+- Add "No flaw here" button to `recognize-stage.tsx`
+- Update hint elimination logic in `hints.ts`
+- Update false positive feedback messaging
+- Update `flaw-responses` API to accept `"no_flaw"` as a type answer
+
+### Motivation System: Coins
+
+**Problem:** No visible reward for correct answers. No sense of accumulation or progress within a stage.
+
+**Solution:** Coin economy earned for learning behaviors (correct identification, explanations, flaw discoveries). Per-student and per-group totals. No cross-group leaderboards.
+
+**Implementation scope:**
+- New `coins` field on `FlawResponse` and `Explanation` models (or separate `CoinLedger` model)
+- Coin award logic per stage (see pedagogical model for values)
+- Coin display component (per-turn animation, running total in stage header)
+- Coin totals in Results view
+- Coin totals on teacher dashboard group cards
+
+### Motivation System: Pass Thresholds and Goal Bars
+
+**Problem:** No win condition within a stage. Students with many flaws to work through felt overwhelmed.
+
+**Solution:** Teachers set pass thresholds per stage at session creation. Goal bar shows progress. Hitting the threshold triggers celebration but doesn't stop the student.
+
+**Implementation scope:**
+- Add threshold fields to `Session.config` JSONB (or `Group.config`)
+- Threshold configuration UI in session creation form
+- Goal bar component shown in each stage
+- Celebration animation when threshold is reached
+- Default thresholds when teacher doesn't set them
 
 ---
 
