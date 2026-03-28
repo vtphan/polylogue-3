@@ -30,6 +30,13 @@ enum GroupPhase {
   reviewing
 }
 
+enum SessionStage {
+  recognize
+  explain
+  locate
+  results
+}
+
 enum FlawType {
   reasoning
   epistemic
@@ -68,6 +75,8 @@ model User {
   scaffolds      Scaffold[]
   sessionEvents  SessionEvent[]
   annotationComments AnnotationComment[]
+  hintUsages     HintUsage[]    @relation("HintUsageStudent")
+  explanations   Explanation[]  @relation("ExplanationAuthor")
 
   @@map("users")
 }
@@ -137,6 +146,8 @@ model Session {
   groups     Group[]
   scaffolds  Scaffold[]
   events     SessionEvent[]
+  hintUsages HintUsage[]
+  explanations Explanation[]
 
   @@map("sessions")
 }
@@ -144,11 +155,12 @@ model Session {
 // --- Groups ---
 
 model Group {
-  id        String     @id @default(uuid()) @db.Uuid
-  sessionId String     @map("session_id") @db.Uuid
+  id        String       @id @default(uuid()) @db.Uuid
+  sessionId String       @map("session_id") @db.Uuid
   name      String
-  phase     GroupPhase @default(individual)
-  config    Json       @default("{}") // {difficulty_mode: "learn" | "recognize" | "locate" | "classify" | "explain", ...per-mode knob}
+  phase     GroupPhase   @default(individual)
+  stage     SessionStage @default(recognize)
+  config    Json         @default("{}") // Legacy: was {difficulty_mode, ...knobs}. Now unused — stage field controls flow.
 
   session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   members   GroupMember[]
@@ -156,6 +168,8 @@ model Group {
   annotations Annotation[]
   flawResponses FlawResponse[]
   scaffolds Scaffold[]
+  hintUsages HintUsage[]
+  explanations Explanation[]
 
   @@map("groups")
 }
@@ -193,6 +207,8 @@ model Annotation {
   severity      Severity?
   explanation   String?
   hinted        Boolean   @default(false)
+  hintLevel     Int       @default(0) @map("hint_level") // Locate: how many hints used before flagging (0 = independent)
+  targetSection String?   @map("target_section") // Locate: which section student tapped for hints
   isGroupAnswer Boolean   @default(false) @map("is_group_answer")
   confirmedBy   Json?     @map("confirmed_by") // [user_ids]
   createdAt     DateTime  @default(now()) @map("created_at")
@@ -233,6 +249,8 @@ model FlawResponse {
   typeCorrect   Boolean  @map("type_correct")
   reasonAnswer  String?  @map("reason_answer")
   reasonCorrect Boolean? @map("reason_correct")
+  hintLevel     Int      @default(0) @map("hint_level") // Recognize: how many hints used before answering
+  stage         String?  // "recognize" or "explain" — null for legacy/learn responses
   createdAt     DateTime @default(now()) @map("created_at")
 
   group         Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
@@ -282,4 +300,48 @@ model SessionEvent {
 
   @@index([sessionId, createdAt])
   @@map("session_events")
+}
+
+// --- Hint Usage (tracks hint requests per student per turn/flaw) ---
+
+model HintUsage {
+  id            String   @id @default(uuid()) @db.Uuid
+  studentId     String   @map("student_id") @db.Uuid
+  sessionId     String   @map("session_id") @db.Uuid
+  groupId       String   @map("group_id") @db.Uuid
+  flawId        String?  @map("flaw_id") // null for non-flawed turns in Recognize
+  turnId        String   @map("turn_id") // which turn (item_id) the hint relates to
+  hintLevel     Int      @map("hint_level") // 1, 2, or 3
+  stage         String   // "recognize", "explain", "locate"
+  targetSection String?  @map("target_section") // Locate only: which section student tapped
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  student       User     @relation("HintUsageStudent", fields: [studentId], references: [id])
+  session       Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  group         Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@index([studentId, sessionId])
+  @@index([groupId])
+  @@map("hint_usages")
+}
+
+// --- Explanations (collaborative writing in Explain stage) ---
+
+model Explanation {
+  id         String   @id @default(uuid()) @db.Uuid
+  turnId     String   @map("turn_id") // which turn this explains
+  authorId   String   @map("author_id") @db.Uuid
+  groupId    String   @map("group_id") @db.Uuid
+  sessionId  String   @map("session_id") @db.Uuid
+  text       String
+  revisionOf String?  @map("revision_of") @db.Uuid // id of the Explanation this revises (null = original)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  author     User     @relation("ExplanationAuthor", fields: [authorId], references: [id])
+  group      Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  session    Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([groupId, turnId])
+  @@index([authorId])
+  @@map("explanations")
 }

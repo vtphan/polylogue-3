@@ -68,20 +68,36 @@ export interface Annotation {
   flawType: FlawType;
   createdAt: string;
   hinted?: boolean;
+  hintLevel?: number;
+  targetSection?: string;
   isGroupAnswer?: boolean;
   confirmedBy?: string[];
   userId?: string;
   comments?: { id: string; text: string; isBonus: boolean }[];
 }
 
-// Difficulty modes — ordered by independence gradient (system withdraws, student takes on more)
+// --- Session stages (three-stage flow) ---
+
+// The three-stage session flow: Recognize → Explain → Locate → Results
+export type SessionStage = "recognize" | "explain" | "locate" | "results";
+
+export const SESSION_STAGES: SessionStage[] = ["recognize", "explain", "locate", "results"];
+
+// Valid stage transitions
+export const STAGE_TRANSITIONS: Record<SessionStage, SessionStage[]> = {
+  recognize: ["explain"],
+  explain: ["locate", "results"], // locate is conditional
+  locate: ["results"],
+  results: [],
+};
+
+// --- Legacy mode types ---
+// DEPRECATED: These types support old sessions created before the three-stage flow.
+// New sessions use SessionStage instead. These will be removed once all legacy sessions are migrated.
+// Migration script: scripts/migrate-classify-to-locate.ts
 export type DifficultyMode = "learn" | "recognize" | "locate" | "classify" | "explain";
-
 export const VALID_DIFFICULTY_MODES: DifficultyMode[] = ["learn", "recognize", "locate", "classify", "explain"];
-
-// Session modes — excludes Learn (standalone page, not a session mode)
 export type SessionMode = "recognize" | "locate" | "classify" | "explain";
-
 export const SESSION_MODES: SessionMode[] = ["recognize", "locate", "classify", "explain"];
 
 // User-facing label is "Practice Mode". Internal name kept for DB compatibility.
@@ -93,7 +109,7 @@ export const DIFFICULTY_MODE_INFO: Record<DifficultyMode, { label: string; desc:
   explain:   { label: "Explain",   desc: "Full analysis with justification" },
 };
 
-// Per-mode granularity knob config types
+// Per-mode granularity knob config types (legacy — will be removed in Phase 6)
 export interface RecognizeConfig { response_format: "ab" | "multiple_choice" }
 export interface LocateConfig { hint_scope: "sentence" | "section" }
 export interface ClassifyConfig { categorization: "detect_only" | "assisted" | "full" }
@@ -101,7 +117,7 @@ export interface ExplainConfig { explanation_format: "guided" | "free_text" }
 
 export type ModeConfig = RecognizeConfig | LocateConfig | ClassifyConfig | ExplainConfig;
 
-// Knob info for session creation UI
+// Knob info for session creation UI (legacy — will be removed in Phase 6)
 export const MODE_KNOB_INFO: Record<SessionMode, {
   key: string;
   label: string;
@@ -146,6 +162,59 @@ export const MODE_KNOB_INFO: Record<SessionMode, {
     default: "guided",
   },
 };
+
+// --- Hint system ---
+
+export interface RecognizeHintState {
+  eliminatedChoices: FlawType[];
+  maxHints: 2;
+}
+
+export interface ExplainHintState {
+  flawTypeRevealed: boolean;
+  templateRevealed: boolean;
+  maxHints: 2;
+}
+
+export interface LocateHintState {
+  sectionConfirmed: string | null;
+  turnRevealed: string | null;
+  flawTypeRevealed: boolean;
+  maxHints: 3;
+}
+
+export type HintState = RecognizeHintState | ExplainHintState | LocateHintState;
+
+// Design parameters
+export const HINT_UNLOCK_DELAY = {
+  recognize: 18_000,  // 18 seconds (individual)
+  explain: 45_000,    // 45 seconds (group discussion)
+  locate: 18_000,     // 18 seconds (per interaction)
+} as const;
+
+export const FALSE_POSITIVE_RATIO = 0.25; // ~1 non-flawed turn per 3-4 flawed turns
+
+export const WRITE_THEN_REVEAL_MS = 75_000; // ~75 seconds individual writing period
+
+// --- Flaw index types (from activity data) ---
+
+export interface FlawIndexEntry {
+  flaw_id: string;
+  locations: string[]; // section_ids or turn_ids
+  flaw_type: string;
+  severity: string;
+}
+
+// --- Turn types (used by stage components) ---
+
+export interface TranscriptTurn {
+  id: string;       // section_id or turn_id
+  speaker: string;  // agent name
+  role: string;
+  content: string;
+  section?: string;  // presentation section name (introduction, approach, etc.)
+  stage?: string;    // discussion stage (opening_up, working_through, converging)
+}
 
 // Flaw type display info
 export const FLAW_TYPES: Record<FlawType, { label: string; abbrev: string; color: string; bgColor: string; description: string }> = {

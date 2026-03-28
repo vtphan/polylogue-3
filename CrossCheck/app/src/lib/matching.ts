@@ -11,6 +11,7 @@ interface AnnotationInput {
   id: string;
   location: { item_id: string };
   flawType: string;
+  hintLevel?: number;
 }
 
 interface FlawIndexEntry {
@@ -26,6 +27,7 @@ export interface AnnotationMatch {
   annotationId: string;
   category: MatchCategory; // green, red, or blue
   matchedFlawId?: string; // which reference flaw it matched (green/blue)
+  hintLevel?: number; // how many hints were used (new flow)
 }
 
 export interface FlawMatch {
@@ -72,6 +74,7 @@ export function computeMatches(
           annotationId: ann.id,
           category: "green",
           matchedFlawId: flaw.flaw_id,
+          hintLevel: ann.hintLevel,
         });
         matchedFlawIds.add(flaw.flaw_id);
         matchedAnnotationIds.add(ann.id);

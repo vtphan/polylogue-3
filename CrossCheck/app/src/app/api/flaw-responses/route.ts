@@ -12,12 +12,14 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { groupId, flawId, typeAnswer, correctType, reasonAnswer } = body as {
+  const { groupId, flawId, typeAnswer, correctType, reasonAnswer, hintLevel, stage } = body as {
     groupId: string;
     flawId: string;
     typeAnswer: string;
     correctType?: string; // Only for Learn mode — the known correct answer
     reasonAnswer?: string;
+    hintLevel?: number;  // How many hints used before this response
+    stage?: string;      // "recognize" | "explain" — which stage this came from
   };
 
   if (!groupId || !flawId || !typeAnswer) {
@@ -85,6 +87,8 @@ export async function POST(request: NextRequest) {
       typeCorrect,
       reasonAnswer: reasonAnswer ?? null,
       reasonCorrect,
+      hintLevel: hintLevel ?? 0,
+      stage: stage ?? null,
     },
   });
 

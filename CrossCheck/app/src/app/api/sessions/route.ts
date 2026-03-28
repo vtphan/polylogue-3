@@ -114,6 +114,9 @@ export async function POST(request: NextRequest) {
     }
   }
 
+  // Determine if this is a new-flow session (no difficultyMode on any group)
+  const isNewFlow = groups.every((g) => !g.difficultyMode);
+
   const newSession = await prisma.session.create({
     data: {
       teacherId: session.user.id,
@@ -123,7 +126,8 @@ export async function POST(request: NextRequest) {
       groups: {
         create: groups.map((g) => ({
           name: g.name,
-          config: { difficulty_mode: g.difficultyMode || (config as Record<string, unknown>)?.difficulty_mode || "classify", ...g.modeConfig },
+          config: isNewFlow ? {} : { difficulty_mode: g.difficultyMode || (config as Record<string, unknown>)?.difficulty_mode || "classify", ...g.modeConfig },
+          // New-flow sessions start at recognize stage (default). Legacy sessions ignore the stage field.
           members: {
             create: g.studentIds.map((sid) => ({ userId: sid })),
           },

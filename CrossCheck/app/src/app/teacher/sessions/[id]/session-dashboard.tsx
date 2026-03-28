@@ -43,6 +43,7 @@ interface GroupData {
   id: string;
   name: string;
   phase: string;
+  stage: string;
   config: { difficulty_mode?: string } | null;
   members: { user: { id: string; displayName: string } }[];
   readySignals: { userId: string }[];
@@ -642,6 +643,22 @@ export function SessionDashboard({ session: initialSession }: { session: Session
                   setActionError("Network error — please try again");
                 }
               }}
+              onAdvanceStage={async (groupId) => {
+                setActionError(null);
+                try {
+                  const res = await fetch(`/api/groups/${groupId}/stage`, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ targetStage: "explain" }),
+                  });
+                  if (!res.ok) {
+                    const data = await res.json().catch(() => ({}));
+                    setActionError(data.error || "Failed to transition stage");
+                  }
+                } catch {
+                  setActionError("Network error — please try again");
+                }
+              }}
             />
           ) : (
             <div className="bg-white border border-gray-200 rounded-lg p-8 text-center text-sm text-gray-400">
@@ -734,6 +751,7 @@ function GroupDetail({
   sessionStatus,
   connectedUsers,
   onAdvancePhase,
+  onAdvanceStage,
 }: {
   group: GroupData;
   flawIndex: { flaw_id: string; locations: string[]; flaw_type: string }[];
@@ -747,12 +765,28 @@ function GroupDetail({
   sessionStatus: string;
   connectedUsers: Map<string, string | null>;
   onAdvancePhase: (groupId: string, phase: string) => void;
+  onAdvanceStage?: (groupId: string) => void;
 }) {
   const [showAnnotations, setShowAnnotations] = useState(false);
   const [showTranscript, setShowTranscript] = useState(false);
 
   const mode = group.config?.difficulty_mode;
+  const isNewFlow = !mode; // New-flow sessions have no difficulty_mode
   const isResponseMode = mode === "learn" || mode === "recognize";
+
+  // Stage labels for new-flow sessions
+  const STAGE_LABELS: Record<string, string> = {
+    recognize: "Recognize (Individual)",
+    explain: "Explain (Group)",
+    locate: "Locate (Group)",
+    results: "Results",
+  };
+  const STAGE_COLORS: Record<string, string> = {
+    recognize: "bg-blue-100 text-blue-700",
+    explain: "bg-amber-100 text-amber-700",
+    locate: "bg-orange-100 text-orange-700",
+    results: "bg-purple-100 text-purple-700",
+  };
 
   // Match annotations against flaw index
   const matchedFlaws = new Set<string>();
@@ -808,18 +842,26 @@ function GroupDetail({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <h3 className="font-semibold text-gray-900">{group.name}</h3>
-          {mode && (
-            <span className="text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">
-              {DIFFICULTY_MODE_INFO[mode as DifficultyMode]?.label || mode}
+          {isNewFlow ? (
+            <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${STAGE_COLORS[group.stage] || "bg-gray-100 text-gray-500"}`}>
+              {STAGE_LABELS[group.stage] || group.stage}
             </span>
+          ) : (
+            <>
+              {mode && (
+                <span className="text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">
+                  {DIFFICULTY_MODE_INFO[mode as DifficultyMode]?.label || mode}
+                </span>
+              )}
+              <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${
+                group.phase === "reviewing" ? "bg-purple-100 text-purple-700"
+                  : group.phase === "group" ? "bg-amber-100 text-amber-700"
+                  : "bg-blue-100 text-blue-700"
+              }`}>
+                {PHASE_LABELS[group.phase] || group.phase}
+              </span>
+            </>
           )}
-          <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${
-            group.phase === "reviewing" ? "bg-purple-100 text-purple-700"
-              : group.phase === "group" ? "bg-amber-100 text-amber-700"
-              : "bg-blue-100 text-blue-700"
-          }`}>
-            {PHASE_LABELS[group.phase] || group.phase}
-          </span>
         </div>
         <div className="flex items-center gap-2">
           {group.phase === "reviewing" && sessionStatus === "active" && (
@@ -834,7 +876,18 @@ function GroupDetail({
               Reopen
             </button>
           )}
-          {nextPhase && sessionStatus === "active" && (
+          {isNewFlow && group.stage === "recognize" && sessionStatus === "active" && onAdvanceStage && (
+            <button
+              onClick={() => onAdvanceStage(group.id)}
+              className="text-xs bg-amber-600 text-white px-3 py-1 rounded hover:bg-amber-700 transition-colors"
+            >
+              Move to Explain
+              {readySet.size > 0 && (
+                <span className="ml-1 text-amber-200">{readySet.size}/{group.members.length}</span>
+              )}
+            </button>
+          )}
+          {!isNewFlow && nextPhase && sessionStatus === "active" && (
             <button
               onClick={() => onAdvancePhase(group.id, nextPhase.phase)}
               className="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors"

@@ -79,6 +79,31 @@ export interface ModeChangedEvent {
   newMode: string;
 }
 
+export interface StageTransitionEvent {
+  groupId: string;
+  fromStage: string;
+  toStage: string;
+}
+
+export interface HintUsedEvent {
+  groupId: string;
+  studentId: string;
+  turnId: string;
+  stage: string;
+  hintLevel: number;
+}
+
+export interface ExplanationSubmittedEvent {
+  groupId: string;
+  turnId: string;
+  authorId: string;
+}
+
+export interface ExplanationRevealedEvent {
+  groupId: string;
+  turnId: string;
+}
+
 export interface UserConnectionEvent {
   userId: string;
   groupId: string | null;
@@ -104,6 +129,10 @@ export interface SessionSocketHandlers {
   onGroupPhaseChanged?: (event: GroupPhaseChangedEvent) => void;
   onGroupReadyChanged?: (event: GroupReadyChangedEvent) => void;
   onModeChanged?: (event: ModeChangedEvent) => void;
+  onStageTransition?: (event: StageTransitionEvent) => void;
+  onHintUsed?: (event: HintUsedEvent) => void;
+  onExplanationSubmitted?: (event: ExplanationSubmittedEvent) => void;
+  onExplanationRevealed?: (event: ExplanationRevealedEvent) => void;
   onUserConnected?: (event: UserConnectionEvent) => void;
   onUserDisconnected?: (event: UserConnectionEvent) => void;
   onConnectionRoster?: (roster: ConnectionRosterEntry[]) => void;
@@ -146,6 +175,10 @@ export function useSessionSocket(
     on("group:phase_changed", handlers.onGroupPhaseChanged as never);
     on("group:ready_changed", handlers.onGroupReadyChanged as never);
     on("session:mode_changed", handlers.onModeChanged as never);
+    on("stage:transition", handlers.onStageTransition as never);
+    on("hint:used", handlers.onHintUsed as never);
+    on("explanation:submitted", handlers.onExplanationSubmitted as never);
+    on("explanation:revealed", handlers.onExplanationRevealed as never);
     on("user:connected", handlers.onUserConnected as never);
     on("user:disconnected", handlers.onUserDisconnected as never);
     on("connection:roster", handlers.onConnectionRoster as never);
@@ -167,6 +200,10 @@ export function useSessionSocket(
     handlers.onGroupPhaseChanged,
     handlers.onGroupReadyChanged,
     handlers.onModeChanged,
+    handlers.onStageTransition,
+    handlers.onHintUsed,
+    handlers.onExplanationSubmitted,
+    handlers.onExplanationRevealed,
     handlers.onUserConnected,
     handlers.onUserDisconnected,
     handlers.onConnectionRoster,

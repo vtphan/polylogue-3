@@ -2,8 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { DIFFICULTY_MODE_INFO, SESSION_MODES, MODE_KNOB_INFO } from "@/lib/types";
-import type { SessionMode } from "@/lib/types";
 
 interface Activity {
   id: string;
@@ -22,12 +20,6 @@ interface Student {
 interface GroupDraft {
   name: string;
   studentIds: string[];
-  difficultyMode: SessionMode;
-  knobValue: string;
-}
-
-function defaultKnob(mode: SessionMode): string {
-  return MODE_KNOB_INFO[mode].default;
 }
 
 const GROUP_COLORS = [
@@ -59,7 +51,7 @@ export function CreateSessionForm({
   const router = useRouter();
   const [activityId, setActivityId] = useState("");
   const [groups, setGroups] = useState<GroupDraft[]>([
-    { name: "Group A", studentIds: [], difficultyMode: "recognize", knobValue: defaultKnob("recognize") },
+    { name: "Group A", studentIds: [] },
   ]);
   const [activeGroupIndex, setActiveGroupIndex] = useState(0);
   const [saving, setSaving] = useState(false);
@@ -75,7 +67,7 @@ export function CreateSessionForm({
 
   function addGroup() {
     const letter = getGroupLetter(groups.length);
-    setGroups([...groups, { name: `Group ${letter}`, studentIds: [], difficultyMode: "recognize", knobValue: defaultKnob("recognize") }]);
+    setGroups([...groups, { name: `Group ${letter}`, studentIds: [] }]);
     setActiveGroupIndex(groups.length);
   }
 
@@ -100,14 +92,11 @@ export function CreateSessionForm({
     const currentGroup = studentGroupMap.get(studentId);
 
     if (currentGroup === activeGroupIndex) {
-      // Unassign from active group
       updated[activeGroupIndex].studentIds = updated[activeGroupIndex].studentIds.filter((id) => id !== studentId);
     } else {
-      // Remove from any current group
       if (currentGroup !== undefined) {
         updated[currentGroup].studentIds = updated[currentGroup].studentIds.filter((id) => id !== studentId);
       }
-      // Add to active group
       updated[activeGroupIndex].studentIds.push(studentId);
     }
     setGroups(updated);
@@ -121,18 +110,6 @@ export function CreateSessionForm({
     shuffled.forEach((s, i) => {
       updated[i % updated.length].studentIds.push(s.id);
     });
-    setGroups(updated);
-  }
-
-  function setGroupMode(mode: SessionMode) {
-    const updated = [...groups];
-    updated[activeGroupIndex] = { ...updated[activeGroupIndex], difficultyMode: mode, knobValue: defaultKnob(mode) };
-    setGroups(updated);
-  }
-
-  function setGroupKnob(value: string) {
-    const updated = [...groups];
-    updated[activeGroupIndex] = { ...updated[activeGroupIndex], knobValue: value };
     setGroups(updated);
   }
 
@@ -150,6 +127,7 @@ export function CreateSessionForm({
     setSaving(true);
     setError("");
 
+    // New-flow session: no difficultyMode, no knobs
     const res = await fetch("/api/sessions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -159,8 +137,7 @@ export function CreateSessionForm({
         groups: groups.map((g) => ({
           name: g.name,
           studentIds: g.studentIds,
-          difficultyMode: g.difficultyMode,
-          modeConfig: { [MODE_KNOB_INFO[g.difficultyMode].key]: g.knobValue },
+          // No difficultyMode — triggers new three-stage flow
         })),
       }),
     });
@@ -175,9 +152,6 @@ export function CreateSessionForm({
     }
   }
 
-  const activeGroup = groups[activeGroupIndex];
-  const activeKnob = MODE_KNOB_INFO[activeGroup.difficultyMode];
-
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
@@ -187,7 +161,7 @@ export function CreateSessionForm({
       {/* Activity selection + Create button */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          Activity
+          Transcript
         </label>
         <div className="flex gap-2 items-start">
           <div className="flex-1">
@@ -196,7 +170,7 @@ export function CreateSessionForm({
               onChange={(e) => setActivityId(e.target.value)}
               className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
             >
-              <option value="">Select an activity...</option>
+              <option value="">Select a transcript...</option>
               {activities.map((a) => (
                 <option key={a.id} value={a.id}>
                   [{a.type}] {a.topic}
@@ -221,6 +195,22 @@ export function CreateSessionForm({
             {saving ? "Creating..." : "Create Session"}
           </button>
         </div>
+      </div>
+
+      {/* Session flow description */}
+      <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+        <p className="text-sm font-medium text-indigo-800 mb-2">Session Flow</p>
+        <div className="flex items-center gap-2 text-xs text-indigo-700">
+          <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-medium">1. Recognize</span>
+          <span className="text-indigo-400">&rarr;</span>
+          <span className="bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-medium">2. Explain</span>
+          <span className="text-indigo-400">&rarr;</span>
+          <span className="bg-orange-100 text-orange-800 px-2 py-0.5 rounded font-medium">3. Locate</span>
+        </div>
+        <p className="text-xs text-indigo-600 mt-2">
+          Students work individually in Recognize, then discuss as a group in Explain.
+          Locate only activates if the group misses flaws.
+        </p>
       </div>
 
       {/* Group bar */}
@@ -279,60 +269,22 @@ export function CreateSessionForm({
                 <div className="text-xs text-gray-500 mt-0.5">
                   {group.studentIds.length} {group.studentIds.length === 1 ? "student" : "students"}
                 </div>
-                {group.difficultyMode && (
-                  <div className="text-xs text-gray-400 mt-0.5">
-                    {DIFFICULTY_MODE_INFO[group.difficultyMode].label}
-                  </div>
-                )}
               </button>
             );
           })}
         </div>
 
-        {/* Mode config for active group */}
+        {/* Group name edit */}
         <div className="mt-3 bg-white border border-gray-200 rounded-lg p-4">
-          <span className="text-xs font-medium text-gray-500">
-            Practice Mode ({activeGroup.name})
-          </span>
-          <div className="flex flex-wrap gap-1.5 mt-1.5">
-            {SESSION_MODES.map((mode) => (
-              <button
-                key={mode}
-                type="button"
-                onClick={() => setGroupMode(mode)}
-                className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
-                  activeGroup.difficultyMode === mode
-                    ? "border-blue-400 bg-blue-50 text-blue-800 font-medium"
-                    : "border-gray-200 text-gray-500 hover:border-gray-300"
-                }`}
-              >
-                {DIFFICULTY_MODE_INFO[mode].label}
-              </button>
-            ))}
-          </div>
-          <p className="text-xs text-gray-400 mt-1">
-            {DIFFICULTY_MODE_INFO[activeGroup.difficultyMode].desc}
-          </p>
-
-          <div className="mt-2">
-            <span className="text-xs text-gray-400">{activeKnob.label}:</span>
-            <div className="flex gap-1 mt-1">
-              {activeKnob.options.map((opt) => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => setGroupKnob(opt.value)}
-                  className={`text-xs px-2 py-0.5 rounded border transition-colors ${
-                    activeGroup.knobValue === opt.value
-                      ? "border-gray-400 bg-gray-100 text-gray-800 font-medium"
-                      : "border-gray-200 text-gray-400 hover:border-gray-300"
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-          </div>
+          <label className="text-xs font-medium text-gray-500">
+            Group name
+          </label>
+          <input
+            type="text"
+            value={groups[activeGroupIndex]?.name || ""}
+            onChange={(e) => updateGroupName(activeGroupIndex, e.target.value)}
+            className="mt-1 w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm"
+          />
         </div>
       </div>
 
@@ -387,7 +339,6 @@ export function CreateSessionForm({
           </p>
         )}
       </div>
-
     </form>
   );
 }

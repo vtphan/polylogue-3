@@ -44,6 +44,7 @@ export async function GET(request: NextRequest) {
     "end_offset",
     "highlighted_text",
     "flaw_type",
+    "hint_level",
     "created_at",
   ].join(","));
 
@@ -63,6 +64,7 @@ export async function GET(request: NextRequest) {
       loc.end_offset,
       `"${text}"`,
       a.flawType,
+      a.hintLevel,
       a.createdAt.toISOString(),
     ].join(","));
   }
