@@ -24,6 +24,8 @@ export default async function ResearcherLayout({
               <div className="flex items-center gap-4 text-sm">
                 <Link href="/researcher" className="text-gray-600 hover:text-gray-900">Activities</Link>
                 <Link href="/researcher/sessions" className="text-gray-600 hover:text-gray-900">Sessions</Link>
+                <Link href="/researcher/teachers" className="text-gray-600 hover:text-gray-900">Teachers</Link>
+                <Link href="/researcher/mock" className="text-gray-600 hover:text-gray-900">Mock Data</Link>
               </div>
             </div>
             <div className="flex items-center gap-4">
