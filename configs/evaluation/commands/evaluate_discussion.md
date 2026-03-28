@@ -64,6 +64,8 @@ The evaluator performs:
 
 Use `append_evaluation.py` to write to `registry/{scenario_id}/discussion_evaluation.yaml`.
 
+**Important:** The only output file is the YAML written by `append_evaluation.py`. Do not write a separate JSON file. If the evaluator subagent returns JSON as an intermediate format, pass it to the script via stdin or `--input` and discard the intermediate — only the YAML file should remain in the registry.
+
 ### Step 6: Report
 
 ```
