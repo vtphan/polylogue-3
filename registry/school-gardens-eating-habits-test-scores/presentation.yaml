@@ -1,0 +1,277 @@
+scenario_id: school-gardens-eating-habits-test-scores
+grade_band: '7'
+topic: Do school gardens actually improve students' eating habits and test scores?
+activity: presentation
+created_at: '2026-03-28T00:00:00Z'
+agents:
+- agent_id: marcus
+  name: Marcus
+  role: Study Designer
+- agent_id: aisha
+  name: Aisha
+  role: Data Analyst
+- agent_id: kenji
+  name: Kenji
+  role: Background Researcher
+- agent_id: destiny
+  name: Destiny
+  role: Synthesizer & Presenter
+sections:
+- section_id: section_01
+  section: introduction
+  speaker: destiny
+  role: Synthesizer & Presenter
+  content: 'Have you ever wondered if something as simple as a garden could actually
+    change how students eat and even how they do in school? That''s the question our
+    group set out to answer. We wanted to know: do school gardens actually improve
+    students'' eating habits and test scores? It''s a really important question because
+    a lot of schools are thinking about starting garden programs, and we wanted to
+    find out if they''re really worth it.
+
+
+    Our team designed a study to test this. We had 12 students work in our school
+    garden for 3 weeks, and we gave them a survey before and after to see if their
+    eating habits changed. We also did some research and found out that schools with
+    garden programs tend to have students who score higher on tests. So we have evidence
+    from two different angles — our own study about eating habits, and outside research
+    about academic performance.
+
+
+    For our presentation today, Marcus is going to walk you through how we designed
+    our study and why we set it up the way we did. Then Aisha will show you the actual
+    data from our surveys — the numbers that show what changed. After that, Kenji
+    will share what he found about the connection between school gardens and test
+    scores from his research. And I''ll wrap everything up at the end and talk about
+    what it all means.
+
+
+    We''re really proud of this project because we didn''t just look up information
+    — we actually collected our own data and combined it with what other people have
+    found. We think our results show something really meaningful about how school
+    gardens can help students, and we''re excited to share what we learned.'
+  metadata:
+    knowledge_areas_engaged:
+    - area: presentation structure and organization
+      category: strong
+    - area: study methodology overview
+      category: shallow
+    - area: relationship between garden study and test score research
+      category: shallow
+    rationale: Destiny frames the presentation confidently and organizationally, previewing
+      all sections, but treats the garden eating study and the test score article
+      as two angles of the same evidence without recognizing they measure different
+      things at different schools.
+  added_at: '2026-03-28T07:17:48.115845+00:00'
+- section_id: section_02
+  section: approach
+  speaker: marcus
+  role: Study Designer
+  content: 'So I was in charge of designing how our study would work, and I wanted
+    to make sure we did this the right way — like an actual experiment, not just guessing.
+    The most important thing I knew we needed was a before-and-after comparison. If
+    we only surveyed students after they worked in the garden, we wouldn''t know if
+    anything actually changed. Maybe they already ate a lot of vegetables before.
+    So the whole point of our design was to measure the same students at two different
+    time points so we could see the difference.
+
+
+    We had 12 students participate in our study. They all signed up to work in the
+    school garden for 3 weeks. Before they started, we gave them a survey asking about
+    what foods they eat — like how often they eat vegetables, fruit, fast food, and
+    snacks. Then after the 3 weeks of working in the garden, we gave them the same
+    exact survey again. That way we could compare their answers and see if anything
+    shifted.
+
+
+    For the survey itself, I spent a lot of time thinking about how to write the questions.
+    We went with multiple choice instead of open-ended questions because it''s way
+    easier to compare the answers when everyone picks from the same options. Like,
+    instead of asking "what do you eat for lunch" and getting a million different
+    answers, we asked "how many servings of vegetables do you eat per day" and gave
+    them ranges to pick from. That made it much cleaner to analyze.
+
+
+    The 3-week timeline worked well because it gave students enough time to actually
+    get involved in the garden and start seeing things grow. It also fit into our
+    school schedule, which was important since we had to do this during the semester.
+    Twelve students was a solid number — it was everyone who wanted to participate,
+    and it gave us enough responses to see a clear pattern in the data.
+
+
+    Since we measured the same students before and after, and the garden program was
+    the thing that happened in between, any changes we see in their eating habits
+    are from the garden. That''s the logic of a before-and-after study — you control
+    for the person by comparing them to themselves. So when Aisha shows you the data,
+    you''ll see that the changes are real because our design makes sure of that.'
+  metadata:
+    knowledge_areas_engaged:
+    - area: before-and-after study design
+      category: strong
+    - area: survey design and question formatting
+      category: strong
+    - area: sample size adequacy
+      category: shallow
+    - area: causal inference and control groups
+      category: misconception
+    - area: study duration for behavior change
+      category: blind_spot
+    rationale: Marcus explains the before-and-after design and survey construction
+      confidently because he genuinely understands those mechanics, but he assumes
+      that pre-post comparison alone establishes causation without a control group,
+      and he does not question whether 12 students or 3 weeks is sufficient.
+  added_at: '2026-03-28T07:18:12.721118+00:00'
+- section_id: section_03
+  section: findings
+  speaker: aisha
+  role: Data Analyst
+  content: 'I''m going to walk you through what we found in our survey data. I organized
+    all the responses from our 12 participants and calculated the percentages so you
+    can see exactly what changed between the before survey and the after survey.
+
+
+    The biggest finding was about vegetables. Before the garden program, only 33%
+    of students — that''s 4 out of 12 — said they ate two or more servings of vegetables
+    per day. After the 3 weeks in the garden, that number went up to 75%, which is
+    9 out of 12. So 42% more students were eating vegetables regularly after working
+    in the garden. I made a bar chart comparing the before and after numbers, and
+    you can really see the jump.
+
+
+    We also saw changes in other areas. Before the program, 58% of students said they
+    ate fast food three or more times a week. After, that dropped to 33%. And for
+    fruit, 50% of students said they ate fruit daily before, and that went up to 67%
+    after. So across the board, students were eating healthier after the garden program.
+
+
+    I want to point out that the data is pretty clear here. We asked students directly
+    about their eating habits, they told us what changed, and the numbers show a consistent
+    pattern — more vegetables, more fruit, less fast food. When you look at all three
+    categories together, every single one moved in the healthier direction. That''s
+    not a coincidence. The data shows that students genuinely changed their eating
+    habits because of the garden.
+
+
+    I put all of this into a table and a chart so you can see the exact numbers. I
+    double-checked all the percentages to make sure the math was right. The results
+    speak for themselves — the garden program made a real difference in what students
+    eat.'
+  metadata:
+    knowledge_areas_engaged:
+    - area: percentage calculation and data presentation
+      category: strong
+    - area: chart and table construction
+      category: strong
+    - area: self-report data limitations
+      category: blind_spot
+    - area: interpreting survey responses as behavior
+      category: misconception
+    rationale: Aisha presents the survey percentages accurately and with clean organization,
+      but she equates what students reported on the survey with what students actually
+      did, treating self-report data as direct measurement of behavior change without
+      acknowledging that participants knew what the study was about.
+  added_at: '2026-03-28T07:18:35.413372+00:00'
+- section_id: section_04
+  section: solution
+  speaker: kenji
+  role: Background Researcher
+  content: 'Okay so here''s where it gets really exciting. Our group''s study showed
+    that the garden changes what students eat — but I found something that takes this
+    even further. I did research outside of our own study, and I found a news article
+    that says schools that have garden programs actually have higher test scores.
+    Like, not just a little higher — the article said there''s a clear connection
+    between having a school garden and students doing better academically.
+
+
+    Think about that for a second. Gardens don''t just help with nutrition — they
+    actually help kids do better in school. The article I found was reporting on what
+    researchers discovered when they looked at schools across the country. Schools
+    with gardens had students who scored higher on standardized tests. That''s huge.
+    It means gardens aren''t just about growing tomatoes — they''re about growing
+    better students.
+
+
+    So our recommendation — our solution — is that our school should expand the garden
+    program and make it available to every student, not just 12. If gardens improve
+    eating habits, which our study showed, AND they improve test scores, which the
+    research shows, then there''s really no reason not to do this. It''s basically
+    a two-for-one deal. Students eat better and they do better in class.
+
+
+    I also think other schools in Memphis should look into starting their own garden
+    programs. If the evidence shows that gardens lead to higher test scores, then
+    this is something that could help students everywhere, not just at our school.
+    The article I found was talking about schools all over the place, so this isn''t
+    just something that works in one specific situation — it''s a pattern that shows
+    up everywhere gardens are used.
+
+
+    Honestly, when I found this article, I was like, this is the strongest piece of
+    evidence we have. Our survey data is great, but the test score connection is what
+    really proves that gardens are worth investing in. It shows that the benefits
+    go way beyond just eating a few more vegetables.'
+  metadata:
+    knowledge_areas_engaged:
+    - area: finding and summarizing news articles
+      category: strong
+    - area: correlation vs. causation
+      category: misconception
+    - area: evaluating source quality (news vs. research)
+      category: shallow
+    - area: confounding variables
+      category: blind_spot
+    rationale: Kenji enthusiastically presents the news article's correlation between
+      gardens and test scores as proof of causation, without considering confounding
+      variables or distinguishing between a news summary and the underlying research,
+      and recommends scaling based on this interpretation.
+  added_at: '2026-03-28T07:19:35.714069+00:00'
+- section_id: section_05
+  section: conclusion
+  speaker: destiny
+  role: Synthesizer & Presenter
+  content: 'So to wrap everything up — our group set out to answer one question: do
+    school gardens actually improve students'' eating habits and test scores? And
+    based on everything we''ve found, the answer is yes.
+
+
+    Marcus showed you how we designed a real scientific study with before-and-after
+    surveys to track changes. Aisha showed you the data, and the numbers are clear
+    — students who worked in the garden started eating significantly more vegetables
+    and fruit, and they cut back on fast food. And Kenji showed you that this isn''t
+    just something happening at our school. Research from around the country shows
+    that schools with gardens have students who perform better on tests. So the evidence
+    lines up from multiple directions.
+
+
+    What''s really cool about our project is that we didn''t just rely on one piece
+    of evidence. We have our own original data showing that gardens change eating
+    habits, and we have outside research showing that gardens are connected to better
+    test scores. When you put those two things together, it paints a really strong
+    picture. Gardens help students eat healthier, and healthier students do better
+    in school. It''s all connected.
+
+
+    Based on our findings, we believe our school should expand the garden program
+    so that more students can benefit. If 12 students showed this much improvement
+    in just 3 weeks, imagine what could happen if the whole school participated for
+    a full semester. The evidence suggests that school gardens are one of the best
+    things a school can invest in for both student health and academic success.
+
+
+    Thank you for listening to our presentation. We hope you can see why we''re so
+    passionate about this. The data supports it, the research supports it, and we
+    think every student deserves the chance to experience what a school garden can
+    do for them.'
+  metadata:
+    knowledge_areas_engaged:
+    - area: presentation synthesis and conclusion structure
+      category: strong
+    - area: connecting multiple evidence sources into an argument
+      category: shallow
+    - area: distinguishing between what the study measured and what is being claimed
+      category: blind_spot
+    rationale: Destiny delivers a polished, well-structured conclusion that ties all
+      sections together, but she overstates the evidence by treating the garden eating
+      survey and the test score news article as mutually reinforcing proof, and she
+      extrapolates from 12 students over 3 weeks to a school-wide recommendation without
+      acknowledging limitations.
+  added_at: '2026-03-28T07:19:52.743892+00:00'

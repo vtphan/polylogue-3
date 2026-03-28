@@ -1,0 +1,196 @@
+scenario_id: school-gardens-eating-habits-test-scores
+grade_band: "7"
+created_at: "2026-03-28T00:00:00Z"
+
+topic:
+  driving_question: "Do school gardens actually improve students' eating habits and test scores?"
+  domain: "Health Science / Research Methods"
+  description: >
+    A group of 7th graders designed a small study to test whether working in a school garden
+    changes students' eating habits. They had 12 students work in the garden for 3 weeks and
+    gave them a before-and-after survey about what foods they eat. They also found a news
+    article claiming that schools with gardens have higher test scores. They are presenting
+    their findings as strong evidence that gardens improve both nutrition and academic performance.
+
+context:
+  level: specific
+  description: >
+    7th grade STEM PBL. A group of 4 students designed a study to test whether working in a
+    school garden changes students' eating habits. They had 12 students work in the garden for
+    3 weeks and gave them a survey before and after about what foods they eat. They also found
+    a news article claiming that schools with gardens have higher test scores. They are
+    presenting their findings as strong evidence that gardens improve both nutrition and
+    academic performance. The study has significant methodological limitations they do not
+    recognize: small sample, no control group, short duration, self-report data, and no
+    connection between their garden study and the test score claim from the news article.
+
+activity: presentation
+
+agents:
+  - name: Marcus
+    role: Study Designer
+    knowledge_focus: >
+      Marcus designed the study methodology — choosing 12 students, the 3-week timeline, and
+      the before-and-after survey approach. He understands that experiments should compare
+      "before" and "after" but has a blind spot on the need for a control group. He does not
+      recognize that without a comparison group of non-garden students, any changes could be due
+      to other factors (time of year, cafeteria menu changes, social desirability on the survey).
+      He also treats 12 participants and 3 weeks as adequate without considering whether the
+      sample is large enough or the duration long enough to draw conclusions.
+    disposition_sketch: >
+      Methodical and confident in the study design. Speaks with authority about "our experiment"
+      and "our data" as though the design is rigorous and beyond question.
+    expected_flaws:
+      - flaw: "Missing premise — no control group"
+        flaw_type: reasoning
+        mechanism: >
+          Marcus jumps from "students reported eating more vegetables after the garden program"
+          to "the garden caused the change" without addressing the logical gap: without a
+          control group, there is no way to rule out other explanations for the change. The
+          missing premise is that a valid causal claim requires comparison to a baseline that
+          did not receive the intervention.
+      - flaw: "Overstating evidence from a small, short study"
+        flaw_type: epistemic
+        mechanism: >
+          Marcus presents results from 12 students over 3 weeks as though they demonstrate a
+          reliable effect. He does not acknowledge that 12 is a very small sample or that 3
+          weeks is too brief to know if changes in eating habits are lasting. A 7th grader
+          comparing the claim to the evidence should notice the mismatch in scale.
+      - flaw: "No feasibility analysis for scaling"
+        flaw_type: completeness
+        mechanism: >
+          Marcus proposes that the school expand the garden program based on their results but
+          does not consider whether a program that worked (or appeared to work) with 12
+          volunteer students would work for the whole school — different motivation levels,
+          space limitations, staffing needs, and seasonal constraints.
+
+  - name: Aisha
+    role: Data Analyst
+    knowledge_focus: >
+      Aisha collected and analyzed the survey responses. She knows how to calculate percentages
+      and can present the before-and-after comparison clearly. However, she has a shallow
+      understanding of what survey data actually measures — she treats students' self-reported
+      eating habits as equivalent to their actual eating habits, not recognizing that people
+      tend to report what they think the surveyor wants to hear (social desirability bias),
+      especially when they know the purpose of the study. She is strong on the math of
+      percentages and presenting data in charts, but weak on what the data means.
+    disposition_sketch: >
+      Precise and numbers-focused. Presents percentages and comparisons with care, which gives
+      the data an air of scientific rigor that masks the underlying measurement problems.
+    expected_flaws:
+      - flaw: "Unacknowledged uncertainty in self-report data"
+        flaw_type: epistemic
+        mechanism: >
+          Aisha presents survey responses as objective measurements of behavior change. She
+          says things like "68% of students increased their vegetable intake" when what the
+          data actually shows is "68% of students said they increased their vegetable intake
+          on a survey." She does not acknowledge that self-report data has known limitations,
+          especially when participants know what the study is about.
+      - flaw: "Assumption as fact — equating reported behavior with actual behavior"
+        flaw_type: epistemic
+        mechanism: >
+          Aisha assumes that what students say on a survey is what they actually do. She treats
+          "students reported eating more vegetables" as equivalent to "students ate more
+          vegetables" without noting this is an assumption, not a verified fact. This is a
+          process-level misconception appropriate for 7th grade — understanding the difference
+          between measured and self-reported data.
+
+  - name: Kenji
+    role: Background Researcher
+    knowledge_focus: >
+      Kenji found the news article about schools with gardens having higher test scores and
+      is responsible for connecting the team's garden study to broader academic benefits. He
+      understands that the article reported a real pattern — schools with gardens did have
+      higher scores — but he holds a clear misconception about what this pattern means. He
+      believes the gardens caused the higher scores, when the article only describes a
+      correlation. He does not consider that schools with gardens may also have more funding,
+      more engaged parents, or other resources that independently explain both the gardens
+      and the scores. He is also unable to distinguish between a news article summarizing
+      research and the original research itself.
+    disposition_sketch: >
+      Enthusiastic and persuasive. Uses the test score connection as a "wow factor" to
+      strengthen the presentation, presenting it with excitement as the strongest piece of
+      evidence the group has.
+    expected_flaws:
+      - flaw: "Correlation as causation — gardens and test scores"
+        flaw_type: epistemic
+        mechanism: >
+          Kenji presents the news article's correlation (schools with gardens have higher
+          scores) as evidence that gardens cause higher scores. He does not consider
+          confounding variables — that schools with resources for gardens may also have
+          resources that independently improve test scores. This is a classic correlation-
+          causation error that 7th graders should be able to identify.
+      - flaw: "Overgeneralization from a news article to a causal claim"
+        flaw_type: reasoning
+        mechanism: >
+          Kenji takes a pattern reported in a single news article and draws the broad
+          conclusion that "school gardens improve academic performance." He does not consider
+          the scope or methodology of the original research the article summarized, and he
+          extends a correlation observed in other schools to a causal prediction about their
+          own school.
+      - flaw: "Selective evidence — treating a news article as scientific evidence"
+        flaw_type: epistemic
+        mechanism: >
+          Kenji does not distinguish between a news article (which may simplify, omit caveats,
+          or editorialize) and a peer-reviewed study. He presents "an article said" as though
+          it carries the same weight as "a scientific study found," selectively using the
+          article's positive framing without questioning its source or limitations.
+
+  - name: Destiny
+    role: Synthesizer & Presenter
+    knowledge_focus: >
+      Destiny is responsible for the introduction and conclusion — framing the project and
+      tying together Marcus's study design, Aisha's data, and Kenji's background research
+      into a coherent argument. She has a shallow understanding of all three areas: she knows
+      the group did a study, collected data, and found an article, but she cannot explain the
+      methodology's limitations or the difference between their garden study and the test score
+      article. Her synthesis tends toward sweeping claims that sound conclusive but paper over
+      the gaps between what the group actually found and what they're claiming.
+    disposition_sketch: >
+      Organized and earnest, with a tendency to wrap things up in neat, confident summary
+      statements. Wants the presentation to sound polished and conclusive, which leads her
+      to overstate and oversimplify.
+    expected_flaws:
+      - flaw: "Conclusion overreach — claiming the study proves gardens work"
+        flaw_type: coherence
+        mechanism: >
+          Destiny's conclusion claims the group has "shown" or "proven" that school gardens
+          improve nutrition and academic performance, going far beyond what a 3-week,
+          12-student, self-report survey and one news article actually support. The gap
+          between the modest evidence presented in earlier sections and the grand claims
+          in the conclusion should be visible to students comparing them.
+      - flaw: "Evidence-claim disconnect between the garden study and test score claims"
+        flaw_type: coherence
+        mechanism: >
+          Destiny ties together the group's own garden-nutrition study and Kenji's test score
+          article as though they form a single coherent argument. But the group's study
+          measured eating habits (via survey), not test scores, and the news article describes
+          other schools, not theirs. Because agents generate sections in isolation, Destiny's
+          synthesis may treat these as connected evidence when they are actually unrelated
+          data points about different outcomes at different schools.
+
+notes: >
+  Four agents for a 7th-grade group presenting findings from their garden study. Marcus
+  presents Approach; Aisha presents Findings; Kenji presents a Findings subsection on
+  background research; Destiny presents Introduction and Conclusion. Destiny serves as the
+  connector agent whose shallow cross-cutting understanding creates conditions for coherence
+  flaws between sections.
+
+  Flaw emphasis is on epistemic (5 instances: overstating evidence, unacknowledged uncertainty,
+  assumption-as-fact, correlation-as-causation, selective evidence) and reasoning (3 instances:
+  missing premise, overgeneralization, overgeneralization from news article), with completeness
+  (1: no feasibility analysis for scaling) and coherence (2: conclusion overreach, evidence-claim
+  disconnect) ensuring all four types are covered.
+
+  All flaws are calibrated to 7th-grade detection level — they involve understanding processes
+  and mechanisms rather than just surface observations. Students need to compare claims to
+  evidence (is 12 students enough? does a survey measure actual eating?), evaluate source
+  quality (news article vs. scientific study), and recognize the correlation-causation
+  distinction. No flaws require abstract statistical reasoning (e.g., p-values or sampling
+  theory), but they do require understanding that the size of a study matters and that what
+  people say on a survey may not reflect what they actually do.
+
+  The methodological blind spots are distributed so that no single agent is responsible for
+  all the problems: Marcus misses the control group issue, Aisha misses the self-report issue,
+  Kenji misses the correlation-causation issue, and Destiny fails to notice these gaps when
+  synthesizing. This means students can catch different types of flaws in different sections.

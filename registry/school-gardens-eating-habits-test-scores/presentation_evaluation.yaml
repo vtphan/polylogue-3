@@ -1,0 +1,212 @@
+scenario_id: school-gardens-eating-habits-test-scores
+activity: presentation
+evaluated_at: '2026-03-28T12:00:00Z'
+flaws:
+- flaw_id: flaw_001
+  location:
+    type: section
+    references:
+    - approach
+  flaw_type: reasoning
+  source: knowledge_driven
+  severity: major
+  description: 'Missing premise: no control group, yet causal claims are made about
+    the garden program.'
+  evidence: Since we measured the same students before and after, and the garden program
+    was the thing that happened in between, any changes we see in their eating habits
+    are from the garden. That's the logic of a before-and-after study — you control
+    for the person by comparing them to themselves.
+  explanation: Marcus claims that a before-and-after design with no control group
+    establishes causation. Without a comparison group of students who did not participate
+    in the garden, many alternative explanations exist (seasonal food availability,
+    awareness effects from taking the survey, general maturation). The claim that
+    'you control for the person by comparing them to themselves' is an incorrect understanding
+    of experimental control. At 7th grade, students can evaluate whether a study design
+    supports its conclusions, making this a major flaw.
+- flaw_id: flaw_002
+  location:
+    type: section
+    references:
+    - approach
+  flaw_type: epistemic
+  source: knowledge_driven
+  severity: moderate
+  description: 'Overstating evidence: a 3-week study of 12 volunteer participants
+    is described as sufficient to show clear, reliable patterns.'
+  evidence: Twelve students was a solid number — it was everyone who wanted to participate,
+    and it gave us enough responses to see a clear pattern in the data.
+  explanation: Marcus describes 12 self-selected volunteers as 'a solid number' without
+    acknowledging that this is a very small, non-random sample. Students who volunteered
+    for the garden likely already had interest in gardening or healthy eating, introducing
+    selection bias. A 7th grader can recognize that 12 volunteers is a small and potentially
+    unrepresentative sample.
+- flaw_id: flaw_003
+  location:
+    type: section
+    references:
+    - findings
+  flaw_type: epistemic
+  source: knowledge_driven
+  severity: moderate
+  description: 'Unacknowledged uncertainty: self-report survey data is presented as
+    objective measurement of eating behavior with no mention of reporting bias.'
+  evidence: We asked students directly about their eating habits, they told us what
+    changed, and the numbers show a consistent pattern... The data shows that students
+    genuinely changed their eating habits because of the garden.
+  explanation: Aisha presents survey responses as direct evidence of actual behavior
+    change. Self-report data is subject to social desirability bias — students who
+    worked in a garden program may feel inclined to report eating more vegetables
+    regardless of actual change. No uncertainty or limitation is mentioned. A 7th
+    grader can understand that what people say they do and what they actually do may
+    differ.
+- flaw_id: flaw_004
+  location:
+    type: section
+    references:
+    - findings
+  flaw_type: epistemic
+  source: knowledge_driven
+  severity: moderate
+  description: 'Assumption as fact: equates self-reported survey responses with actual
+    eating behavior change.'
+  evidence: The results speak for themselves — the garden program made a real difference
+    in what students eat.
+  explanation: Aisha concludes that the garden 'made a real difference in what students
+    eat' based solely on what students reported on surveys. The leap from reported
+    behavior to actual behavior is treated as unproblematic. Combined with the lack
+    of uncertainty acknowledgment, this presents survey data as though it is a direct
+    measurement of dietary intake rather than a self-assessment.
+- flaw_id: flaw_005
+  location:
+    type: section
+    references:
+    - solution
+  flaw_type: epistemic
+  source: knowledge_driven
+  severity: major
+  description: 'Correlation as causation: a correlational finding from a news article
+    (schools with gardens have higher test scores) is treated as evidence that gardens
+    cause higher test scores.'
+  evidence: Schools with gardens had students who scored higher on standardized tests.
+    That's huge. It means gardens aren't just about growing tomatoes — they're about
+    growing better students.
+  explanation: Kenji interprets a correlation (schools with gardens tend to have higher
+    scores) as a causal relationship (gardens produce better students). Schools that
+    invest in garden programs may also have more funding, more engaged parents, or
+    other advantages that drive higher scores. The leap from 'schools with gardens
+    have higher scores' to 'gardens cause higher scores' is a textbook correlation-as-causation
+    error. At 7th grade, students can be expected to recognize this pattern when the
+    evidence and claim are compared.
+- flaw_id: flaw_006
+  location:
+    type: section
+    references:
+    - solution
+  flaw_type: epistemic
+  source: knowledge_driven
+  severity: moderate
+  description: 'Selective evidence: a single news article is treated as definitive
+    scientific evidence for the garden-test score connection.'
+  evidence: I found a news article that says schools that have garden programs actually
+    have higher test scores... this is the strongest piece of evidence we have.
+  explanation: Kenji bases the entire test score argument on one news article, which
+    he describes as 'the strongest piece of evidence we have.' A news article is a
+    secondary source that may simplify, misrepresent, or selectively report research
+    findings. No peer-reviewed study, sample size, or methodology is cited. Treating
+    a single news article as conclusive evidence is a selective evidence problem —
+    no contradictory or qualifying sources are considered.
+- flaw_id: flaw_007
+  location:
+    type: section
+    references:
+    - solution
+  flaw_type: completeness
+  source: knowledge_driven
+  severity: moderate
+  description: 'No feasibility analysis: recommends expanding the garden program to
+    all students and to other Memphis schools without addressing practical constraints.'
+  evidence: Our recommendation — our solution — is that our school should expand the
+    garden program and make it available to every student, not just 12... I also think
+    other schools in Memphis should look into starting their own garden programs.
+  explanation: Kenji proposes scaling from 12 students to the entire school and even
+    to other schools in Memphis, but never addresses cost, space requirements, staffing,
+    curriculum integration, or other practical constraints. Scaling a 12-person pilot
+    to hundreds of students involves significant logistical challenges that are entirely
+    unexamined. A 7th grader can recognize that a recommendation needs practical grounding.
+- flaw_id: flaw_008
+  location:
+    type: cross_section
+    references:
+    - findings
+    - solution
+    - conclusion
+  flaw_type: coherence
+  source: knowledge_driven
+  severity: major
+  description: 'Evidence-claim disconnect: the group''s own study measured eating
+    habits via self-report surveys, but the presentation''s central claim extends
+    to academic performance based on an unrelated news article, and the conclusion
+    treats both as a unified evidence base.'
+  evidence: We have our own original data showing that gardens change eating habits,
+    and we have outside research showing that gardens are connected to better test
+    scores. When you put those two things together, it paints a really strong picture.
+    Gardens help students eat healthier, and healthier students do better in school.
+    It's all connected.
+  explanation: Destiny stitches together two entirely separate evidence streams —
+    the group's own eating habit survey and Kenji's news article about test scores
+    — as though they form a single chain of evidence. The group's data says nothing
+    about test scores, and the news article says nothing about their specific school
+    or garden program. The implied causal chain (garden leads to better eating leads
+    to better test scores) is never established by either source. At 7th grade, students
+    can compare claims across sections and notice that the evidence in the findings
+    section does not support the test score claims made in the solution and conclusion.
+- flaw_id: flaw_009
+  location:
+    type: cross_section
+    references:
+    - approach
+    - findings
+    - conclusion
+  flaw_type: coherence
+  source: knowledge_driven
+  severity: major
+  description: 'Conclusion overreach: the conclusion claims the study demonstrates
+    that school gardens are ''one of the best things a school can invest in for both
+    student health and academic success,'' far exceeding what a 12-person, 3-week,
+    self-report survey can support.'
+  evidence: Based on our findings, we believe our school should expand the garden
+    program so that more students can benefit. If 12 students showed this much improvement
+    in just 3 weeks, imagine what could happen if the whole school participated for
+    a full semester. The evidence suggests that school gardens are one of the best
+    things a school can invest in for both student health and academic success.
+  explanation: Destiny's conclusion dramatically overstates what the evidence supports.
+    The group conducted a small, uncontrolled survey of 12 volunteers over 3 weeks,
+    supplemented by a single news article. From this, the conclusion claims gardens
+    are 'one of the best things a school can invest in' for health and academics,
+    and projects that whole-school, full-semester participation would yield proportionally
+    greater results. This extrapolation ignores the study's limitations (no control
+    group, small sample, self-report bias, volunteer selection) and treats speculative
+    projection as supported inference.
+summary:
+  total_flaws: 9
+  by_type:
+    reasoning: 1
+    epistemic: 5
+    completeness: 1
+    coherence: 2
+  by_source:
+    knowledge_driven: 9
+    interaction_driven: 0
+  by_severity:
+    minor: 0
+    moderate: 5
+    major: 4
+  key_patterns: 'The presentation''s central weakness is a chain of epistemic flaws:
+    a small, uncontrolled study with self-report data is presented as conclusive,
+    and a single news article''s correlational finding is treated as causal proof
+    that gardens improve test scores. These epistemic gaps compound into coherence
+    flaws at the presentation level, where Destiny stitches together two unrelated
+    evidence streams into a unified causal narrative that neither source actually
+    supports. The result is a conclusion that dramatically overstates what the evidence
+    can bear, claiming gardens are among the best school investments for health and
+    academics based on 12 surveys and one article.'

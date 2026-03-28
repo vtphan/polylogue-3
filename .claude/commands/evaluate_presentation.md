@@ -25,18 +25,23 @@ Read `registry/{scenario_id}/presentation.yaml`.
 
 If the file doesn't exist or has no sections, report an error and exit.
 
-### Step 2: Load Expected Flaws (Optional)
+### Step 2: Load Scenario Metadata
+
+Read `grade_band` from the transcript header or from `configs/scenarios/{scenario_id}.yaml`.
+
+### Step 3: Load Expected Flaws (Optional)
 
 If expected flaws are available for comparison:
 - `configs/profiles/{scenario_id}/*.yaml` — load expected flaws from all agent profiles
 
-### Step 3: Evaluate
+### Step 4: Evaluate
 
 Delegate to the **evaluator** subagent.
 
 Provide the subagent with:
 - The full presentation transcript (content + metadata)
 - Activity type: `presentation`
+- `grade_band`: for severity calibration (see evaluator's Grade Band Calibration section)
 
 The evaluator reads the reference glossaries and evaluation schema from `configs/` directly (see its Reference section).
 
@@ -48,11 +53,13 @@ The evaluator performs:
 
 3. **Summary** — Aggregate flaw counts by type, source, and severity. Identify key patterns.
 
-### Step 4: Write Output
+### Step 5: Write Output
 
 Use `append_evaluation.py` to write to `registry/{scenario_id}/presentation_evaluation.yaml`.
 
-### Step 5: Report
+**Important:** The only output file is the YAML written by `append_evaluation.py`. Do not write a separate JSON file. If the evaluator subagent returns JSON as an intermediate format, pass it to the script via stdin or `--input` and discard the intermediate — only the YAML file should remain in the registry.
+
+### Step 6: Report
 
 ```
 Presentation evaluated: {scenario_id}

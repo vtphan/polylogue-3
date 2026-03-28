@@ -1,0 +1,22 @@
+scenario_id: school-gardens-eating-habits-test-scores
+grade_band: '7'
+created_at: '2026-03-28T00:00:00Z'
+topic: Do school gardens actually improve students' eating habits and test scores?
+activity: presentation
+agents:
+- agent_id: marcus
+  name: Marcus
+- agent_id: aisha
+  name: Aisha
+- agent_id: kenji
+  name: Kenji
+- agent_id: destiny
+  name: Destiny
+presentation_state:
+  sections_completed:
+  - introduction
+  - approach
+  - findings
+  - solution
+  - conclusion
+  total_sections: 5

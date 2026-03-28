@@ -1,0 +1,237 @@
+scenario_id: school-garden-healthy-eating
+activity: presentation
+evaluated_at: '2026-03-28T02:30:00Z'
+flaws:
+- flaw_id: flaw_001
+  location:
+    type: section
+    references:
+    - introduction
+  flaw_type: epistemic
+  source: knowledge_driven
+  severity: moderate
+  description: Mia uses authoritative language like 'studies show' and 'the research
+    proves' to describe findings from only two articles and one garden visit, overstating
+    the strength of her evidence base.
+  evidence: Studies show that school gardens are one of the best ways to teach kids
+    about nutrition and healthy eating. The research proves that when students grow
+    their own food, they're way more likely to eat it and make better food choices.
+  explanation: Two articles and a single community garden visit do not constitute
+    'studies' in the plural-authoritative sense or 'proof.' This is overstating evidence
+    — the language implies a robust body of research when the actual evidence base
+    is very narrow. A 6th grader can catch this because the speaker later admits she
+    only read two articles, creating a visible gap between the confident framing and
+    the actual sources.
+- flaw_id: flaw_002
+  location:
+    type: section
+    references:
+    - approach
+  flaw_type: epistemic
+  source: knowledge_driven
+  severity: minor
+  description: Sofia characterizes the group's limited research methods as thorough
+    and comprehensive, claiming they 'covered all our bases' when the research consisted
+    of two articles, one garden visit, and one interview.
+  evidence: I think our approach was really thorough because we looked at it from
+    multiple angles. We had the research side, the real-world visit, and the school
+    community side, so we covered all our bases.
+  explanation: Calling three data points from three sources 'all our bases' overstates
+    how comprehensive the approach was. Important bases were not covered — no surveys
+    of students, no consultation with administration about feasibility, no cost research.
+    This is minor for 6th graders because the phrasing is subjective and the gap is
+    subtle, but it sets up the pattern of the group overstating what they actually
+    did.
+- flaw_id: flaw_003
+  location:
+    type: section
+    references:
+    - findings
+  flaw_type: reasoning
+  source: knowledge_driven
+  severity: moderate
+  description: Mia generalizes from two specific school garden programs in California
+    and Vermont to conclude that a garden would definitely work at her Memphis school,
+    without considering differences in climate, resources, or school context.
+  evidence: School gardens in other states have already shown that this works, and
+    we saw a working garden right here in Memphis. There's no reason it wouldn't work
+    at our school too.
+  explanation: This is overgeneralization from narrow evidence. Two programs in different
+    states with different climates, budgets, and student populations do not prove
+    a garden will succeed at any particular school. The claim 'there's no reason it
+    wouldn't work' dismisses contextual differences entirely. A 6th grader can catch
+    this — the speaker only talked about two other schools and is saying it will definitely
+    work everywhere.
+- flaw_id: flaw_004
+  location:
+    type: section
+    references:
+    - findings
+  flaw_type: reasoning
+  source: knowledge_driven
+  severity: minor
+  description: Mia treats a community garden that donates produce to a food bank as
+    equivalent evidence for a school garden feeding a cafeteria, despite the two serving
+    different populations and purposes.
+  evidence: So the garden wasn't just growing food for fun — it was actually helping
+    feed people in the community. That's basically the same idea we have for our school,
+    except the food would go to the cafeteria for our lunches.
+  explanation: This is a false equivalence. A volunteer-run community garden donating
+    to a food bank operates under different conditions than a school garden maintained
+    by students and integrated into a cafeteria. The purposes, labor models, and scale
+    are different. Rated minor for 6th graders because the speaker does acknowledge
+    a difference ('except the food would go to the cafeteria'), and the analogy is
+    not unreasonable on its face — it just glosses over important distinctions.
+- flaw_id: flaw_005
+  location:
+    type: section
+    references:
+    - solution
+  flaw_type: completeness
+  source: knowledge_driven
+  severity: major
+  description: The solution section proposes building a school garden but includes
+    no analysis of cost, physical space requirements, who would maintain it, what
+    happens during summer break, or how to fund it.
+  evidence: So basically our plan is that the school would build a garden — like with
+    raised beds and everything — and students would help plant and take care of the
+    vegetables. Then when the vegetables are ready, they go straight to the cafeteria
+    so everyone gets to eat fresh, healthy food.
+  explanation: This is a no-feasibility-analysis flaw. The proposal describes what
+    the garden would look like and what it would produce, but never addresses whether
+    the school can actually build and sustain it. For a 6th grader, these are concrete,
+    everyday questions — 'How much does it cost? Where does it go? Who takes care
+    of it in summer?' The complete absence of any implementation details makes this
+    a major flaw.
+- flaw_id: flaw_006
+  location:
+    type: section
+    references:
+    - solution
+  flaw_type: completeness
+  source: knowledge_driven
+  severity: moderate
+  description: Jayden interviewed only the cafeteria manager and treats her as the
+    sole relevant stakeholder, never mentioning the principal, teachers, parents,
+    budget office, or school board who would be involved in approving and funding
+    a garden.
+  evidence: I interviewed our cafeteria manager, Ms. Johnson, and she was SO into
+    this idea... The cool thing is that the cafeteria manager is already on board,
+    which means the school is pretty much ready to support this.
+  explanation: This is a missing-stakeholders flaw. A school garden proposal would
+    require buy-in from administrators (who approve projects), a budget authority
+    (who allocates funds), teachers (who integrate it into curriculum), and potentially
+    parents. Interviewing one enthusiastic staff member and treating that as 'the
+    school is ready' skips all of these. A 6th grader can identify this — they know
+    the cafeteria manager does not decide what gets built at the school.
+- flaw_id: flaw_007
+  location:
+    type: section
+    references:
+    - solution
+  flaw_type: reasoning
+  source: knowledge_driven
+  severity: moderate
+  description: Jayden jumps from the cafeteria manager's enthusiasm to the conclusion
+    that the school is ready to support the project, treating one person's excitement
+    as institutional readiness.
+  evidence: The cool thing is that the cafeteria manager is already on board, which
+    means the school is pretty much ready to support this. She works there every day,
+    she knows the students, and she's saying yes — so that tells us this is something
+    the school wants to do.
+  explanation: This is a missing-premise flaw. The argument leaps from 'one employee
+    likes the idea' to 'the school is ready to support this' without explaining why
+    one person's opinion represents the school's position. The cafeteria manager does
+    not have authority over building projects or budgets. For 6th graders, this is
+    a concrete logical gap — students understand that one person saying yes does not
+    mean the whole school says yes.
+- flaw_id: flaw_008
+  location:
+    type: section
+    references:
+    - conclusion
+  flaw_type: completeness
+  source: knowledge_driven
+  severity: moderate
+  description: The conclusion presents no limitations, tradeoffs, or potential downsides
+    of the proposal — no mention of seasonal growing constraints, competing uses for
+    school space, maintenance burden, or what happens if the garden fails.
+  evidence: We looked at this from a lot of different angles and everything points
+    in the same direction — school gardens work, and our school should have one.
+  explanation: This is an unaddressed-tradeoffs flaw. Every proposal has downsides
+    and limitations, but the conclusion presents the case as entirely one-sided. Memphis
+    has hot summers when school is out — who maintains the garden? What if crops fail?
+    What other uses could the space serve? For 6th graders, the absence of any 'but'
+    or 'however' in a conclusion is something they can notice and question.
+- flaw_id: flaw_009
+  location:
+    type: cross_section
+    references:
+    - findings
+    - conclusion
+  flaw_type: coherence
+  source: knowledge_driven
+  severity: major
+  description: The conclusion makes claims that go far beyond what the findings section
+    actually established, escalating from 'students ate more vegetables' to 'completely
+    transform how our school approaches healthy eating' and 'stick with them for the
+    rest of their lives.'
+  evidence: 'Findings: ''students in the garden program ate like 30 percent more vegetables''
+    and ''kids who grew their own lettuce and tomatoes actually asked for salads at
+    lunch.'' Conclusion: ''A school garden would completely transform how our school
+    approaches healthy eating... Every student who works in that garden is going to
+    come away with a totally different relationship with what they eat... that''s
+    going to stick with them for the rest of their lives.'''
+  explanation: This is conclusion overreach — an evidence-claim disconnect between
+    sections. The findings showed modest, specific outcomes (more vegetable consumption,
+    willingness to try salads) at two other schools. The conclusion inflates these
+    into transformative, lifelong, school-wide cultural change. A 6th grader can notice
+    this gap because the findings talked about eating more vegetables, while the conclusion
+    talks about changing lives forever — those are visibly different scales of claim.
+- flaw_id: flaw_010
+  location:
+    type: cross_section
+    references:
+    - introduction
+    - findings
+    - conclusion
+  flaw_type: coherence
+  source: knowledge_driven
+  severity: minor
+  description: The conclusion refers to 'our research on school nutrition programs'
+    as though the team studied nutrition programs broadly, when the findings section
+    described only two specific school garden articles and one community garden visit.
+  evidence: 'Conclusion: ''Our research on school nutrition programs shows that gardens
+    have a real, proven impact on how students eat.'' Findings: ''I read two really
+    good articles about school gardens — one was about a program in California and
+    the other was about one in Vermont.'''
+  explanation: This is a subtle evidence-claim disconnect. The conclusion reframes
+    two articles about school gardens as 'research on school nutrition programs,'
+    broadening the scope of what was actually studied. For 6th graders this is minor
+    because the shift in language is subtle and does not dramatically change the argument,
+    but it contributes to the pattern of the presentation making its evidence sound
+    more substantial than it is.
+summary:
+  total_flaws: 10
+  by_type:
+    reasoning: 3
+    epistemic: 2
+    completeness: 3
+    coherence: 2
+  by_source:
+    knowledge_driven: 10
+    interaction_driven: 0
+  by_severity:
+    minor: 3
+    moderate: 5
+    major: 2
+  key_patterns: 'The presentation''s central weakness is a pattern of narrow evidence
+    treated as comprehensive proof — two articles and one garden visit are framed
+    as ''studies show'' and ''research proves,'' and this inflation compounds across
+    sections until the conclusion claims the garden will transform school culture
+    for life. The solution section has a major completeness gap: no feasibility analysis
+    (cost, space, maintenance, seasonal constraints) and missing stakeholders beyond
+    the cafeteria manager, whose enthusiasm is treated as institutional support. For
+    6th graders, the most accessible flaws are the concrete omissions (no cost, no
+    plan for summer, only one person interviewed) and the visible gap between the
+    modest findings and the sweeping conclusion.'

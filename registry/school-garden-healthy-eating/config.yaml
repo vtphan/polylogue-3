@@ -1,0 +1,20 @@
+scenario_id: school-garden-healthy-eating
+grade_band: '6'
+created_at: '2026-03-28T00:00:00Z'
+topic: Should our school start a garden to teach students about healthy eating?
+activity: presentation
+agents:
+- agent_id: mia
+  name: Mia
+- agent_id: jayden
+  name: Jayden
+- agent_id: sofia
+  name: Sofia
+presentation_state:
+  sections_completed:
+  - introduction
+  - approach
+  - findings
+  - solution
+  - conclusion
+  total_sections: 5

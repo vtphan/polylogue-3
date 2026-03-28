@@ -1,0 +1,258 @@
+scenario_id: school-garden-healthy-eating
+grade_band: '6'
+topic: Should our school start a garden to teach students about healthy eating?
+activity: presentation
+created_at: '2026-03-28T00:00:00Z'
+agents:
+- agent_id: mia
+  name: Mia
+  role: Researcher
+- agent_id: jayden
+  name: Jayden
+  role: Community Liaison
+- agent_id: sofia
+  name: Sofia
+  role: Synthesizer
+sections:
+- section_id: section_01
+  section: introduction
+  speaker: mia
+  role: Researcher
+  content: 'Hi everyone, my name is Mia and our group has been working on a really
+    important question — should our school start a garden to teach students about
+    healthy eating? We think this is something that could really make a difference
+    for our school, and we''re excited to share what we found out.
+
+
+    So the reason we picked this topic is because a lot of kids at our school don''t
+    really know that much about where their food comes from or why eating healthy
+    matters. Like, we all eat lunch in the cafeteria every day, but most of us just
+    grab whatever''s there without thinking about it. We started wondering — what
+    if there was a way to get students to actually care about eating vegetables and
+    trying new foods? That''s when we found out about school gardens.
+
+
+    Studies show that school gardens are one of the best ways to teach kids about
+    nutrition and healthy eating. The research proves that when students grow their
+    own food, they''re way more likely to eat it and make better food choices. We
+    read articles about real school garden programs in other states and they all showed
+    the same thing — gardens work. We also visited an actual community garden right
+    here in Memphis, so we''ve seen it with our own eyes.
+
+
+    For our project, we did a bunch of research. I read two articles about school
+    gardens that were really successful, and I went and visited a community garden
+    in Memphis. Jayden interviewed our school cafeteria manager to find out what she
+    thought about the idea. And Sofia helped us put everything together into this
+    presentation. So today we''re going to walk you through what we found, how we
+    think the garden should work, and why we believe this is something our school
+    should definitely do.'
+  metadata:
+    knowledge_areas_engaged:
+    - area: school garden programs and outcomes
+      category: shallow
+    - area: evidence from articles and garden visit
+      category: misconception
+    - area: nutrition education concepts
+      category: shallow
+    rationale: Mia frames two articles and one garden visit as strong proof using
+      phrases like 'studies show' and 'the research proves,' reflecting her genuine
+      belief that her limited evidence base is comprehensive and conclusive.
+  added_at: '2026-03-28T06:55:35.915272+00:00'
+- section_id: section_02
+  section: approach
+  speaker: sofia
+  role: Synthesizer
+  content: 'So for this project, our group wanted to figure out the best way to research
+    whether a school garden would actually help students eat healthier. We knew we
+    couldn''t just say it was a good idea without backing it up, so we divided the
+    work into different parts so each person could focus on something specific.
+
+
+    Mia was in charge of the research part. She found articles about school gardens
+    that have already been done in other places, and she also went and visited a community
+    garden here in Memphis to see what a real garden looks like. So she was able to
+    bring us information from actual programs that worked, plus what she saw in person.
+    That gave us a really solid foundation for our project because it showed us that
+    gardens really do help students learn about food and nutrition.
+
+
+    Jayden was our community liaison, which means he was the one who went out and
+    talked to people at our school about the idea. He interviewed the cafeteria manager,
+    and she had a lot of really great things to say about wanting fresh vegetables
+    and how students would benefit from growing their own food. So that was our way
+    of getting the school''s perspective on the whole thing.
+
+
+    And then my job was to take everything Mia and Jayden found and organize it into
+    this presentation. I made sure we had a clear structure — like, an introduction
+    to explain what we''re doing, then our findings, our solution, and a conclusion
+    to tie it all together. I think our approach was really thorough because we looked
+    at it from multiple angles. We had the research side, the real-world visit, and
+    the school community side, so we covered all our bases.'
+  metadata:
+    knowledge_areas_engaged:
+    - area: presentation organization and structure
+      category: strong
+    - area: understanding of teammates' research
+      category: shallow
+    - area: research methodology
+      category: shallow
+    rationale: Sofia describes the group's approach from the big picture without detailed
+      knowledge of what Mia and Jayden specifically found, and characterizes their
+      limited research as thorough and covering 'all bases' because it felt like multiple
+      angles to her.
+  added_at: '2026-03-28T06:55:51.082882+00:00'
+- section_id: section_03
+  section: findings
+  speaker: mia
+  role: Researcher
+  content: 'Okay so now I''m going to tell you about what we actually found in our
+    research. I read two really good articles about school gardens — one was about
+    a program in California and the other was about one in Vermont. Both of them showed
+    that when schools started gardens, the students who worked in them ate more vegetables
+    and were more willing to try new foods. The California one said that students
+    in the garden program ate like 30 percent more vegetables than students who weren''t
+    in the program. And the Vermont one talked about how kids who grew their own lettuce
+    and tomatoes actually asked for salads at lunch, which is kind of amazing if you
+    think about it.
+
+
+    I also got to visit a real community garden here in Memphis, and it was really
+    cool. They had raised beds with tomatoes, peppers, and squash growing in them.
+    There were volunteers working there, and they had a sign that said the produce
+    goes to a local food bank. So the garden wasn''t just growing food for fun — it
+    was actually helping feed people in the community. That''s basically the same
+    idea we have for our school, except the food would go to the cafeteria for our
+    lunches.
+
+
+    What I learned from all of this is that school gardens are proven to work. The
+    research shows that when students are involved in growing food, it changes how
+    they think about eating. It''s called farm-to-table, and it''s basically the idea
+    that when you know where your food comes from and you helped grow it yourself,
+    you''re going to want to eat it more. That''s food literacy — understanding the
+    connection between the food you eat and where it comes from.
+
+
+    So based on everything I found, I think the evidence is really clear. School gardens
+    in other states have already shown that this works, and we saw a working garden
+    right here in Memphis. There''s no reason it wouldn''t work at our school too.
+    The research proves that gardens help kids eat healthier, and that''s exactly
+    what our school needs.'
+  metadata:
+    knowledge_areas_engaged:
+    - area: school garden program outcomes in California and Vermont
+      category: shallow
+    - area: Memphis community garden observation
+      category: strong
+    - area: farm-to-table and food literacy vocabulary
+      category: shallow
+    - area: generalizability of evidence across contexts
+      category: misconception
+    rationale: Mia presents her two articles and one garden visit as comprehensive
+      proof, uses vocabulary like farm-to-table and food literacy as recently learned
+      terms, and assumes results from California and Vermont will automatically transfer
+      to Memphis without considering contextual differences.
+  added_at: '2026-03-28T06:56:06.964571+00:00'
+- section_id: section_04
+  section: solution
+  speaker: jayden
+  role: Community Liaison
+  content: 'Alright so now I get to tell you about our solution, which is the exciting
+    part. Our group is recommending that our school builds a garden where students
+    can grow vegetables and learn about healthy eating. And I know this might sound
+    like just an idea, but I actually talked to someone at our school who thinks this
+    could really happen.
+
+
+    I interviewed our cafeteria manager, Ms. Johnson, and she was SO into this idea.
+    Like, when I told her about what we were thinking, her face just lit up. She said
+    she would love to have fresh vegetables from a school garden because right now
+    a lot of the vegetables in the cafeteria come frozen or from cans. She told me
+    that if students grew their own tomatoes and lettuce and stuff, she could actually
+    use those in the salad bar and in some of the lunch recipes. She even said she
+    used to work at a school that had a small herb garden, so she''s already seen
+    something like this work before. She said the students at that school were so
+    proud of the herbs they grew and they actually wanted to eat the food that had
+    their herbs in it.
+
+
+    So basically our plan is that the school would build a garden — like with raised
+    beds and everything — and students would help plant and take care of the vegetables.
+    Then when the vegetables are ready, they go straight to the cafeteria so everyone
+    gets to eat fresh, healthy food. Ms. Johnson said she thinks students would be
+    way more excited to eat food they actually grew themselves, and I totally agree
+    with her. When you put work into something, you care about it more.
+
+
+    The cool thing is that the cafeteria manager is already on board, which means
+    the school is pretty much ready to support this. She works there every day, she
+    knows the students, and she''s saying yes — so that tells us this is something
+    the school wants to do. We think if we can get this garden started, it''s going
+    to change how students at our school think about food.'
+  metadata:
+    knowledge_areas_engaged:
+    - area: cafeteria manager interview details
+      category: strong
+    - area: implementation logistics (cost, space, maintenance)
+      category: blind_spot
+    - area: stakeholder analysis and school decision-making
+      category: misconception
+    rationale: Jayden draws heavily on his vivid memory of the cafeteria manager interview
+      and treats her enthusiasm as evidence the school is ready to proceed, while
+      having no awareness of the implementation details (cost, space, summer maintenance)
+      or broader stakeholders (principal, budget office) needed for a real proposal.
+  added_at: '2026-03-28T06:56:24.465894+00:00'
+- section_id: section_05
+  section: conclusion
+  speaker: sofia
+  role: Synthesizer
+  content: 'So to wrap everything up, our group has been researching whether our school
+    should build a garden to help students learn about healthy eating, and we think
+    the answer is definitely yes. We looked at this from a lot of different angles
+    and everything points in the same direction — school gardens work, and our school
+    should have one.
+
+
+    Our research on school nutrition programs shows that gardens have a real, proven
+    impact on how students eat. When kids are involved in growing their own food,
+    they develop better eating habits and they actually start choosing healthier options
+    on their own. The community garden we studied here in Memphis showed us that this
+    kind of thing is already happening in our city, and the school community is excited
+    to bring it to our campus. The cafeteria manager told us she''s ready to start
+    using fresh vegetables from a student garden, which means the school already has
+    the support it needs to make this happen.
+
+
+    What makes our proposal special is that it''s not just about growing some plants.
+    A school garden would completely transform how our school approaches healthy eating.
+    Right now, a lot of students just eat whatever is in front of them without thinking
+    about nutrition. But if we had a garden, students would understand the whole process
+    of where food comes from and why eating fresh vegetables matters. It would change
+    the culture of our school when it comes to food. Every student who works in that
+    garden is going to come away with a totally different relationship with what they
+    eat.
+
+
+    We really believe this is one of the best things our school could do for students''
+    health and education. Fresh food is always better than processed food, and if
+    we can teach students that lesson by letting them grow it themselves, that''s
+    going to stick with them for the rest of their lives. Our group is ready to help
+    make this happen, and we hope you''ll support the idea of building a school garden.
+    Thank you for listening to our presentation.'
+  metadata:
+    knowledge_areas_engaged:
+    - area: synthesizing group research into summary claims
+      category: shallow
+    - area: nutrition science and behavior change
+      category: shallow
+    - area: seasonal and logistical constraints
+      category: blind_spot
+    - area: scope of evidence vs. scope of claims
+      category: misconception
+    rationale: Sofia sweeps the group's modest evidence into grand claims about transforming
+      school culture and changing students for life, reflects her blind spot on seasonal
+      constraints and tradeoffs, and summarizes the research in broader terms than
+      what was actually presented in the findings section.
+  added_at: '2026-03-28T06:56:40.898466+00:00'

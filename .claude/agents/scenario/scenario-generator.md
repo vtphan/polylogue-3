@@ -22,7 +22,7 @@ Given a topic, activity type, and pedagogical goals, you produce a complete scen
 Before generating, read the following from `configs/`:
 
 - `configs/reference/flaw_type_glossary.md` — flaw types, subtypes, and interaction-driven patterns
-- `configs/reference/knowledge_category_glossary.md` — knowledge categories and their flaw mappings
+- `configs/reference/knowledge_category_glossary.md` — knowledge categories, their flaw mappings, and grade band variation
 - `configs/reference/disposition_glossary.md` — disposition dimensions and values
 - `configs/reference/presentation_section_glossary.md` — section definitions (if activity is presentation)
 - `configs/reference/discussion_stage_glossary.md` — stage definitions (if activity is discussion)
@@ -35,6 +35,7 @@ Before generating, read the following from `configs/`:
 ```yaml
 topic: string                          # PBL driving question or topic
 activity: presentation | discussion    # Activity type
+grade_band: "6" | "7" | "8"           # Grade level of target student audience
 flaw_emphasis: [string]                # Which flaw types to emphasize
 context: string                        # Context description
 ```
@@ -47,6 +48,7 @@ A complete scenario YAML document conforming to `configs/scenario/schemas/scenar
 
 ```yaml
 scenario_id: string                    # kebab-case
+grade_band: "6" | "7" | "8"
 created_at: ISO 8601
 
 topic:
@@ -99,25 +101,27 @@ Roles are flexible and scenario-specific. The architecture imposes no fixed role
 
 Create pedagogically productive mismatches — a Researcher with shallow understanding of the science, a Designer with a blind spot on feasibility. Note in the scenario notes if interaction-driven flaws are expected from specific dynamics (e.g., "Zara's competitiveness may trigger Tomas's critical stance").
 
-### The Connector Pattern
+For **presentations** that emphasize coherence flaws, consider including a synthesizer or connector agent — one who covers the Approach and/or Conclusion sections and whose knowledge gaps include weak comparative analysis or shallow synthesis. Because agents generate sections in isolation, coherence flaws depend on cross-section relationships that only a synthesizing agent can bridge (or fail to bridge). This pattern is less necessary for discussions, where interaction dynamics naturally create coherence opportunities.
 
-For **presentations**, consider assigning one agent a synthesizer or connector role — someone responsible for tying the team's work together (typically covering the Approach and/or Conclusion sections). This is not a required role, but it is the most reliable way to produce **coherence flaws** in presentations.
+### Grade Band
 
-Why it matters: In presentations, agents generate sections in isolation. Most flaws produced this way are knowledge-driven (reasoning, epistemic, completeness). Coherence flaws — contradictions between sections, conclusions that don't follow from findings, superficial synthesis — are harder to produce because they depend on the *relationship* between agents' contributions, not on any single agent's gaps. A connector agent whose knowledge gaps include shallow comparative analysis, weak synthesis skills, or blind spots on internal consistency creates the conditions for these flaws to emerge.
+The `grade_band` determines the cognitive level of the knowledge gaps and the language in which agents express themselves. Consult the knowledge category glossary's "Grade Band Variation" section for concrete examples of what misconceptions, shallow understanding, and blind spots look like at each grade level.
 
-**How to design a connector agent:**
-- **Role:** Synthesizer, integrator, team coordinator, or similar. The label is free-form.
-- **Section assignment:** Approach and/or Conclusion — the sections that require pulling together other agents' work.
-- **Knowledge gaps:** Blind spots on limitations of synthesis without comparative analysis, shallow understanding of how different aspects of the topic relate to each other, or misconceptions about what constitutes a strong summary.
-- **Expected flaws:** Coherence subtypes — evidence-claim disconnect, conclusion overreach, team inconsistency. Also completeness subtypes like unaddressed tradeoffs.
+- **6th grade:** Misconceptions are concrete and observational. Blind spots are about practical constraints (cost, who does the work). Flaws should be detectable from surface-level reading.
+- **7th grade:** Misconceptions involve processes and mechanisms. Blind spots are about systemic interactions. Flaws require comparing claims to evidence.
+- **8th grade:** Misconceptions are methodological and relational. Blind spots are about reasoning quality and generalizability. Flaws require evaluating the structure of arguments.
 
-**When to use it:** When the teacher emphasizes coherence flaws, or when the scenario has agents with divergent knowledge that should produce contradictions a synthesizer would fail to reconcile. Not every presentation needs a connector — if the emphasis is on reasoning or epistemic flaws, a connector adds less value.
+### Flaw Type Floor
 
-For **discussions**, the connector pattern is less necessary. Discussion dynamics naturally create coherence opportunities through interaction — agents can agree superficially, fail to reconcile contradictions in real time, or abandon lines of reasoning. Interaction-driven patterns (superficial consensus, conformity) serve the same pedagogical function that a connector serves in presentations.
+Even when `flaw_emphasis` specifies only some flaw types, ensure agents' expected flaws collectively cover **all four flaw types** (reasoning, epistemic, completeness, coherence). Emphasized types should appear more frequently, but non-emphasized types must not be zero. This prevents lopsided outputs where entire flaw categories are absent.
+
+### Causal Misconceptions for Discussions
+
+For discussions, ensure at least one agent holds a **causal or mechanistic misconception** — an incorrect belief about a cause-effect relationship (e.g., "waste heat causes urban heat islands" when the real driver is surface absorption). Pair this agent with another who has strong knowledge that contradicts the causal claim. This pairing creates conditions for reasoning flaws to emerge from debate: when challenged, the agent with the causal misconception must construct arguments to defend it, producing circular reasoning, missing-premise dismissals, and escalation patterns. Factual misconceptions (e.g., "blue light is calming") tend to produce epistemic flaws when stated; causal misconceptions produce reasoning flaws when defended.
 
 ### Coverage
 
-- Ensure all emphasized flaw types appear at least once across agents.
+- Ensure all four flaw types appear at least once across agents (see Flaw Type Floor above).
 - Ensure agents have diverse knowledge profiles — not all agents should have the same kind of gap.
 - Ensure at least one agent has some strong understanding — not everyone should be wrong about everything.
 

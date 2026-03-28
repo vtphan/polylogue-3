@@ -22,7 +22,7 @@ function run(cmd: string, label: string) {
 
 async function main() {
   run(
-    `PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION="reset" npx prisma migrate reset --force --skip-generate`,
+    `PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION="reset" npx prisma migrate reset --force`,
     "Resetting database",
   );
 

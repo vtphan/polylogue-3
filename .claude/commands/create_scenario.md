@@ -15,6 +15,7 @@ Generate a scenario document that drives agent creation and discourse generation
 |----------|----------|-------------|
 | `topic` | Yes | PBL topic or driving question (quoted string) |
 | `activity` | Yes | `presentation` or `discussion` |
+| `--grade` | Yes | Grade level: `6`, `7`, or `8` |
 | `--flaws` | No | Comma-separated flaw types to emphasize (e.g., `epistemic,completeness`) |
 | `--context` | No | Context description (default: "middle school students working on a PBL project") |
 | `--id` | No | Scenario ID (default: auto-generated from topic) |
@@ -28,6 +29,7 @@ Generate a scenario document that drives agent creation and discourse generation
 Extract from arguments:
 - `topic`: the driving question or topic
 - `activity`: presentation or discussion (must be one of these two)
+- `grade_band`: grade level (`6`, `7`, or `8`)
 - `flaw_emphasis`: list of flaw types to emphasize, or all four if not specified
 - `context`: context description
 - `scenario_id`: provided or generated (kebab-case from topic)
@@ -37,7 +39,7 @@ Extract from arguments:
 Delegate to the **scenario-generator** subagent.
 
 Provide the subagent with:
-- Topic, activity, flaw emphasis, context
+- Topic, activity, grade_band, flaw emphasis, context
 
 The subagent reads the reference glossaries and scenario schema from `configs/` directly (see its Reference section) and produces a complete scenario YAML.
 
@@ -47,9 +49,11 @@ Read `configs/scenario/schemas/scenario.schema.yaml`.
 
 Validate the generated scenario against the schema:
 - `scenario_id` is kebab-case
+- `grade_band` is `6`, `7`, or `8`
 - `activity` is `presentation` or `discussion`
 - `agents` is a non-empty array of agent descriptions
 - All `expected_flaws[].flaw_type` values are valid enums
+- All four flaw types (`reasoning`, `epistemic`, `completeness`, `coherence`) appear at least once across all agents' expected flaws
 - `context.level` is a valid enum
 
 If validation fails, fix and regenerate.
@@ -64,6 +68,7 @@ If file exists, ask confirmation before overwriting.
 
 ```
 Scenario created: {scenario_id}
+├── Grade band: {grade_band}
 ├── Topic: {driving_question}
 ├── Activity: {activity}
 ├── Agents:
