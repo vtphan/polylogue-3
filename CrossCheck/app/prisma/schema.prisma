@@ -77,6 +77,7 @@ model User {
   annotationComments AnnotationComment[]
   hintUsages     HintUsage[]    @relation("HintUsageStudent")
   explanations   Explanation[]  @relation("ExplanationAuthor")
+  auditLogs      AuditLog[]     @relation("AuditLogActor")
 
   @@map("users")
 }
@@ -344,4 +345,22 @@ model Explanation {
   @@index([groupId, turnId])
   @@index([authorId])
   @@map("explanations")
+}
+
+// --- Audit Log (researcher actions, not session-scoped) ---
+
+model AuditLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  actorId    String   @map("actor_id") @db.Uuid
+  action     String   // user_created, password_reset, activity_ingested, activity_deleted
+  targetId   String?  @map("target_id") @db.Uuid
+  targetType String?  @map("target_type") // "user", "activity"
+  payload    Json     @default("{}")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  actor      User     @relation("AuditLogActor", fields: [actorId], references: [id])
+
+  @@index([actorId, createdAt])
+  @@index([action, createdAt])
+  @@map("audit_logs")
 }

@@ -95,4 +95,4 @@ This is expected and healthy — discussions often loop.
 - `stage_changed`: boolean — true only on actual transitions
 - `rationale`: 2-3 sentences. Cite specific turns or content that support your assessment
 - Be conservative: when in doubt, don't change the stage
-- A stage transition requires evidence from at least 2-3 recent turns, not a single turn
+- A stage transition requires evidence from at least `config.stage_transition.min_evidence_turns` recent turns (default: 2), not a single turn. Read this value from the transcript's config block.

@@ -1,0 +1,314 @@
+scenario_id: school-garden-design
+activity: discussion
+evaluated_at: '2026-03-28T00:00:00Z'
+flaws:
+- flaw_id: flaw_001
+  location:
+    type: turn
+    references:
+    - turn_001
+  flaw_type: completeness
+  source: knowledge_driven
+  severity: moderate
+  description: Dante presents raised bed cost as $30-50 total, omitting the cost of
+    soil, compost, and amendments needed to fill the beds -- typically the largest
+    expense.
+  evidence: you just cut your boards to 4 by 8 feet, screw them together, and fill
+    it up. There's no way a greenhouse comes close to that price.
+  explanation: Dante's blind spot on soil costs means his cost comparison omits the
+    single largest expense category for raised beds. He frames the lumber cost as
+    the full budget, which misleads the group's cost comparison from the outset. A
+    7th grader can catch this by asking 'but what about the soil to fill it?'
+- flaw_id: flaw_002
+  location:
+    type: turn
+    references:
+    - turn_005
+  flaw_type: reasoning
+  source: knowledge_driven
+  severity: moderate
+  description: Dante treats lumber cost as the total project cost, jumping from 'the
+    frame costs $30-50' to 'that's the budget right there' without accounting for
+    soil, tools, or other expenses.
+  evidence: The frame costs $30 to $50, you fill it with dirt, and you're done --
+    that's the budget right there.
+  explanation: This is a missing premise flaw. Dante's reasoning jumps from one cost
+    component (lumber) to a total cost conclusion without explaining why other costs
+    are negligible. His misconception that raised beds use less soil makes this jump
+    feel logical to him, but the unstated premise -- that soil is free or trivial
+    -- is false. A 7th grader can spot the gap by asking 'is dirt really free?'
+- flaw_id: flaw_003
+  location:
+    type: turn
+    references:
+    - turn_003
+  flaw_type: epistemic
+  source: knowledge_driven
+  severity: moderate
+  description: Lucia presents only the positive aspects of the community garden she
+    visited -- shared tools, mentorship, cultural exchange -- without mentioning any
+    challenges or limitations.
+  evidence: everyone shares tools and the experienced gardeners literally help the
+    beginners learn. Like there was this one family growing vegetables from their
+    home country and the coordinator who's been gardening for thirty years was helping
+    them
+  explanation: This is selective evidence. Lucia's entire case for the community garden
+    comes from one visit during which she focused on what was appealing. She does
+    not mention volunteer turnover, seasonal gaps, plot disputes, or any difficulties
+    the coordinator may have described. A 7th grader can notice that all the evidence
+    points one direction and ask 'did anything go wrong there?'
+- flaw_id: flaw_004
+  location:
+    type: turn
+    references:
+    - turn_004
+  flaw_type: reasoning
+  source: knowledge_driven
+  severity: moderate
+  description: Amara jumps from 'everyone has good points' to 'we should combine all
+    three options' without explaining why combining would be better or cheaper than
+    choosing one.
+  evidence: Maybe we could do some kind of combination, like raised beds that are
+    connected to a community partnership, and then if we have budget left we look
+    into the greenhouse option too?
+  explanation: This is a missing premise. Amara's reasoning skips from 'each option
+    has merits' to 'combining them is the best approach' without addressing whether
+    combining multiplies costs and complexity rather than capturing the best of each.
+    The unstated premise -- that good features simply add together -- is a misconception
+    about how design tradeoffs work.
+- flaw_id: flaw_005
+  location:
+    type: turn
+    references:
+    - turn_007
+  flaw_type: completeness
+  source: knowledge_driven
+  severity: moderate
+  description: Lucia proposes partnering with a community garden without addressing
+    how students would get there, who would supervise them, or what institutional
+    agreements would be needed.
+  evidence: We wouldn't have to buy all the tools or figure out the soil thing because
+    the people there already know all that stuff.
+  explanation: 'This is a no-feasibility-analysis flaw. Lucia identifies the benefits
+    of partnership (shared tools, expertise) but completely omits the logistics: transportation
+    for minors to an off-campus site, liability coverage, scheduling within the school
+    day, and formal agreements between organizations. A 7th grader can catch this
+    by asking ''but how would we actually get there?'''
+- flaw_id: flaw_006
+  location:
+    type: turn
+    references:
+    - turn_010
+  flaw_type: epistemic
+  source: knowledge_driven
+  severity: minor
+  description: Lucia uses the coordinator's personal enthusiasm as evidence that a
+    school partnership would work, conflating one person's willingness with institutional
+    feasibility.
+  evidence: the coordinator I talked to literally said she loves doing school partnerships
+    -- it's not like we'd just be borrowing their garden, she wants to teach kids
+    how to garden.
+  explanation: This is overstating evidence. One coordinator's expressed enthusiasm
+    does not address whether the community garden's board, insurance, or organizational
+    structure would support a formal school partnership. Lucia treats a personal statement
+    of interest as evidence of institutional viability. Minor severity because the
+    coordinator's willingness is relevant -- it just does not prove the partnership
+    is feasible.
+- flaw_id: flaw_007
+  location:
+    type: turn
+    references:
+    - turn_015
+  flaw_type: epistemic
+  source: knowledge_driven
+  severity: moderate
+  description: Priya cites a $5,000 greenhouse cost from an article about university
+    facilities and presents it as a realistic figure for a school greenhouse, without
+    examining whether that estimate applies to a school context.
+  evidence: the article I read said you can get one set up for around five thousand
+    dollars.
+  explanation: This is assumption as fact. The $5,000 figure comes from an article
+    about a different context (university greenhouses) and Priya presents it without
+    caveats about whether it includes installation, foundation work, heating systems,
+    or ongoing costs. She treats the article's number as directly applicable to a
+    school project. A 7th grader can notice the source is a university article and
+    question whether those costs transfer.
+- flaw_id: flaw_008
+  location:
+    type: turn
+    references:
+    - turn_016
+  flaw_type: epistemic
+  source: knowledge_driven
+  severity: moderate
+  description: Dante states the school budget is 'like five hundred bucks' based on
+    nothing -- a figure he assumed without verification that becomes a constraint
+    in his argument.
+  evidence: I figured our whole budget was like five hundred bucks.
+  explanation: This is assumption as fact. Dante admits this is what he 'figured,'
+    but he has been building his entire cost argument around this number as though
+    it were a real constraint. The word 'figured' reveals it is a guess, but he immediately
+    uses it to dismiss the greenhouse option as unaffordable. A 7th grader can catch
+    that he never said where this number came from.
+- flaw_id: flaw_009
+  location:
+    type: turn
+    references:
+    - turn_020
+  flaw_type: reasoning
+  source: knowledge_driven
+  severity: moderate
+  description: Dante claims 'raised beds win no matter what the budget is' -- an overgeneralization
+    that ignores how different budget levels change which options are feasible and
+    what the project needs.
+  evidence: Honestly, raised beds win no matter what the budget is. If we have $500,
+    we can build two or three beds with real lumber and actually have something solid
+    to show. If we somehow get more money, we can just build more beds -- it scales.
+  explanation: This is an overgeneralization. Dante extends his argument from 'raised
+    beds are affordable at $500' to 'raised beds are the best option at any budget.'
+    A larger budget might make a greenhouse feasible, addressing the winter problem
+    that raised beds cannot solve. His claim that 'more money just means more beds'
+    ignores that additional budget could change which options are worth considering.
+- flaw_id: flaw_010
+  location:
+    type: turn
+    references:
+    - turn_019
+  flaw_type: epistemic
+  source: knowledge_driven
+  severity: minor
+  description: Priya floats unresearched alternatives -- a 'smaller version' greenhouse
+    or grants -- without any evidence that these exist or would be feasible.
+  evidence: Maybe there's a smaller version or like a grant we could apply for or
+    something.
+  explanation: This is unacknowledged uncertainty. Priya presents speculative alternatives
+    as though they might solve the cost problem, without acknowledging she has done
+    no research on whether small-scale greenhouses exist at school budgets or whether
+    grants are available. The hedging language ('maybe,' 'or something') signals uncertainty
+    but she still uses these as reasons not to dismiss the greenhouse option.
+- flaw_id: flaw_011
+  location:
+    type: turn
+    references:
+    - turn_022
+  flaw_type: coherence
+  source: knowledge_driven
+  severity: major
+  description: Amara's combined recommendation -- 'raised bed setup that's covered
+    or partnered with a community organization' -- merges options that serve different
+    goals without explaining how they fit together or what the combined plan would
+    actually cost.
+  evidence: what if our recommendation is a raised bed setup that's covered or partnered
+    with a community organization, so we get the low cost and the outside support?
+  explanation: This is a goal-method mismatch. Raised beds serve the goal of low-cost,
+    on-campus control; community partnership serves the goal of shared expertise and
+    cost-sharing at an off-campus location. Amara's synthesis implies both goals are
+    achieved simultaneously ('low cost and the outside support') but does not explain
+    how an on-campus raised bed would involve a community partner, or how a partnership
+    that brings expertise would not also bring the logistics challenges Lucia cannot
+    answer. The combined proposal lacks a coherent purpose.
+- flaw_id: flaw_012
+  location:
+    type: cross_turn
+    references:
+    - turn_015
+    - turn_016
+    - turn_018
+    - turn_022
+  flaw_type: coherence
+  source: interaction_driven
+  severity: major
+  description: The group identifies a fundamental budget contradiction ($500 vs. $5,000)
+    but resolves it by deferring to the teacher rather than reconciling it, then proceeds
+    to a recommendation that implicitly requires a specific budget without ever determining
+    what that budget is.
+  evidence: 'Turn 016: ''I figured our whole budget was like five hundred bucks.''
+    Turn 015: ''the article I read said you can get one set up for around five thousand
+    dollars.'' Turn 018: ''we definitely need to ask the teacher about the actual
+    budget.'' Turn 022: ''what if our recommendation is a raised bed setup that''s
+    covered or partnered with a community organization'''
+  explanation: This is superficial consensus. The group surfaces the $500 vs. $5000
+    contradiction in turns 015-016, agrees they need to ask the teacher (turn 018),
+    but then proceeds to a recommendation in turn 022 without having resolved the
+    budget question. The final recommendation implicitly assumes a budget that fits
+    raised beds (closer to Dante's $500) without acknowledging that the greenhouse
+    option was dismissed based on unverified budget assumptions. The group's agreement
+    masks an unresolved contradiction at the foundation of their analysis.
+- flaw_id: flaw_013
+  location:
+    type: cross_turn
+    references:
+    - turn_025
+    - turn_026
+    - turn_027
+  flaw_type: completeness
+  source: interaction_driven
+  severity: major
+  description: Priya raises the winter growing problem as unresolved by the group's
+    recommendation, but Amara deflects it to a vague 'phase two' and Priya yields,
+    leaving a critical gap in the recommendation unaddressed.
+  evidence: 'Turn 025: ''raised beds don''t solve that -- the plants still die when
+    it gets cold in Memphis... if we recommend this and someone asks can students
+    use it in January, what do we say?'' Turn 026: ''Maybe we say in our recommendation
+    that the raised beds are the main part but we leave room to add something for
+    winter later, like that could be phase two.'' Turn 027: ''Okay, fine, I can live
+    with that for now.'''
+  explanation: 'This is an abandonment pattern. Priya identifies a legitimate and
+    significant gap -- the recommended plan does not work for nearly half the school
+    year -- but accepts Amara''s deferral to ''phase two'' under social pressure to
+    not disrupt the emerging consensus. The winter problem is not refuted; it is simply
+    set aside. The resulting recommendation has a major completeness gap: it does
+    not address whether the garden functions during November through February, which
+    is a significant portion of the school year.'
+- flaw_id: flaw_014
+  location:
+    type: cross_turn
+    references:
+    - turn_007
+    - turn_010
+    - turn_021
+    - turn_024
+  flaw_type: epistemic
+  source: interaction_driven
+  severity: moderate
+  description: Across multiple turns, Lucia deflects logistical challenges by returning
+    to stories about the community garden coordinator rather than addressing institutional
+    feasibility questions.
+  evidence: 'Turn 007: ''the coordinator I talked to -- she''s been gardening for
+    like thirty years -- she said they love working with schools.'' Turn 010: ''the
+    coordinator I talked to literally said she loves doing school partnerships.''
+    Turn 021: ''The lady I talked to at the garden said they basically built the whole
+    thing with donated tools and volunteer hours.'' Turn 024: ''the coordinator who
+    knew everything, the experienced gardeners helping out -- that''s not just extra,
+    that''s the point.'''
+  explanation: This is a deflection pattern. Each time the discussion approaches the
+    practical difficulties of a school-community partnership (ownership in turn 009,
+    reliability in turn 010, budget in turn 021, control in turn 024), Lucia redirects
+    to anecdotes about the coordinator. The coordinator's enthusiasm is genuine but
+    does not address transportation, liability, institutional agreements, or scheduling
+    -- the actual barriers to a school partnership. The group accepts these stories
+    as evidence, leaving the logistics permanently unexamined.
+summary:
+  total_flaws: 14
+  by_type:
+    reasoning: 3
+    epistemic: 5
+    completeness: 3
+    coherence: 3
+  by_source:
+    knowledge_driven: 11
+    interaction_driven: 3
+  by_severity:
+    minor: 2
+    moderate: 9
+    major: 3
+  key_patterns: The discussion's central weakness is that the group reaches a recommendation
+    without resolving the foundational contradictions that emerged during debate --
+    most critically, the $500 vs. $5000 budget gap and the unanswered winter growing
+    problem. Amara's synthesizer role drives superficial consensus by combining options
+    without examining whether they are compatible, while Lucia's reliance on anecdotal
+    evidence from a single community garden visit substitutes narrative warmth for
+    logistical analysis. Dante's consistent omission of soil costs distorts the cost
+    comparison that frames the entire discussion, and Priya's abandonment of the winter
+    concern under social pressure leaves the group's recommendation with a gap that
+    covers nearly half the school year.

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { logAudit } from "@/lib/audit";
 import bcrypt from "bcryptjs";
 
 function toUsername(name: string): string {
@@ -84,6 +85,14 @@ export async function POST(request: NextRequest) {
       createdBy: session.user.id,
     },
     select: { id: true, displayName: true, username: true, role: true },
+  });
+
+  await logAudit({
+    actorId: session.user.id,
+    action: "user_created",
+    targetId: user.id,
+    targetType: "user",
+    payload: { role: targetRole, displayName: user.displayName },
   });
 
   return NextResponse.json(user, { status: 201 });

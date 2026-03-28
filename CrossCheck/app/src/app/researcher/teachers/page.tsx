@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import Link from "next/link";
+import ResetPasswordButton from "./reset-password-button";
 
 export default async function TeachersPage() {
   const teachers = await prisma.user.findMany({
@@ -43,6 +44,7 @@ export default async function TeachersPage() {
                 <th className="px-4 py-3 font-medium">Classes</th>
                 <th className="px-4 py-3 font-medium">Sessions</th>
                 <th className="px-4 py-3 font-medium">Created</th>
+                <th className="px-4 py-3 font-medium">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -61,6 +63,9 @@ export default async function TeachersPage() {
                   </td>
                   <td className="px-4 py-3 text-gray-400 text-xs">
                     {t.createdAt.toLocaleDateString()}
+                  </td>
+                  <td className="px-4 py-3">
+                    <ResetPasswordButton teacherId={t.id} teacherName={t.displayName} />
                   </td>
                 </tr>
               ))}

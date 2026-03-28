@@ -56,6 +56,17 @@ properties:
         enum: [responsive, round_robin]
       max_turns:
         type: [integer, "null"]
+      stage_transition:
+        type: object
+        properties:
+          min_evidence_turns:
+            type: integer
+            minimum: 1
+            default: 2
+            description: >
+              Minimum number of recent turns that must show transition signals
+              before the stage-tracker may advance the stage.
+        additionalProperties: false
 
   turns:
     type: array

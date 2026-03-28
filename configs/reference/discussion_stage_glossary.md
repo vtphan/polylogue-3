@@ -23,3 +23,7 @@ Stages are **loose** — they describe a general arc, not a strict sequence.
 - **Opening up → Working through:** Agents start engaging directly with each other's specific claims rather than putting new ideas on the table.
 - **Working through → Converging:** Agents start referencing earlier discussion points, proposing synthesized positions, or acknowledging what's been resolved and what hasn't.
 - **Working through → Opening up (loop back):** A new subtopic or angle emerges that shifts the discussion to fresh exploration.
+
+### Transition Threshold
+
+Stage transitions require evidence from at least **`min_evidence_turns`** recent turns (default: **2**). This parameter is configurable in the transcript's `config.stage_transition` object. A single turn showing transition signals is never sufficient to trigger a stage change.

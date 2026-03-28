@@ -217,6 +217,28 @@ export async function ingestScenario(
  * If registryDir is provided, uses it directly (absolute path).
  * scenariosDir and profilesDir are derived from the project root unless registryDir is custom.
  */
+function validateRegistryPath(resolvedPath: string, projectRoot: string): void {
+  const normalizedPath = path.resolve(resolvedPath);
+  const normalizedRoot = path.resolve(projectRoot);
+  if (!normalizedPath.startsWith(normalizedRoot + path.sep) && normalizedPath !== normalizedRoot) {
+    throw new Error(
+      `Registry path must be within the project root: ${normalizedRoot}`
+    );
+  }
+  // Check symlinks that escape the project root
+  try {
+    const realPath = fs.realpathSync(normalizedPath);
+    if (!realPath.startsWith(normalizedRoot + path.sep) && realPath !== normalizedRoot) {
+      throw new Error(
+        `Registry path resolves via symlink outside the project root: ${normalizedRoot}`
+      );
+    }
+  } catch (err: unknown) {
+    // Path doesn't exist yet — ingestScenario checks existence later
+    if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
+  }
+}
+
 export function getIngestPaths(registryDir?: string): IngestPaths {
   const appRoot = process.cwd();
   const projectRoot = path.resolve(appRoot, "..", "..");
@@ -226,6 +248,7 @@ export function getIngestPaths(registryDir?: string): IngestPaths {
     const resolvedRegistry = path.isAbsolute(registryDir)
       ? registryDir
       : path.resolve(appRoot, registryDir);
+    validateRegistryPath(resolvedRegistry, projectRoot);
     return {
       registryDir: resolvedRegistry,
       scenariosDir: path.join(projectRoot, "configs", "scenarios"),

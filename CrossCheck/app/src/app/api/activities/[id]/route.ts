@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { logAudit } from "@/lib/audit";
 
 export async function GET(
   request: NextRequest,
@@ -97,6 +98,14 @@ export async function DELETE(
 
   // Cascade delete: sessions → groups → annotations → etc.
   await prisma.activity.delete({ where: { id } });
+
+  await logAudit({
+    actorId: session.user.id,
+    action: "activity_deleted",
+    targetId: id,
+    targetType: "activity",
+    payload: { scenarioId: activity.scenarioId, topic: activity.topic, force },
+  });
 
   return NextResponse.json({ ok: true });
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { logAudit } from "@/lib/audit";
 import { listRegistryScenarios, ingestScenario, getIngestPaths } from "@/lib/ingest";
 
 /**
@@ -70,6 +71,13 @@ export async function POST(request: NextRequest) {
 
   try {
     const activity = await ingestScenario(prisma, scenarioId, paths);
+    await logAudit({
+      actorId: session.user.id,
+      action: "activity_ingested",
+      targetId: activity.id,
+      targetType: "activity",
+      payload: { scenarioId, topic: activity.topic },
+    });
     return NextResponse.json(activity, { status: 201 });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Ingest failed";

@@ -14,6 +14,6 @@ agents:
 - agent_id: amara
   name: Amara
 discussion_state:
-  current_stage: working_through
-  total_turns: 12
-  last_speaker: lucia
+  current_stage: converging
+  total_turns: 28
+  last_speaker: amara
