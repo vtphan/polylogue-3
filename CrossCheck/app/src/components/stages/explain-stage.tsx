@@ -6,8 +6,6 @@ import type { FlawType, FlawIndexEntry } from "@/lib/types";
 import { FLAW_TYPES, HINT_UNLOCK_DELAY } from "@/lib/types";
 import type { ExplainTurn } from "@/lib/turn-selection";
 import { HintButton } from "@/components/shared/hint-button";
-import { RecognizeDistribution } from "@/components/explain/recognize-distribution";
-import { DisagreementPrompt } from "@/components/explain/disagreement-prompt";
 import { CollaborativeEditor } from "@/components/explain/collaborative-editor";
 import { useSessionSocket } from "@/hooks/useSessionSocket";
 import { FlawFieldGuide, FlawFieldGuideDrawer } from "@/components/annotation/flaw-field-guide";
@@ -39,17 +37,6 @@ interface ExplainStageProps {
   existingHints?: { turnId: string; hintLevel: number }[];
 }
 
-type Step = "type_selection" | "writing";
-
-const BUTTON_COLORS: Record<FlawType, { base: string; hover: string }> = {
-  reasoning:    { base: "border-red-200 bg-red-50 text-red-700",        hover: "hover:border-red-400 hover:bg-red-100" },
-  epistemic:    { base: "border-amber-200 bg-amber-50 text-amber-700",  hover: "hover:border-amber-400 hover:bg-amber-100" },
-  completeness: { base: "border-blue-200 bg-blue-50 text-blue-700",     hover: "hover:border-blue-400 hover:bg-blue-100" },
-  coherence:    { base: "border-purple-200 bg-purple-50 text-purple-700", hover: "hover:border-purple-400 hover:bg-purple-100" },
-};
-
-const ALL_FLAW_TYPES: FlawType[] = ["reasoning", "epistemic", "completeness", "coherence"];
-
 // --- Component ---
 
 export function ExplainStage({
@@ -57,9 +44,7 @@ export function ExplainStage({
   groupId,
   userId,
   explainTurns,
-  flawIndex,
   groupMembers,
-  existingGroupSelections = [],
   existingExplanations = [],
   existingHints = [],
 }: ExplainStageProps) {
@@ -74,56 +59,39 @@ export function ExplainStage({
     return map;
   }, [groupMembers]);
 
-  // Enrich the Recognize distribution with display names
-  const enrichedTurns = useMemo(() => {
-    return explainTurns.map((turn) => {
-      const namedDistribution: Record<string, string[]> = {};
-      for (const [type, userIds] of Object.entries(turn.recognizeDistribution)) {
-        namedDistribution[type] = userIds.map((id) => memberNames.get(id) || id);
-      }
-      return { ...turn, namedDistribution };
-    });
-  }, [explainTurns, memberNames]);
-
-  // Per-turn state
+  // Per-turn state — simplified: no type selection, just writing
   interface TurnExplainState {
-    step: Step;
-    groupTypeAnswer: FlawType | "no_flaw" | null;
     hintsUsed: number;
     hintTemplate: string | null;
-    flawTypeRevealed: boolean;
     discussed: boolean;
   }
 
   const initialTurnStates = useMemo(() => {
     const states = new Map<string, TurnExplainState>();
-    for (const turn of enrichedTurns) {
-      // Check if there's an existing group selection
-      const existing = existingGroupSelections.find((s) => s.flawId === turn.flawId);
+    for (const turn of explainTurns) {
       const hintData = existingHints.filter((h) => h.turnId === turn.id);
       const maxHint = hintData.length > 0 ? Math.max(...hintData.map((h) => h.hintLevel)) : 0;
 
+      // A turn is "discussed" if we have an explanation for it
+      const hasExplanation = existingExplanations.some((e) => e.turnId === turn.id);
+
       states.set(turn.id, {
-        step: existing ? "writing" : "type_selection",
-        groupTypeAnswer: existing ? (existing.typeAnswer as FlawType | "no_flaw") : null,
         hintsUsed: maxHint,
-        hintTemplate: maxHint >= 2 ? `This is a ${turn.correctFlawType} flaw because ___` : null,
-        flawTypeRevealed: maxHint >= 1,
-        discussed: existing !== undefined,
+        hintTemplate: maxHint >= 1 ? `This is a ${turn.correctFlawType} flaw because ___` : null,
+        discussed: hasExplanation,
       });
     }
     return states;
-  }, [enrichedTurns, existingGroupSelections, existingHints]);
+  }, [explainTurns, existingExplanations, existingHints]);
 
   const [turnStates, setTurnStates] = useState(initialTurnStates);
   const [currentIndex, setCurrentIndex] = useState(() => {
-    // Start at first undiscussed turn
-    const idx = enrichedTurns.findIndex((t) => !turnStates.get(t.id)?.discussed);
+    const idx = explainTurns.findIndex((t) => !turnStates.get(t.id)?.discussed);
     return idx >= 0 ? idx : 0;
   });
   const [hintLoading, setHintLoading] = useState(false);
 
-  const currentTurn = enrichedTurns[currentIndex];
+  const currentTurn = explainTurns[currentIndex];
   const currentState = currentTurn ? turnStates.get(currentTurn.id) : undefined;
   const discussedCount = Array.from(turnStates.values()).filter((s) => s.discussed).length;
 
@@ -136,7 +104,6 @@ export function ExplainStage({
       router.refresh();
     },
     onExplanationSubmitted: (event) => {
-      // Fetch the new explanation to get full data
       fetch(`/api/explanations?sessionId=${sessionId}&groupId=${groupId}&turnId=${event.turnId}`)
         .then((res) => res.json())
         .then((data) => {
@@ -156,85 +123,7 @@ export function ExplainStage({
     },
   });
 
-  // Determine if current user is in the minority
-  const isMinority = useMemo(() => {
-    if (!currentTurn?.hasDisagreement) return false;
-    const dist = currentTurn.recognizeDistribution;
-    // Find what the current user selected
-    let userType: string | null = null;
-    for (const [type, userIds] of Object.entries(dist)) {
-      if (userIds.includes(userId)) {
-        userType = type;
-        break;
-      }
-    }
-    if (!userType) return false;
-
-    // Check if user's type has fewer votes than the majority
-    const counts = Object.entries(dist).map(([type, ids]) => ({ type, count: ids.length }));
-    counts.sort((a, b) => b.count - a.count);
-    const majorityCount = counts[0]?.count || 0;
-    const userCount = dist[userType]?.length || 0;
-    return userCount < majorityCount;
-  }, [currentTurn, userId]);
-
-  // Get user's Recognize answer for this turn
-  const userRecognizeAnswer = useMemo(() => {
-    if (!currentTurn) return undefined;
-    for (const [type, userIds] of Object.entries(currentTurn.recognizeDistribution)) {
-      if (userIds.includes(userId)) return type;
-    }
-    return undefined;
-  }, [currentTurn, userId]);
-
   // --- Handlers ---
-
-  const handleSelectType = useCallback(async (type: FlawType | "no_flaw") => {
-    if (!currentTurn || !currentState) return;
-
-    // Save group selection to API
-    try {
-      await fetch("/api/flaw-responses", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          groupId,
-          flawId: currentTurn.flawId,
-          typeAnswer: type,
-          correctType: currentTurn.correctFlawType,
-          hintLevel: currentState.hintsUsed,
-          stage: "explain",
-        }),
-      });
-    } catch {
-      // Silently fail
-    }
-
-    if (type === "no_flaw") {
-      // Skip writing step — mark as discussed and advance
-      setTurnStates((prev) => {
-        const next = new Map(prev);
-        next.set(currentTurn.id, {
-          ...prev.get(currentTurn.id)!,
-          step: "writing",
-          groupTypeAnswer: type,
-          discussed: true,
-        });
-        return next;
-      });
-    } else {
-      // Move to writing step
-      setTurnStates((prev) => {
-        const next = new Map(prev);
-        next.set(currentTurn.id, {
-          ...prev.get(currentTurn.id)!,
-          step: "writing",
-          groupTypeAnswer: type,
-        });
-        return next;
-      });
-    }
-  }, [currentTurn, currentState, groupId]);
 
   const handleMarkDiscussed = useCallback(() => {
     if (!currentTurn) return;
@@ -250,22 +139,21 @@ export function ExplainStage({
 
   const handleNext = useCallback(async () => {
     const nextIndex = currentIndex + 1;
-    if (nextIndex < enrichedTurns.length) {
+    if (nextIndex < explainTurns.length) {
       setCurrentIndex(nextIndex);
     } else {
-      // All turns discussed — trigger stage transition
+      // All turns discussed — trigger transition to Collaborate
       try {
         await fetch(`/api/groups/${groupId}/stage`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({}), // Server auto-determines locate vs results
+          body: JSON.stringify({}),
         });
       } catch {
-        // Fallback: refresh
         router.refresh();
       }
     }
-  }, [currentIndex, enrichedTurns, groupId, router]);
+  }, [currentIndex, explainTurns, groupId, router]);
 
   const handlePrevious = useCallback(() => {
     if (currentIndex > 0) setCurrentIndex(currentIndex - 1);
@@ -289,47 +177,16 @@ export function ExplainStage({
 
       if (res.ok) {
         const data = await res.json();
-        setTurnStates((prev) => {
-          const next = new Map(prev);
-          const state = prev.get(currentTurn.id)!;
-
-          if (data.hintLevel === 1 && data.autoCompleteStep1) {
-            // Hint 1: auto-select flaw type
+        if (data.template) {
+          setTurnStates((prev) => {
+            const next = new Map(prev);
             next.set(currentTurn.id, {
-              ...state,
+              ...prev.get(currentTurn.id)!,
               hintsUsed: 1,
-              flawTypeRevealed: true,
-              step: "writing",
-              groupTypeAnswer: data.flawType as FlawType,
-            });
-          } else if (data.hintLevel === 2 && data.template) {
-            // Hint 2: show guided template
-            next.set(currentTurn.id, {
-              ...state,
-              hintsUsed: 2,
               hintTemplate: data.template,
             });
-          }
-
-          return next;
-        });
-
-        // If hint auto-completed step 1, also save the response
-        if (data.autoCompleteStep1) {
-          try {
-            await fetch("/api/flaw-responses", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                groupId,
-                flawId: currentTurn.flawId,
-                typeAnswer: data.flawType,
-                correctType: currentTurn.correctFlawType,
-                hintLevel: 1,
-                stage: "explain",
-              }),
-            });
-          } catch { /* ok */ }
+            return next;
+          });
         }
       }
     } catch {
@@ -342,7 +199,7 @@ export function ExplainStage({
 
   // Auto-transition when no turns need discussion
   useEffect(() => {
-    if (enrichedTurns.length === 0) {
+    if (explainTurns.length === 0) {
       fetch(`/api/groups/${groupId}/stage`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -355,9 +212,9 @@ export function ExplainStage({
         setTimeout(() => router.refresh(), 500);
       });
     }
-  }, [enrichedTurns.length, groupId, router]);
+  }, [explainTurns.length, groupId, router]);
 
-  if (enrichedTurns.length === 0) {
+  if (explainTurns.length === 0) {
     return (
       <div className="max-w-md mx-auto mt-12 text-center">
         <div className="bg-green-50 border border-green-200 rounded-xl p-8">
@@ -370,8 +227,9 @@ export function ExplainStage({
     );
   }
 
-  const hintsRemaining = currentState ? 2 - currentState.hintsUsed : 2;
-  const allDiscussed = discussedCount === enrichedTurns.length;
+  // Max 1 hint in Explain (template only)
+  const hintsRemaining = currentState ? 1 - currentState.hintsUsed : 1;
+  const allDiscussed = discussedCount === explainTurns.length;
 
   // Get existing explanations for current turn
   const currentExplanations = currentTurn
@@ -395,20 +253,20 @@ export function ExplainStage({
       <div className="mb-6">
         <h2 className="text-lg font-bold text-gray-900">Explain</h2>
         <p className="text-sm text-gray-500 mt-1">
-          Discuss each turn with your group. Select the flaw type, then write why it&apos;s a flaw.
+          Teach your group — explain why each flaw is a problem in your own words.
         </p>
       </div>
 
       {/* Progress */}
       <div className="mb-6">
         <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
-          <span>Turn {currentIndex + 1} of {enrichedTurns.length}</span>
-          <span>{discussedCount} discussed</span>
+          <span>Turn {currentIndex + 1} of {explainTurns.length}</span>
+          <span>{discussedCount} explained</span>
         </div>
         <div className="w-full bg-gray-100 rounded-full h-1.5">
           <div
             className="bg-amber-500 h-1.5 rounded-full transition-all duration-300"
-            style={{ width: `${(discussedCount / enrichedTurns.length) * 100}%` }}
+            style={{ width: `${(discussedCount / explainTurns.length) * 100}%` }}
           />
         </div>
       </div>
@@ -431,100 +289,47 @@ export function ExplainStage({
             <p className="text-sm text-gray-800 leading-relaxed">{currentTurn.content}</p>
           </div>
 
-          {/* Recognize distribution */}
-          <div className="mb-4">
-            <RecognizeDistribution
-              distribution={currentTurn.namedDistribution}
-              hasDisagreement={currentTurn.hasDisagreement}
-            />
-            <DisagreementPrompt
-              isMinority={isMinority}
-              minorityTypes={[]}
-              userAnswer={userRecognizeAnswer}
-            />
+          {/* Flaw type badge — always shown (students already know the answer) */}
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-xs font-medium text-gray-500">Flaw type:</span>
+            {(() => {
+              const type = currentTurn.correctFlawType as FlawType;
+              const info = FLAW_TYPES[type];
+              return info ? (
+                <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${info.bgColor} ${info.color}`}>
+                  {info.label}
+                </span>
+              ) : null;
+            })()}
           </div>
 
-          {/* Step 1: Type selection */}
-          {currentState.step === "type_selection" && (
-            <div className="mb-4">
-              <p className="text-xs font-medium text-gray-500 mb-2">
-                As a group, what type of flaw is this?
-              </p>
-              <div className="space-y-2">
-                {ALL_FLAW_TYPES.map((type) => {
-                  const info = FLAW_TYPES[type];
-                  const colors = BUTTON_COLORS[type];
-                  return (
-                    <button
-                      key={type}
-                      onClick={() => handleSelectType(type)}
-                      className={`w-full text-left text-sm p-3 rounded-lg border transition-all ${colors.base} ${colors.hover} cursor-pointer`}
-                    >
-                      <span className="font-semibold">{info.label}</span>
-                      <span className="text-xs ml-2 opacity-75">{info.description}</span>
-                    </button>
-                  );
-                })}
-                <button
-                  onClick={() => handleSelectType("no_flaw")}
-                  className="w-full text-left text-sm p-3 rounded-lg border border-gray-300 bg-gray-50 text-gray-600 hover:border-gray-400 hover:bg-gray-100 transition-all cursor-pointer"
-                >
-                  <span className="font-semibold">No flaw here</span>
-                  <span className="text-xs ml-2 opacity-75">This turn doesn&apos;t contain a problem.</span>
-                </button>
-              </div>
-            </div>
-          )}
+          {/* Framing prompt */}
+          <p className="text-xs font-medium text-gray-500 mb-3">
+            Teach your group — explain why this is a {FLAW_TYPES[currentTurn.correctFlawType as FlawType]?.label?.toLowerCase() || currentTurn.correctFlawType} flaw.
+          </p>
 
-          {/* Step 2: Collaborative writing */}
-          {currentState.step === "writing" && currentState.groupTypeAnswer && currentState.groupTypeAnswer !== "no_flaw" && (
-            <div className="mb-4">
-              {/* Type badge */}
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-xs font-medium text-gray-500">Flaw type:</span>
-                {(() => {
-                  const type = currentState.groupTypeAnswer as FlawType;
-                  const info = FLAW_TYPES[type];
-                  return info ? (
-                    <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${info.bgColor} ${info.color}`}>
-                      {info.label}
-                    </span>
-                  ) : null;
-                })()}
-                {currentState.flawTypeRevealed && (
-                  <span className="text-[10px] text-gray-400 italic">via strategic support</span>
-                )}
-              </div>
+          {/* Collaborative writing */}
+          <div className="mb-4">
+            <CollaborativeEditor
+              sessionId={sessionId}
+              groupId={groupId}
+              turnId={currentTurn.id}
+              userId={userId}
+              stage="explain"
+              template={currentState.hintTemplate || undefined}
+              existingExplanations={currentExplanations}
+            />
 
-              <CollaborativeEditor
-                sessionId={sessionId}
-                groupId={groupId}
-                turnId={currentTurn.id}
-                userId={userId}
-                template={currentState.hintTemplate || undefined}
-                existingExplanations={currentExplanations}
-              />
-
-              {/* Mark as discussed button — only after type selection */}
-              {!currentState.discussed && currentState.groupTypeAnswer && (
-                <button
-                  onClick={handleMarkDiscussed}
-                  className="mt-3 px-4 py-2 rounded-lg text-sm font-medium bg-amber-100 text-amber-800 hover:bg-amber-200 transition-colors"
-                >
-                  Mark as discussed
-                </button>
-              )}
-            </div>
-          )}
-
-          {/* No flaw selected — just show a note */}
-          {currentState.step === "writing" && currentState.groupTypeAnswer === "no_flaw" && (
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
-              <p className="text-sm text-gray-600">
-                Your group decided this turn has no flaw.
-              </p>
-            </div>
-          )}
+            {/* Mark as discussed button */}
+            {!currentState.discussed && (
+              <button
+                onClick={handleMarkDiscussed}
+                className="mt-3 px-4 py-2 rounded-lg text-sm font-medium bg-amber-100 text-amber-800 hover:bg-amber-200 transition-colors"
+              >
+                Mark as explained
+              </button>
+            )}
+          </div>
         </>
       )}
 
@@ -535,11 +340,11 @@ export function ExplainStage({
           disabled={currentIndex === 0}
           className="text-sm text-gray-500 hover:text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed"
         >
-          ← Previous
+          &larr; Previous
         </button>
 
         <div className="flex items-center gap-3">
-          {/* Hint button */}
+          {/* Hint button — 1 max (template only) */}
           {currentState && !currentState.discussed && (
             <HintButton
               hintsRemaining={hintsRemaining}
@@ -557,7 +362,7 @@ export function ExplainStage({
               onClick={handleNext}
               className="px-4 py-2 rounded-lg text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
             >
-              {currentIndex < enrichedTurns.length - 1 ? "Next →" : allDiscussed ? "Finish Explain" : "Next →"}
+              {currentIndex < explainTurns.length - 1 ? "Next \u2192" : allDiscussed ? "Finish Explain" : "Next \u2192"}
             </button>
           )}
         </div>
@@ -566,7 +371,7 @@ export function ExplainStage({
       {/* Summary */}
       {discussedCount > 0 && (
         <div className="mt-6 pt-4 border-t border-gray-100 text-xs text-gray-400">
-          {discussedCount} of {enrichedTurns.length} turns discussed
+          {discussedCount} of {explainTurns.length} turns explained
         </div>
       )}
 

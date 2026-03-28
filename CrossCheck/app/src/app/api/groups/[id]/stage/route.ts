@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { getIO } from "@/lib/socket-server";
 import { STAGE_TRANSITIONS } from "@/lib/types";
 import type { SessionStage, FlawIndexEntry } from "@/lib/types";
-import { selectExplainTurns } from "@/lib/turn-selection";
+import { selectExplainTurns, selectCollaborateTurns } from "@/lib/turn-selection";
 import { getLocateTargets } from "@/lib/locate-trigger";
 import { extractTurns } from "@/lib/transcript";
 import type { Transcript } from "@/lib/types";
@@ -57,7 +57,7 @@ export async function PATCH(
   const currentStage = group.stage as SessionStage;
 
   // Teacher-triggered transitions: recognize→explain, locate→results
-  // Student/system-triggered: explain→locate/results
+  // Auto-triggered: explain→collaborate (always), collaborate→locate/results (conditional)
   if (currentStage === "recognize" && session.user.role !== "teacher") {
     return NextResponse.json(
       { error: "Only teacher can transition from recognize to explain" },
@@ -73,10 +73,11 @@ export async function PATCH(
   let resolvedTarget: SessionStage;
 
   if (currentStage === "explain" && !targetStage) {
+    // Explain always transitions to Collaborate
+    resolvedTarget = "collaborate";
+  } else if (currentStage === "collaborate" && !targetStage) {
     // Auto-determine: check if Locate should trigger
     const flawIndex = group.session.activity.flawIndex as unknown as FlawIndexEntry[];
-    const transcript = group.session.activity.transcript as unknown as Transcript;
-    const allTurns = extractTurns(transcript);
 
     // Get all Recognize responses for this group
     const recognizeResponses = await prisma.flawResponse.findMany({
@@ -84,13 +85,13 @@ export async function PATCH(
       select: { flawId: true, userId: true, typeAnswer: true, typeCorrect: true },
     });
 
-    // Get group's Explain selections (Step 1)
-    const explainResponses = await prisma.flawResponse.findMany({
-      where: { groupId, stage: "explain" },
+    // Get group's Collaborate type selections
+    const collaborateResponses = await prisma.flawResponse.findMany({
+      where: { groupId, stage: "collaborate" },
       select: { flawId: true, typeAnswer: true },
     });
 
-    const locateTargets = getLocateTargets(flawIndex, recognizeResponses, explainResponses);
+    const locateTargets = getLocateTargets(flawIndex, recognizeResponses, collaborateResponses);
     resolvedTarget = locateTargets.length > 0 ? "locate" : "results";
   } else if (targetStage) {
     resolvedTarget = targetStage as SessionStage;
@@ -113,7 +114,9 @@ export async function PATCH(
   }
 
   // Determine the phase for the new stage
-  const newPhase = resolvedTarget === "recognize" ? "individual" : "group";
+  const newPhase = resolvedTarget === "recognize" ? "individual"
+    : resolvedTarget === "results" ? "reviewing"
+    : "group";
 
   // Update stage and phase
   await prisma.$transaction([
@@ -141,45 +144,85 @@ export async function PATCH(
     // Socket.IO not available
   }
 
-  // If transitioning to explain, compute and return the explain turns
-  let explainTurns = undefined;
+  // Handle empty-stage skipping: chain transitions server-side
+  const flawIndex = group.session.activity.flawIndex as unknown as FlawIndexEntry[];
+  const transcript = group.session.activity.transcript as unknown as Transcript;
+  const allTurns = extractTurns(transcript);
+
+  const recognizeResponses = await prisma.flawResponse.findMany({
+    where: { groupId, stage: "recognize" },
+    select: { flawId: true, userId: true, typeAnswer: true, typeCorrect: true },
+  });
+
+  // Skip empty Explain: if no unanimously correct turns, chain to Collaborate
   if (resolvedTarget === "explain") {
-    const flawIndex = group.session.activity.flawIndex as unknown as FlawIndexEntry[];
-    const transcript = group.session.activity.transcript as unknown as Transcript;
-    const allTurns = extractTurns(transcript);
+    const eTurns = selectExplainTurns(allTurns, flawIndex, recognizeResponses);
+    if (eTurns.length === 0) {
+      resolvedTarget = "collaborate";
+      // Re-update the DB with the chained target
+      await prisma.$transaction([
+        prisma.group.update({
+          where: { id: groupId },
+          data: { stage: resolvedTarget, phase: "group" },
+        }),
+        prisma.groupReady.deleteMany({ where: { groupId } }),
+      ]);
+    }
+  }
 
-    const recognizeResponses = await prisma.flawResponse.findMany({
-      where: { groupId, stage: "recognize" },
-      select: { flawId: true, userId: true, typeAnswer: true, typeCorrect: true },
-    });
+  // Skip empty Collaborate: if no error turns, chain to Locate check
+  if (resolvedTarget === "collaborate") {
+    const cTurns = selectCollaborateTurns(allTurns, flawIndex, recognizeResponses);
+    if (cTurns.length === 0) {
+      // No collaborate turns — check Locate trigger (with empty collaborate selections)
+      const locTargets = getLocateTargets(flawIndex, recognizeResponses, []);
+      resolvedTarget = locTargets.length > 0 ? "locate" : "results";
+      await prisma.$transaction([
+        prisma.group.update({
+          where: { id: groupId },
+          data: {
+            stage: resolvedTarget,
+            phase: resolvedTarget === "results" ? "reviewing" : "group",
+          },
+        }),
+        prisma.groupReady.deleteMany({ where: { groupId } }),
+      ]);
+    }
+  }
 
+  // Compute response data for the final resolved target
+  let explainTurns = undefined;
+  let collaborateTurns = undefined;
+  let locateTargets = undefined;
+
+  if (resolvedTarget === "explain") {
     explainTurns = selectExplainTurns(allTurns, flawIndex, recognizeResponses);
   }
 
-  // If transitioning to locate, compute and return locate targets
-  let locateTargets = undefined;
+  if (resolvedTarget === "collaborate") {
+    collaborateTurns = selectCollaborateTurns(allTurns, flawIndex, recognizeResponses);
+  }
+
   if (resolvedTarget === "locate") {
-    const flawIndex = group.session.activity.flawIndex as unknown as FlawIndexEntry[];
-
-    const recognizeResponses = await prisma.flawResponse.findMany({
-      where: { groupId, stage: "recognize" },
-      select: { flawId: true, userId: true, typeAnswer: true, typeCorrect: true },
-    });
-
-    const explainResponses = await prisma.flawResponse.findMany({
-      where: { groupId, stage: "explain" },
+    const collaborateResponses = await prisma.flawResponse.findMany({
+      where: { groupId, stage: "collaborate" },
       select: { flawId: true, typeAnswer: true },
     });
-
-    locateTargets = getLocateTargets(flawIndex, recognizeResponses, explainResponses);
+    locateTargets = getLocateTargets(flawIndex, recognizeResponses, collaborateResponses);
   }
+
+  // Recompute phase for final resolved target
+  const finalPhase = resolvedTarget === "recognize" ? "individual"
+    : resolvedTarget === "results" ? "reviewing"
+    : "group";
 
   return NextResponse.json({
     groupId,
     fromStage: currentStage,
     toStage: resolvedTarget,
-    phase: newPhase,
+    phase: finalPhase,
     ...(explainTurns ? { explainTurns } : {}),
+    ...(collaborateTurns ? { collaborateTurns } : {}),
     ...(locateTargets ? { locateTargets } : {}),
   });
 }

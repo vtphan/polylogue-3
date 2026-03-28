@@ -6,7 +6,9 @@
  */
 
 import type { FlawIndexEntry, TranscriptTurn } from "./types";
-import { FALSE_POSITIVE_RATIO } from "./types";
+
+/** @deprecated Will be removed in Phase 3. Previously 0.25. */
+const FALSE_POSITIVE_RATIO = 0.25;
 
 /**
  * Simple seeded PRNG (mulberry32). Deterministic for the same seed.

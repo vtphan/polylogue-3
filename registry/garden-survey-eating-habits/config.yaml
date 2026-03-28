@@ -13,6 +13,6 @@ agents:
 - agent_id: mateo
   name: Mateo
 discussion_state:
-  current_stage: working_through
-  total_turns: 9
-  last_speaker: imani
+  current_stage: converging
+  total_turns: 17
+  last_speaker: mateo

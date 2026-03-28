@@ -17,6 +17,8 @@ interface CollaborativeEditorProps {
   groupId: string;
   turnId: string;
   userId: string;
+  /** Which stage this editor is used in — passed to the explanations API */
+  stage?: string;
   /** Template text (from Hint 2) — replaces the open text area */
   template?: string;
   /** Existing explanations for this turn (loaded from API) */
@@ -49,6 +51,7 @@ export function CollaborativeEditor({
   groupId,
   turnId,
   userId,
+  stage,
   template,
   existingExplanations = [],
   onSubmit,
@@ -126,6 +129,7 @@ export function CollaborativeEditor({
           groupId,
           turnId,
           text: text.trim(),
+          stage: stage || undefined,
         }),
       });
 
@@ -142,7 +146,7 @@ export function CollaborativeEditor({
     } catch {
       setSubmitted(false);
     }
-  }, [text, submitted, sessionId, groupId, turnId, userId, onSubmit, addExplanation]);
+  }, [text, submitted, sessionId, groupId, turnId, userId, stage, onSubmit, addExplanation]);
 
   const handleRevise = useCallback(async () => {
     if (!text.trim() || !userExplanation) return;
@@ -157,6 +161,7 @@ export function CollaborativeEditor({
           turnId,
           text: text.trim(),
           revisionOf: userExplanation.id,
+          stage: stage || undefined,
         }),
       });
 

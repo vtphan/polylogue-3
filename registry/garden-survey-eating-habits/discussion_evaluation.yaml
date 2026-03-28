@@ -1,0 +1,398 @@
+scenario_id: garden-survey-eating-habits
+activity: discussion
+evaluated_at: '2026-03-28T17:00:00Z'
+flaws:
+- flaw_id: flaw_001
+  location:
+    type: turn
+    references:
+    - turn_001
+  flaw_type: reasoning
+  source: knowledge_driven
+  severity: major
+  description: 'Causal misconception: Nadia treats correlation between garden participation
+    and attitude change as proof that the garden caused the change.'
+  evidence: '"the kids who were actually out there planting and watering stuff in
+    the garden were the ones whose answers changed the most -- when you grow your
+    own food you''re obviously gonna want to eat it."'
+  explanation: Nadia observes that students who gardened the most also reported the
+    biggest attitude shift and concludes the garden caused the shift. This is correlation
+    treated as causation. Other factors (the new salad bar, seasonal produce, maturation)
+    could explain the same pattern. The word 'obviously' signals she treats this mechanism
+    as self-evident rather than as a hypothesis needing testing. For 7th graders,
+    this is a detectable causal reasoning error -- they should be able to see that
+    two things happening together does not prove one caused the other.
+- flaw_id: flaw_002
+  location:
+    type: turn
+    references:
+    - turn_004
+  flaw_type: reasoning
+  source: knowledge_driven
+  severity: moderate
+  description: 'Missing premise: Mateo treats effort and firsthand observation of
+    student excitement as evidence that the garden caused dietary change.'
+  evidence: '"I literally watched kids get excited when the lettuce and radishes they
+    planted actually grew into real food... so yeah the survey numbers went up, and
+    to me that lines up perfectly with what I saw happening all semester -- the garden
+    worked."'
+  explanation: Mateo jumps from 'students were excited during garden activities' to
+    'the garden worked' (meaning it changed eating habits). The missing premise is
+    that excitement about growing food does not establish that the garden caused lasting
+    dietary changes. Anecdotal observations of enthusiasm are not evidence of behavior
+    change. He also implies that because the group worked hard all semester, the results
+    must reflect that effort. A 7th grader can recognize that seeing kids get excited
+    is not the same as proving they changed their eating habits.
+- flaw_id: flaw_003
+  location:
+    type: turn
+    references:
+    - turn_006
+  flaw_type: reasoning
+  source: knowledge_driven
+  severity: major
+  description: 'Dismissal of confounding variable through false distinction: Nadia
+    argues the salad bar cannot explain the change because it is passive while the
+    garden is hands-on, then reasserts correlation as proof.'
+  evidence: '"the salad bar is just food sitting there, right? That''s not the same
+    thing as literally planting a seed and watching it grow... The kids who worked
+    in the garden the most are the ones whose survey answers changed the most, so
+    that''s not a coincidence."'
+  explanation: Nadia dismisses the salad bar as a confound by drawing a qualitative
+    distinction (passive vs. active) that does not logically eliminate it as an alternative
+    explanation. A salad bar increasing vegetable access could independently shift
+    attitudes. She then repeats the correlation argument ('the ones who worked most
+    changed most') as if it settles the question, which is circular -- the correlation
+    is precisely what needs explaining, not what does the explaining. This combines
+    a missing-premise dismissal with circular reasoning. At 7th grade, students should
+    be able to see that dismissing an alternative explanation is not the same as ruling
+    it out.
+- flaw_id: flaw_004
+  location:
+    type: turn
+    references:
+    - turn_008
+  flaw_type: epistemic
+  source: knowledge_driven
+  severity: major
+  description: 'Dismissal of measurement validity concern: Nadia claims the differently
+    worded survey questions are ''both asking if you like vegetables'' and that the
+    trend overrides the wording problem.'
+  evidence: '"the questions aren''t that different -- they''re both asking if you
+    like vegetables. The second one just mentions the garden because that''s what
+    we were studying. And honestly the trend is super clear... so even if the wording
+    is slightly different, the pattern still holds up."'
+  explanation: 'The pre-survey asked ''do you like eating vegetables'' while the post-survey
+    asked ''do you enjoy trying fresh vegetables from the garden.'' These are meaningfully
+    different questions -- the post-survey is leading (mentions the garden, uses ''fresh,''
+    lowers commitment with ''enjoy trying'' vs. ''like eating''). Nadia''s claim that
+    they are essentially the same question reflects a blind spot on measurement validity.
+    The trend cannot ''hold up'' if the instrument changed, because you cannot tell
+    whether the shift reflects changed attitudes or changed questions. This is an
+    assumption-as-fact flaw: she assumes the questions measure the same thing without
+    evidence. A 7th grader comparing the two questions side by side should be able
+    to see they are not equivalent.'
+- flaw_id: flaw_005
+  location:
+    type: turn
+    references:
+    - turn_009
+  flaw_type: epistemic
+  source: knowledge_driven
+  severity: moderate
+  description: 'Unacknowledged uncertainty: Imani senses the wording difference matters
+    but cannot articulate why, and concedes the point without resolving it.'
+  evidence: '"I guess you''re right that they''re both about vegetables. I just feel
+    like ''enjoy trying'' something is different from ''like eating'' something, but
+    maybe it doesn''t really matter that much."'
+  explanation: Imani correctly observes that 'enjoy trying' and 'like eating' are
+    different, but her shallow understanding of survey methodology prevents her from
+    explaining why this invalidates the comparison. She frames a potentially devastating
+    methodological problem as a feeling ('I just feel like') rather than an argument,
+    leaving the uncertainty unacknowledged. At 7th grade, this is a moderate flaw
+    because the surface observation is accessible even if the deeper methodological
+    reasoning is not -- students can see that Imani had a valid point but let it go
+    without resolution.
+- flaw_id: flaw_006
+  location:
+    type: turn
+    references:
+    - turn_010
+  flaw_type: epistemic
+  source: knowledge_driven
+  severity: moderate
+  description: 'Overstating evidence: Mateo presents the combination of timeline,
+    survey numbers, and anecdotes as sufficient proof that ''the garden worked,''
+    treating narrative coherence as evidence.'
+  evidence: '"we''ve got the timeline, we''ve got the survey numbers, and we''ve got
+    real stories from kids who actually changed what they eat because of the garden...
+    here''s what we did, here''s what the data shows, here''s what students told us,
+    and boom, that''s our conclusion that the garden worked."'
+  explanation: Mateo treats three types of evidence (timeline, survey shift, anecdotes)
+    as collectively proving the garden caused dietary change. But the timeline only
+    shows sequence, the survey has unresolved methodological problems (confounds,
+    changed wording), and the anecdotes are self-selected. Arranging weak evidence
+    into a narrative structure does not make the conclusion stronger -- 'boom, that's
+    our conclusion' overstates what this evidence can support. He also says students
+    'actually changed what they eat' when the survey only measured self-reported attitudes,
+    not behavior. A 7th grader should notice that listing multiple pieces of weak
+    evidence does not equal one piece of strong evidence.
+- flaw_id: flaw_007
+  location:
+    type: turn
+    references:
+    - turn_012
+  flaw_type: reasoning
+  source: knowledge_driven
+  severity: moderate
+  description: 'Dismissal via intuitive argument: Nadia minimizes the salad bar confound
+    by asserting that salad bars do not change preferences, without evidence.'
+  evidence: '"you don''t just start liking vegetables because there''s a salad bar,
+    you know? If someone asks, we just say we know about it but the garden is where
+    the real connection happened."'
+  explanation: Nadia dismisses the salad bar as a plausible cause based on her intuition
+    that passive exposure does not change preferences. This is an unsupported assertion
+    -- increased access to vegetables through a salad bar could plausibly shift attitudes.
+    Her plan to 'just say we know about it' treats a genuine methodological limitation
+    as a presentation management issue rather than a threat to validity. The confounding
+    variable remains unresolved, and the reasoning for dismissing it is an appeal
+    to common sense rather than evidence.
+- flaw_id: flaw_008
+  location:
+    type: turn
+    references:
+    - turn_014
+  flaw_type: epistemic
+  source: knowledge_driven
+  severity: moderate
+  description: 'Assumption as fact: Imani endorses the ''before and after numbers''
+    as compelling evidence without acknowledging the wording problem she herself raised
+    earlier.'
+  evidence: '"I think people will really get it when they see the before and after
+    numbers."'
+  explanation: Imani previously identified that the pre-survey and post-survey asked
+    different questions, which means the 'before and after numbers' are not comparable.
+    By endorsing the numbers as persuasive without caveating her earlier concern,
+    she treats the survey comparison as a valid measure when she herself identified
+    a reason it might not be. This reflects her misconception that survey responses
+    directly measure behavior change -- she has defaulted to accepting the numbers
+    at face value.
+- flaw_id: flaw_009
+  location:
+    type: turn
+    references:
+    - turn_016
+  flaw_type: epistemic
+  source: knowledge_driven
+  severity: moderate
+  description: 'Overstating evidence: Nadia claims ''the data backs it up'' and calls
+    the garden ''what we have the strongest evidence for'' despite unresolved confounds
+    and measurement problems.'
+  evidence: '"the data backs it up, like the numbers are right there showing students
+    changed how they feel about vegetables after working in the garden. We can mention
+    the salad bar real quick... but the garden is what we have the strongest evidence
+    for."'
+  explanation: 'The group''s evidence has multiple unresolved problems: the salad
+    bar confound was acknowledged but not addressed, the survey questions were worded
+    differently, and the data shows correlation not causation. Calling this ''the
+    strongest evidence'' overstates what the data can support. Nadia also slips from
+    ''how they feel about vegetables'' to implying behavioral change, continuing the
+    unexamined assumption that attitude surveys measure eating habits.'
+- flaw_id: flaw_010
+  location:
+    type: cross_turn
+    references:
+    - turn_002
+    - turn_005
+    - turn_011
+    - turn_015
+  flaw_type: completeness
+  source: interaction_driven
+  severity: major
+  description: 'Abandonment: Ravi raises the salad bar confounding variable as a legitimate
+    methodological concern but progressively weakens and ultimately abandons it under
+    group pressure.'
+  evidence: 'Turn 2: ''how do we know the change was from the garden and not from
+    that?'' Turn 5: ''I''m just saying like, if the salad bar started at the same
+    time, we can''t really tell.'' Turn 11: ''should we at least mention that the
+    salad bar was also new?'' Turn 15: ''I still kinda think the salad bar thing is
+    more important than just a quick mention, but I get it... Let''s go with it.'''
+  explanation: 'Ravi''s concern is valid and important -- confounding variables undermine
+    the group''s causal claim. But across four turns, his framing degrades from a
+    methodological challenge (turn 2) to a presentational suggestion (turn 11) to
+    a concession (turn 15). Each time the group pushes back, he softens his language
+    and lowers his ask. By turn 15, a substantive methodological problem has been
+    reduced to ''I still kinda think.'' The confounding variable is never addressed
+    analytically -- only acknowledged as something to mention briefly. This is a classic
+    abandonment pattern: a valid line of reasoning dies not because it was refuted
+    but because the agent lacked the confidence to sustain it against social pressure.'
+- flaw_id: flaw_011
+  location:
+    type: cross_turn
+    references:
+    - turn_003
+    - turn_007
+    - turn_009
+    - turn_014
+  flaw_type: completeness
+  source: interaction_driven
+  severity: major
+  description: 'Abandonment: Imani raises the survey wording discrepancy but drops
+    it after one dismissal, and by turn 14 endorses the very comparison she questioned.'
+  evidence: 'Turn 3: ''the first one said "do you like eating vegetables" and the
+    second one said something about "enjoy trying fresh vegetables from the garden."
+    So I don''t know, maybe that matters?'' Turn 7: ''we''re still comparing answers
+    to two different questions.'' Turn 9: ''maybe it doesn''t really matter that much.
+    Anyway yeah the trend does look pretty clear so let''s keep going.'' Turn 14:
+    ''I think people will really get it when they see the before and after numbers.'''
+  explanation: Imani identifies a genuine measurement validity problem -- the pre-survey
+    and post-survey asked different questions, making the comparison invalid. She
+    reasserts it once in turn 7 but capitulates in turn 9 after Nadia's dismissal.
+    By turn 14, she actively endorses the before/after comparison as compelling. The
+    wording discrepancy is never resolved; it is simply dropped. This is an abandonment
+    pattern driven by Imani's restrained disposition and moderate confidence interacting
+    with Nadia's high-confidence dismissal. A critical piece of methodological evidence
+    is lost to group dynamics.
+- flaw_id: flaw_012
+  location:
+    type: cross_turn
+    references:
+    - turn_004
+    - turn_010
+    - turn_013
+    - turn_017
+  flaw_type: coherence
+  source: interaction_driven
+  severity: moderate
+  description: 'Narrative redirection as deflection: Mateo consistently redirects
+    the discussion away from methodological concerns and toward a narrative arc about
+    the garden''s success.'
+  evidence: 'Turn 4: ''I literally watched kids get excited... the garden worked.''
+    Turn 10: ''we''re in a really good spot... here''s what we did, here''s what the
+    data shows... boom, that''s our conclusion.'' Turn 13: ''our whole presentation
+    is really about the garden journey... That''s the story.'' Turn 17: ''I''ll put
+    together the timeline... Nadia, you hit them with the survey numbers.'''
+  explanation: 'Each time the group begins to engage with a methodological concern
+    (confounding variables in turns 2-3, survey wording in turns 7-8), Mateo reframes
+    the conversation around the project narrative -- the timeline, student excitement,
+    the showcase presentation. This is not direct dismissal but deflection through
+    redirection: he shifts the group''s focus from ''is our evidence valid?'' to ''how
+    do we tell the story?'' The result is a conclusion that follows narratively but
+    not logically from the evidence. Mateo''s blind spot on the difference between
+    a compelling narrative and a supported conclusion drives this pattern, but its
+    effect is amplified by group dynamics -- his enthusiasm gives the group an off-ramp
+    from uncomfortable methodological questions.'
+- flaw_id: flaw_013
+  location:
+    type: cross_turn
+    references:
+    - turn_001
+    - turn_006
+    - turn_008
+    - turn_012
+  flaw_type: reasoning
+  source: interaction_driven
+  severity: major
+  description: 'Escalation: Nadia defends her causal misconception with increasing
+    certainty across the discussion, dismissing both the confounding variable and
+    measurement validity challenges rather than engaging with them.'
+  evidence: 'Turn 1: ''you''re obviously gonna want to eat it.'' Turn 6: ''that''s
+    not a coincidence. Like, the connection is right there in the data.'' Turn 8:
+    ''the trend is super clear... the pattern still holds up.'' Turn 12: ''it''s pretty
+    obvious the garden is what actually changed things.'''
+  explanation: 'Nadia''s causal claim does not evolve in response to two legitimate
+    challenges (the salad bar confound from Ravi, the wording problem from Imani).
+    Instead, her language becomes more absolute: from ''obviously'' (turn 1) to ''not
+    a coincidence'' and ''right there in the data'' (turn 6) to ''super clear'' and
+    ''still holds up'' (turn 8) to ''pretty obvious'' and ''what actually changed
+    things'' (turn 12). Each challenge produces a more forceful reassertion rather
+    than engagement. This is the causal misconception defense pattern described in
+    the flaw glossary: the initial epistemic error (wrong causal belief) generates
+    reasoning flaws (circular reasoning, dismissal of counter-evidence) when defended
+    under pressure.'
+- flaw_id: flaw_014
+  location:
+    type: cross_turn
+    references:
+    - turn_013
+    - turn_014
+    - turn_015
+    - turn_016
+    - turn_017
+  flaw_type: coherence
+  source: interaction_driven
+  severity: major
+  description: 'Superficial consensus: The group agrees on a conclusion (''the garden
+    worked'') without resolving the methodological concerns raised during working_through
+    -- the salad bar confound, the survey wording discrepancy, and the gap between
+    self-reported attitudes and actual behavior.'
+  evidence: 'Turn 13: ''That''s the story, and I think when people at the showcase
+    hear it laid out like that, they''re gonna totally get why we''re saying the garden
+    worked.'' Turn 14: ''Yeah, that sounds good to me.'' Turn 15: ''Okay cool, yeah,
+    I''m good with that.'' Turn 16: ''the data backs it up.'' Turn 17: ''Okay awesome,
+    we''re locked in!'''
+  explanation: 'The converging stage produces agreement, but the agreement is superficial
+    -- it does not resolve the substantive disagreements from working_through. Three
+    problems were raised: (1) the salad bar as a confounding variable, reduced to
+    a ''quick mention''; (2) the survey wording change, dropped entirely; (3) the
+    implicit assumption that self-reported attitudes equal behavior change, never
+    examined. The group converges on a narrative strategy (''tell the garden story'')
+    rather than an analytical conclusion. Each member expresses agreement, but the
+    underlying issues remain -- Ravi even says ''I still kinda think the salad bar
+    thing is more important'' in the same breath as agreeing. This is textbook superficial
+    consensus: surface harmony masking unresolved contradictions.'
+- flaw_id: flaw_015
+  location:
+    type: cross_turn
+    references:
+    - turn_001
+    - turn_004
+    - turn_006
+    - turn_010
+    - turn_014
+    - turn_016
+  flaw_type: epistemic
+  source: knowledge_driven
+  severity: moderate
+  description: 'Assumption as fact: The group collectively treats self-reported survey
+    attitudes (''students said they like vegetables more'') as equivalent to actual
+    behavior change (''students eat healthier''), without ever examining this assumption.'
+  evidence: 'Turn 1: ''way fewer students said they liked vegetables compared to the
+    post-survey.'' Turn 4: ''real stories from kids who actually changed what they
+    eat.'' Turn 10: ''we''ve got real stories from kids who actually changed what
+    they eat because of the garden.'' Turn 16: ''the numbers are right there showing
+    students changed how they feel about vegetables.'''
+  explanation: The driving question is whether the garden made students eat healthier,
+    but the survey only measured self-reported attitudes about vegetables. Saying
+    you like vegetables is not the same as eating them. This gap is never acknowledged
+    by any group member. Mateo explicitly slides from attitudes to behavior ('actually
+    changed what they eat') without evidence of behavioral data. The assumption that
+    survey responses equal behavior is shared across the group and never examined,
+    making it a collective epistemic flaw. At 7th grade, students should be able to
+    recognize the difference between 'said they like vegetables more' and 'actually
+    ate more vegetables.'
+summary:
+  total_flaws: 15
+  by_type:
+    reasoning: 4
+    epistemic: 6
+    completeness: 2
+    coherence: 3
+  by_source:
+    knowledge_driven: 9
+    interaction_driven: 6
+  by_severity:
+    minor: 0
+    moderate: 7
+    major: 8
+  key_patterns: 'The discussion''s central weakness is that two valid methodological
+    challenges -- Ravi''s confounding variable concern and Imani''s survey wording
+    observation -- are raised during working_through but systematically abandoned
+    through a combination of Nadia''s escalating dismissals and Mateo''s narrative
+    redirection. The converging stage produces superficial consensus around a ''garden
+    success story'' that papers over all three unresolved problems (confounding variables,
+    measurement validity, and the attitude-behavior gap). Nadia''s causal misconception
+    is the engine of the discussion''s reasoning failures: rather than engaging with
+    counter-evidence, she defends her position with increasing certainty, producing
+    circular reasoning and missing-premise dismissals that go unchallenged as the
+    group prioritizes harmony and narrative coherence over analytical rigor.'

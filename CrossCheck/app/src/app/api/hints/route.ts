@@ -3,7 +3,6 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getIO } from "@/lib/socket-server";
 import { computeRecognizeHint, computeExplainHint, computeLocateHint, findLocateHintTarget } from "@/lib/hints";
-import { isFalsePositive } from "@/lib/false-positives";
 import { buildSectionToTurnMap } from "@/lib/transcript";
 import type { FlawType, FlawIndexEntry, Transcript } from "@/lib/types";
 
@@ -26,7 +25,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  if (!["recognize", "explain", "locate"].includes(stage)) {
+  if (!["recognize", "explain", "collaborate", "locate"].includes(stage)) {
     return NextResponse.json({ error: "Invalid stage" }, { status: 400 });
   }
 
@@ -72,9 +71,13 @@ export async function POST(request: NextRequest) {
   let hintResult: Record<string, unknown> | null = null;
 
   if (stage === "recognize") {
+    if (!flaw) {
+      return NextResponse.json({ error: "No flaw for this turn" }, { status: 400 });
+    }
+
     // Reconstruct eliminated choices by replaying hint computation
     const eliminated: FlawType[] = [];
-    const correctType = flaw ? (flaw.flaw_type as FlawType) : null;
+    const correctType = flaw.flaw_type as FlawType;
     for (let i = 0; i < currentLevel; i++) {
       const result = computeRecognizeHint(correctType, i, eliminated);
       if (result) eliminated.push(result.eliminatedChoice);
@@ -94,6 +97,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No flaw for this turn in explain" }, { status: 400 });
     }
 
+    const result = computeExplainHint(flaw.flaw_type as FlawType, currentLevel);
+    if (!result) {
+      return NextResponse.json({ error: "No more hints available" }, { status: 400 });
+    }
+
+    hintResult = { ...result };
+  } else if (stage === "collaborate") {
+    if (!flaw) {
+      return NextResponse.json({ error: "No flaw for this turn in collaborate" }, { status: 400 });
+    }
+
+    // Collaborate uses the same hint logic as Explain (type reveal + template)
     const result = computeExplainHint(flaw.flaw_type as FlawType, currentLevel);
     if (!result) {
       return NextResponse.json({ error: "No more hints available" }, { status: 400 });

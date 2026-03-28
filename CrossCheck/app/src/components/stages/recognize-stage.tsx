@@ -3,7 +3,6 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
 import type { FlawType, TranscriptTurn, FlawIndexEntry } from "@/lib/types";
 import { FLAW_TYPES, HINT_UNLOCK_DELAY } from "@/lib/types";
-import { selectFalsePositives, isFalsePositive } from "@/lib/false-positives";
 import { HintButton } from "@/components/shared/hint-button";
 
 // --- Types ---
@@ -12,7 +11,6 @@ interface TurnState {
   answered: boolean;
   correct: boolean;
   hintsUsed: number;
-  productiveFailure: boolean;
   selectedType: FlawType | null;
   eliminatedChoices: FlawType[];
 }
@@ -60,17 +58,14 @@ export function RecognizeStage({
   existingHints = [],
   onComplete,
 }: RecognizeStageProps) {
-  // Build the turn sequence: flawed turns + selected false positives
+  // Build the turn sequence: only flawed turns, in transcript order
   const turnSequence = useMemo(() => {
-    const falsePositiveIds = selectFalsePositives(sessionId, groupId, turns, flawIndex);
     const flawedTurnIds = new Set<string>();
     for (const flaw of flawIndex) {
       for (const loc of flaw.locations) flawedTurnIds.add(loc);
     }
-
-    // Include all flawed turns + selected false positive turns, in transcript order
-    return turns.filter((t) => flawedTurnIds.has(t.id) || falsePositiveIds.includes(t.id));
-  }, [turns, flawIndex, sessionId, groupId]);
+    return turns.filter((t) => flawedTurnIds.has(t.id));
+  }, [turns, flawIndex]);
 
   // Build initial state from existing responses + hints
   const initialTurnStates = useMemo(() => {
@@ -82,7 +77,6 @@ export function RecognizeStage({
         answered: false,
         correct: false,
         hintsUsed: 0,
-        productiveFailure: false,
         selectedType: null,
         eliminatedChoices: [],
       });
@@ -104,14 +98,13 @@ export function RecognizeStage({
     }
 
     for (const resp of existingResponses) {
-      const turnId = flawToTurn.get(resp.flawId) || resp.flawId.replace("fp_", "");
+      const turnId = flawToTurn.get(resp.flawId) || resp.flawId;
       const state = states.get(turnId);
       if (state) {
         state.answered = true;
         state.correct = resp.typeCorrect;
         state.selectedType = resp.typeAnswer as FlawType;
         state.hintsUsed = resp.hintLevel || hintsByTurn.get(turnId) || 0;
-        state.productiveFailure = !resp.typeCorrect && isFalsePositive(turnId, flawIndex);
       }
     }
 
@@ -125,12 +118,11 @@ export function RecognizeStage({
   const [currentIndex, setCurrentIndex] = useState(firstUnanswered >= 0 ? firstUnanswered : turnSequence.length - 1);
 
   const [showingFeedback, setShowingFeedback] = useState(false);
-  const [feedbackMessage, setFeedbackMessage] = useState<{ type: "correct" | "wrong" | "productive_failure"; text: string } | null>(null);
+  const [feedbackMessage, setFeedbackMessage] = useState<{ type: "correct" | "wrong"; text: string } | null>(null);
   const [hintLoading, setHintLoading] = useState(false);
 
   const currentTurn = turnSequence[currentIndex];
   const currentState = currentTurn ? turnStates.get(currentTurn.id) : undefined;
-  const isNonFlawed = currentTurn ? isFalsePositive(currentTurn.id, flawIndex) : false;
 
   // Find the correct flaw type for the current turn
   const currentFlaw = useMemo(() => {
@@ -147,35 +139,28 @@ export function RecognizeStage({
   // --- Handlers ---
 
   const handleSelectType = useCallback(async (type: FlawType) => {
-    if (!currentTurn || currentState?.answered || showingFeedback) return;
+    if (!currentTurn || !currentFlaw || currentState?.answered || showingFeedback) return;
 
-    const isCorrect = currentFlaw ? currentFlaw.flaw_type === type : false;
-    const isProductiveFailure = isNonFlawed; // Any selection on a non-flawed turn
+    const isCorrect = currentFlaw.flaw_type === type;
 
     setShowingFeedback(true);
 
     if (isCorrect) {
       setFeedbackMessage({ type: "correct", text: "Correct!" });
-    } else if (isProductiveFailure) {
-      setFeedbackMessage({
-        type: "productive_failure",
-        text: "This turn is actually fine — not every statement has a problem. Knowing when something isn't flawed is part of critical thinking.",
-      });
     } else {
-      setFeedbackMessage({ type: "wrong", text: `Not quite. The correct answer is ${FLAW_TYPES[currentFlaw!.flaw_type as FlawType].label}.` });
+      setFeedbackMessage({ type: "wrong", text: `Not quite. The correct answer is ${FLAW_TYPES[currentFlaw.flaw_type as FlawType].label}.` });
     }
 
     // Save response to API
-    const flawId = currentFlaw?.flaw_id || `fp_${currentTurn.id}`;
     try {
       await fetch("/api/flaw-responses", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           groupId,
-          flawId,
+          flawId: currentFlaw.flaw_id,
           typeAnswer: type,
-          correctType: currentFlaw?.flaw_type || "no_flaw",
+          correctType: currentFlaw.flaw_type,
           hintLevel: currentState?.hintsUsed || 0,
           stage: "recognize",
         }),
@@ -192,11 +177,10 @@ export function RecognizeStage({
         answered: true,
         correct: isCorrect,
         selectedType: type,
-        productiveFailure: isProductiveFailure,
       });
       return next;
     });
-  }, [currentTurn, currentState, currentFlaw, isNonFlawed, showingFeedback, groupId]);
+  }, [currentTurn, currentState, currentFlaw, showingFeedback, groupId]);
 
   const handleNext = useCallback(() => {
     setShowingFeedback(false);
@@ -293,7 +277,7 @@ export function RecognizeStage({
       <div className="mb-6">
         <h2 className="text-lg font-bold text-gray-900">Recognize</h2>
         <p className="text-sm text-gray-500 mt-1">
-          Read each turn and identify the type of critical thinking flaw — or discover there isn&apos;t one.
+          Read each turn and identify the type of critical thinking flaw.
         </p>
       </div>
 
@@ -332,7 +316,7 @@ export function RecognizeStage({
         </div>
       )}
 
-      {/* Flaw type buttons (no "No flaw" — productive failure handles this) */}
+      {/* Flaw type buttons */}
       {!currentState?.answered && !showingFeedback && (
         <div className="space-y-2 mb-4">
           <p className="text-xs font-medium text-gray-500 mb-2">What type of problem is this?</p>
@@ -366,17 +350,11 @@ export function RecognizeStage({
           className={`rounded-xl p-4 mb-4 ${
             feedbackMessage.type === "correct"
               ? "bg-green-50 border border-green-200 text-green-800"
-              : feedbackMessage.type === "productive_failure"
-                ? "bg-amber-50 border border-amber-200 text-amber-800 animate-warm-glow"
-                : "bg-red-50 border border-red-200 text-red-800"
+              : "bg-red-50 border border-red-200 text-red-800"
           }`}
         >
           <p className="text-sm font-medium mb-1">
-            {feedbackMessage.type === "correct"
-              ? "✓ Correct!"
-              : feedbackMessage.type === "productive_failure"
-                ? "💡 Good engagement"
-                : "✗ Not quite"}
+            {feedbackMessage.type === "correct" ? "✓ Correct!" : "✗ Not quite"}
           </p>
           <p className="text-sm leading-relaxed">{feedbackMessage.text}</p>
         </div>

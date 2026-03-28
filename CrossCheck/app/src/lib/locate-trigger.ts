@@ -1,7 +1,7 @@
 /**
  * Locate stage trigger logic.
  *
- * After Explain completes, determines whether the Locate stage should activate
+ * After Collaborate completes, determines whether the Locate stage should activate
  * and which flaws are its targets.
  */
 
@@ -13,7 +13,7 @@ interface RecognizeResponse {
   typeCorrect: boolean;
 }
 
-interface ExplainGroupSelection {
+interface CollaborateGroupSelection {
   flawId: string;
   typeAnswer: string;
 }
@@ -30,17 +30,19 @@ export interface LocateTarget {
  *
  * A flaw is "missed" if:
  * 1. No student selected the correct type in Recognize, AND
- * 2. The group did not select the correct type in Explain
+ * 2. The group did not select the correct type in Collaborate
+ *
+ * Explain (teach back) doesn't affect Locate targeting — it has no type selection step.
  *
  * @param flawIndex - Reference flaw index
  * @param recognizeResponses - All students' Recognize responses
- * @param explainGroupSelections - Group's Step 1 selections in Explain (may be empty for flaws not shown in Explain)
+ * @param collaborateGroupSelections - Group's type selections in Collaborate
  * @returns Array of LocateTargets. Empty array means Locate should be skipped.
  */
 export function getLocateTargets(
   flawIndex: FlawIndexEntry[],
   recognizeResponses: RecognizeResponse[],
-  explainGroupSelections: ExplainGroupSelection[]
+  collaborateGroupSelections: CollaborateGroupSelection[]
 ): LocateTarget[] {
   const targets: LocateTarget[] = [];
 
@@ -52,9 +54,9 @@ export function getLocateTargets(
     recognizeByFlaw.set(resp.flawId, existing);
   }
 
-  const explainByFlaw = new Map<string, ExplainGroupSelection>();
-  for (const sel of explainGroupSelections) {
-    explainByFlaw.set(sel.flawId, sel);
+  const collaborateByFlaw = new Map<string, CollaborateGroupSelection>();
+  for (const sel of collaborateGroupSelections) {
+    collaborateByFlaw.set(sel.flawId, sel);
   }
 
   for (const flaw of flawIndex) {
@@ -64,10 +66,10 @@ export function getLocateTargets(
 
     if (anyCorrectInRecognize) continue; // Caught in Recognize — not a Locate target
 
-    // Check 2: Did the group get it right in Explain?
-    const explainSelection = explainByFlaw.get(flaw.flaw_id);
-    if (explainSelection && explainSelection.typeAnswer === flaw.flaw_type) {
-      continue; // Corrected in Explain — not a Locate target
+    // Check 2: Did the group get it right in Collaborate?
+    const collaborateSelection = collaborateByFlaw.get(flaw.flaw_id);
+    if (collaborateSelection && collaborateSelection.typeAnswer === flaw.flaw_type) {
+      continue; // Corrected in Collaborate — not a Locate target
     }
 
     // Missed — this is a Locate target
@@ -88,7 +90,7 @@ export function getLocateTargets(
 export function shouldTriggerLocate(
   flawIndex: FlawIndexEntry[],
   recognizeResponses: RecognizeResponse[],
-  explainGroupSelections: ExplainGroupSelection[]
+  collaborateGroupSelections: CollaborateGroupSelection[]
 ): boolean {
-  return getLocateTargets(flawIndex, recognizeResponses, explainGroupSelections).length > 0;
+  return getLocateTargets(flawIndex, recognizeResponses, collaborateGroupSelections).length > 0;
 }

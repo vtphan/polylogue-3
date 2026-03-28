@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getIO } from "@/lib/socket-server";
+import { computeRecognizeCoins, computeCollaborateCoins } from "@/lib/coins";
 
 const VALID_FLAW_TYPES = ["reasoning", "epistemic", "completeness", "coherence", "no_flaw"];
 
@@ -78,6 +79,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ id: crypto.randomUUID(), flawId, typeAnswer, typeCorrect }, { status: 201 });
   }
 
+  // Compute coins based on stage
+  let coins = 0;
+  if (stage === "recognize") {
+    coins = computeRecognizeCoins(typeCorrect, hintLevel ?? 0);
+  } else if (stage === "collaborate") {
+    coins = computeCollaborateCoins("correct_selection", hintLevel ?? 0);
+    if (!typeCorrect) coins = 0; // Only award coins for correct selections
+  }
+
   const response = await prisma.flawResponse.create({
     data: {
       groupId,
@@ -89,6 +99,7 @@ export async function POST(request: NextRequest) {
       reasonCorrect,
       hintLevel: hintLevel ?? 0,
       stage: stage ?? null,
+      coins,
     },
   });
 
@@ -109,8 +120,20 @@ export async function POST(request: NextRequest) {
           flawId,
           typeAnswer,
           typeCorrect,
+          coins,
         },
       });
+
+      // Emit coins:awarded event for student UI
+      if (coins > 0) {
+        io.to(`group:${groupId}`).emit("coins:awarded", {
+          groupId,
+          userId: session.user.id,
+          coins,
+          stage,
+          action: stage === "recognize" ? "flaw_response" : "group_selection",
+        });
+      }
     }
   }
 

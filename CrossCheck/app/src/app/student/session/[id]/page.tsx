@@ -14,7 +14,7 @@ import { WaitingScreen } from "@/components/stages/waiting-screen";
 import { ModeChangeListener } from "./mode-change-listener";
 import { computeMatches } from "@/lib/matching";
 import { extractTurns } from "@/lib/transcript";
-import { selectExplainTurns } from "@/lib/turn-selection";
+import { selectExplainTurns, selectCollaborateTurns } from "@/lib/turn-selection";
 import { getLocateTargets } from "@/lib/locate-trigger";
 import type {
   Agent,
@@ -171,31 +171,42 @@ export default async function StudentSessionPage({ params }: PageProps) {
         hintLevel: h.hintLevel,
       }));
 
-    // Explain stage data
-    const explainGroupSelections = group.flawResponses
-      .filter((r) => r.stage === "explain")
-      .map((r) => ({
-        turnId: r.flawId, // flawId maps to turnId via flawIndex
-        flawId: r.flawId,
-        typeAnswer: r.typeAnswer,
-      }));
-
+    // Explain stage data (teach back — unanimously correct turns)
     const explainHints = group.hintUsages
       .filter((h) => h.stage === "explain")
       .map((h) => ({ turnId: h.turnId, hintLevel: h.hintLevel }));
 
-    const existingExplanations = group.explanations.map((e) => ({
+    const allExplanations = group.explanations.map((e) => ({
       id: e.id,
       turnId: e.turnId,
       authorId: e.authorId,
       authorName: e.author.displayName,
       text: e.text,
+      stage: (e as { stage?: string | null }).stage || undefined,
       revisionOf: e.revisionOf || undefined,
       createdAt: e.createdAt.toISOString(),
     }));
 
-    // Compute explain turns (which turns need discussion)
+    // Split explanations by stage (null/undefined/"explain" = explain, "collaborate" = collaborate)
+    const explainExplanations = allExplanations.filter((e) => e.stage === "explain" || !e.stage);
+    const collaborateExplanations = allExplanations.filter((e) => e.stage === "collaborate");
+
+    // Collaborate stage data (team building — any-error turns)
+    const collaborateGroupSelections = group.flawResponses
+      .filter((r) => r.stage === "collaborate")
+      .map((r) => ({
+        turnId: r.flawId,
+        flawId: r.flawId,
+        typeAnswer: r.typeAnswer,
+      }));
+
+    const collaborateHints = group.hintUsages
+      .filter((h) => h.stage === "collaborate")
+      .map((h) => ({ turnId: h.turnId, hintLevel: h.hintLevel }));
+
+    // Compute turn sets
     const explainTurns = selectExplainTurns(allTurns, flawIndex, allRecognizeResponses);
+    const collaborateTurns = selectCollaborateTurns(allTurns, flawIndex, allRecognizeResponses);
 
     const groupMembersList = group.members.map((m) => ({
       id: m.user.id,
@@ -242,11 +253,13 @@ export default async function StudentSessionPage({ params }: PageProps) {
           <span className={`text-xs px-2 py-0.5 rounded font-medium ${
             groupStage === "results" ? "bg-purple-100 text-purple-700"
               : groupStage === "locate" ? "bg-orange-100 text-orange-700"
+              : groupStage === "collaborate" ? "bg-teal-100 text-teal-700"
               : groupStage === "explain" ? "bg-amber-100 text-amber-700"
               : "bg-blue-100 text-blue-700"
           }`}>
             {groupStage === "recognize" ? "Recognize (individual)"
               : groupStage === "explain" ? "Explain (group)"
+              : groupStage === "collaborate" ? "Collaborate (group)"
               : groupStage === "locate" ? "Locate (group)"
               : "Results"}
           </span>
@@ -279,7 +292,7 @@ export default async function StudentSessionPage({ params }: PageProps) {
                   turnId: r.flawId,
                   correct: r.typeCorrect,
                   hintsUsed: r.hintLevel || 0,
-                  productiveFailure: !r.typeCorrect && r.typeAnswer !== r.flawId,
+                  productiveFailure: false, // legacy field — false positives removed
                 })),
                 summary: {
                   total: responses.length,
@@ -290,10 +303,9 @@ export default async function StudentSessionPage({ params }: PageProps) {
               };
             });
 
-            // Explain results
+            // Explain results (teach back — unanimously correct turns)
             const explainResultsData = explainTurns.map((turn) => {
-              const groupSel = explainGroupSelections.find((s) => s.flawId === turn.flawId);
-              const turnExplanations = existingExplanations
+              const turnExplanations = explainExplanations
                 .filter((e) => e.turnId === turn.id)
                 .map((e) => ({
                   authorId: e.authorId,
@@ -307,6 +319,30 @@ export default async function StudentSessionPage({ params }: PageProps) {
                 speaker: turn.speaker,
                 content: turn.content,
                 correctType: turn.correctFlawType,
+                groupTypeAnswer: turn.correctFlawType, // always correct in Explain
+                explanations: turnExplanations,
+                hintsUsed: turnHints.length > 0 ? Math.max(...turnHints.map((h) => h.hintLevel)) : 0,
+                hasDisagreement: false, // no disagreement in Explain (all correct)
+              };
+            });
+
+            // Collaborate results (team building — any-error turns)
+            const collaborateResultsData = collaborateTurns.map((turn) => {
+              const groupSel = collaborateGroupSelections.find((s) => s.flawId === turn.flawId);
+              const turnExplanations = collaborateExplanations
+                .filter((e) => e.turnId === turn.id)
+                .map((e) => ({
+                  authorId: e.authorId,
+                  authorName: e.authorName,
+                  text: e.text,
+                }));
+              const turnHints = collaborateHints.filter((h) => h.turnId === turn.id);
+
+              return {
+                turnId: turn.id,
+                speaker: turn.speaker,
+                content: turn.content,
+                correctType: turn.correctFlawType,
                 groupTypeAnswer: groupSel?.typeAnswer || "",
                 explanations: turnExplanations,
                 hintsUsed: turnHints.length > 0 ? Math.max(...turnHints.map((h) => h.hintLevel)) : 0,
@@ -314,8 +350,8 @@ export default async function StudentSessionPage({ params }: PageProps) {
               };
             });
 
-            // Locate results
-            const locateTargetsData = getLocateTargets(flawIndex, allRecognizeResponses, explainGroupSelections);
+            // Locate results — uses Collaborate selections (not Explain)
+            const locateTargetsData = getLocateTargets(flawIndex, allRecognizeResponses, collaborateGroupSelections);
             const locateAnnotations = group.annotations
               .filter((a) => a.hintLevel > 0 || group.stage === "results")
               .map((a) => ({
@@ -381,13 +417,13 @@ export default async function StudentSessionPage({ params }: PageProps) {
             explainTurns={explainTurns}
             flawIndex={flawIndex}
             groupMembers={groupMembersList}
-            existingGroupSelections={explainGroupSelections}
-            existingExplanations={existingExplanations}
+            existingGroupSelections={[]}
+            existingExplanations={explainExplanations}
             existingHints={explainHints}
           />
         ) : groupStage === "locate" ? (
           (() => {
-            const locateTargetsData = getLocateTargets(flawIndex, allRecognizeResponses, explainGroupSelections);
+            const locateTargetsData = getLocateTargets(flawIndex, allRecognizeResponses, collaborateGroupSelections);
             const locateAnnotations = group.annotations
               .filter((a) => a.hintLevel !== undefined)
               .map((a) => ({
