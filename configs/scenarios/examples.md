@@ -110,6 +110,30 @@ Students now evaluate whether claims are supported by evidence. Harder than Leve
 
 **What students should catch:** 12 students for 3 weeks is too small and too short to prove anything. Self-reported eating habits are unreliable. The test score claim comes from a news article, not their study — and correlation doesn't prove the garden caused higher scores. "Our study proves" language overstates what the data supports.
 
+### Level 2.5a: Transition — "Did They Forget to Check?"
+
+**Format:** Discussion. **Target flaws:** Completeness (primary), reasoning (secondary).
+
+Students already know how to spot omissions from Level 1. Now they do it in a conversation instead of a presentation. The new skill is noticing omissions as they happen in real-time dialogue rather than in a finished product.
+
+```
+/create_scenario "What should we grow in our school garden to have the biggest impact on the school cafeteria?" discussion --grade 6 --context "6th grade STEM PBL. A group of 4 students is deciding what to plant in their school garden. One student wants tomatoes because they're easy to grow. Another wants herbs because the cafeteria manager said she'd use them. A third wants flowers to make the garden look nice. They are excited and quickly agreeing on a plan that includes all three, but no one has checked how much space they have, what grows well in Memphis's climate and soil in the planting season they're targeting, or how much the cafeteria actually needs. They're likely to commit to a planting plan that sounds good but hasn't been reality-checked." --flaws completeness,reasoning
+```
+
+**What students should catch:** The group picks crops without checking growing season, space, or soil. "Tomatoes are easy" is asserted but not verified for their conditions. They include flowers even though the goal is cafeteria impact. The group's enthusiasm leads them to agree fast without anyone asking practical feasibility questions.
+
+### Level 2.5b: Transition — "Did That Actually Prove Anything?"
+
+**Format:** Discussion. **Target flaws:** Reasoning (primary), epistemic (secondary).
+
+Students practiced evaluating evidence quality in Level 2. Now they hear a bad causal claim get accepted in conversation. The new skill is catching flawed reasoning in dialogue — but unlike Level 4, the group dynamic is simple (no social pressure, no one backing down), so students only need to evaluate the argument, not the interpersonal dynamics.
+
+```
+/create_scenario "Did our school garden actually make students eat healthier this semester?" discussion --grade 7 --context "7th grade STEM PBL. A group of 4 students is reviewing whether their school garden project changed eating habits. They gave a survey at the start and end of the semester. More students said they 'like vegetables' in the second survey. One student concludes the garden worked. Another points out that the cafeteria also started a new salad bar mid-semester, but the group dismisses this quickly — 'the garden is what we worked on, so that's probably what made the difference.' A third student notices the survey questions were worded differently each time but isn't sure if that matters. They are heading toward claiming the garden improved eating habits based on the survey shift alone." --flaws reasoning,epistemic
+```
+
+**What students should catch:** The group attributes the survey change to the garden while ignoring the confounding variable (new salad bar). The changed survey wording undermines comparison. "We worked on the garden, so the garden caused it" is a textbook post hoc fallacy — but no one is being pressured or shouted down, they just don't notice the logic gap.
+
 ### Level 3: Intermediate — "Do the Pieces Fit Together?"
 
 **Format:** Discussion. **Target flaws:** Coherence (primary), epistemic (secondary).
@@ -142,10 +166,12 @@ Students must detect flaws in reasoning *and* notice how group dynamics amplify 
 |-------|--------|----------------------|------------------|
 | 1. Warm-Up | Presentation | Noticing what's missing | Low — "did they forget X?" |
 | 2. Building Up | Presentation | Evaluating evidence quality | Medium — "is this actually proven?" |
+| 2.5a. Transition | Discussion | Spotting omissions in live conversation | Medium — familiar flaw type, new format |
+| 2.5b. Transition | Discussion | Catching flawed reasoning in dialogue | Medium — familiar flaw type, new format |
 | 3. Intermediate | Discussion | Comparing claims across speakers | Medium-high — "do these pieces fit?" |
 | 4. Challenge | Discussion | Tracking reasoning + group dynamics | High — "why did the group accept a bad argument?" |
 
-Teachers can use all four in sequence over a unit, or pick the level that matches their class. Level 1 works as a standalone warm-up activity. Levels 3-4 work best after students have practiced with presentations first.
+Teachers can use all six in sequence over a unit, or pick the level that matches their class. Level 1 works as a standalone warm-up activity. At the 2.5 transition, teachers choose based on how the class handled Level 2: use 2.5a if students need a gentler on-ramp (familiar flaw type, just new format), 2.5b if they're ready for a slight analytical step up, or both in sequence. Levels 3–4 work best after students have practiced with at least one discussion-format scenario.
 
 ---
 

@@ -1,0 +1,206 @@
+scenario_id: school-garden-design
+grade_band: "7"
+created_at: "2026-03-28T00:00:00Z"
+
+topic:
+  driving_question: "What type of school garden would work best for our school — raised beds, a greenhouse, or a community plot?"
+  domain: "Environmental Science / Design & Engineering"
+  description: >
+    A group of 7th graders is comparing three garden designs — raised beds, a greenhouse, and a
+    community plot with a local partner — and must recommend one for their school. Each student
+    researched a different option and brings different assumptions about budget, goals, and
+    feasibility. They have not aligned on basic constraints like budget, creating conditions for
+    a recommendation that sounds unified but rests on unresolved contradictions.
+
+context:
+  level: specific
+  description: >
+    7th grade STEM PBL. A group of 4 students is debating which garden design to recommend. One
+    student researched raised beds and thinks they're best because they're cheap. Another
+    researched greenhouses and believes year-round growing is essential. A third visited a
+    community garden and wants to partner with a local organization. A fourth is trying to
+    synthesize but doesn't fully understand the tradeoffs between the options. They have different
+    assumptions about the budget (one thinks $500, another thinks $5000) but haven't noticed
+    this disagreement. They are likely to agree on a plan without resolving the budget conflict.
+
+activity: discussion
+
+agents:
+  - name: Dante
+    role: Raised Bed Researcher
+    knowledge_focus: >
+      Dante researched raised beds online and found several DIY tutorials. He is confident
+      raised beds are the cheapest option because he believes they require less soil than
+      in-ground gardens — a causal misconception, since raised beds actually require purchasing
+      soil mix rather than using existing ground soil, often making them more expensive per
+      square foot. He knows basic construction steps (lumber, hardware, assembly) but has not
+      looked into soil costs, drainage requirements, or how long raised beds last before needing
+      replacement. He assumes the total budget is around $500 and has not checked this figure
+      with anyone.
+    disposition_sketch: >
+      Assertive and practical-sounding. Speaks in concrete terms about materials and steps,
+      which makes his claims sound well-researched even when they rest on a faulty cost assumption.
+    expected_flaws:
+      - flaw: "Causal misconception — raised beds are cheaper because they use less soil"
+        flaw_type: reasoning
+        mechanism: >
+          Dante believes raised beds cost less because they use less soil than in-ground
+          planting. In reality, raised beds require purchased soil mix (topsoil, compost,
+          amendments) while in-ground gardens use existing soil. When Priya or Lucia challenge
+          his cost claims, he will defend this causal chain, producing circular reasoning
+          ("they're cheaper because you need less material, and you need less material because
+          they're raised") and missing-premise arguments.
+      - flaw: "Assumption as fact — $500 budget"
+        flaw_type: epistemic
+        mechanism: >
+          Dante treats $500 as the established budget without citing a source. He builds his
+          entire cost argument around this figure, presenting it as a constraint everyone shares
+          when it is actually his own assumption. This becomes a coherence time-bomb when Priya
+          operates under a $5000 assumption.
+      - flaw: "Ignored constraints — soil and maintenance costs"
+        flaw_type: completeness
+        mechanism: >
+          Dante has a blind spot on ongoing costs: soil replacement, pest management, seasonal
+          prep. His proposal addresses only upfront lumber and hardware costs, ignoring that
+          raised beds need soil refreshed every 1-2 years and require drainage solutions.
+
+  - name: Priya
+    role: Greenhouse Advocate
+    knowledge_focus: >
+      Priya visited a university greenhouse on a field trip and read an article about
+      year-round growing in controlled environments. She has strong understanding of why
+      season extension matters for school gardens (plants die over Memphis winters; summer
+      break means no one tends the garden). However, she overstates what greenhouses can do —
+      she treats "controlled environment" as meaning the greenhouse manages itself, without
+      understanding that greenhouses require ventilation, heating, and daily monitoring. She
+      assumes the budget is around $5000, based on a figure she saw in her article about
+      university greenhouses, and has not checked whether this is realistic for a middle school.
+    disposition_sketch: >
+      Enthusiastic and science-oriented. Cites her field trip and article frequently, using
+      phrases like "at the university greenhouse, they said..." to support her points. Becomes
+      animated when discussing year-round growing but deflects when pressed on practical details.
+    expected_flaws:
+      - flaw: "Overstating evidence — generalizing from a university greenhouse to a school context"
+        flaw_type: epistemic
+        mechanism: >
+          Priya's evidence base is one field trip and one article, both about university-scale
+          facilities. She presents observations from a professionally staffed research greenhouse
+          as proof that a middle school greenhouse would function similarly, without
+          acknowledging the difference in scale, staffing, and budget.
+      - flaw: "Unacknowledged uncertainty — greenhouse maintenance requirements"
+        flaw_type: epistemic
+        mechanism: >
+          Priya presents "controlled environment" as though it means low-maintenance, without
+          acknowledging that she doesn't actually know what daily greenhouse operations involve.
+          She hasn't researched ventilation, heating costs, or who would monitor temperature
+          during weekends and breaks.
+      - flaw: "Assumption as fact — $5000 budget"
+        flaw_type: epistemic
+        mechanism: >
+          Priya assumes $5000 is available because she saw that figure in an article about
+          university greenhouses. She treats this as the project budget without verifying it,
+          creating a fundamental contradiction with Dante's $500 assumption that neither
+          agent notices.
+
+  - name: Lucia
+    role: Community Partnership Lead
+    knowledge_focus: >
+      Lucia visited a community garden in her neighborhood and spoke with the volunteer
+      coordinator. She has genuine firsthand knowledge of how community gardens operate —
+      shared plots, volunteer schedules, tool libraries. She understands that partnerships
+      share costs and labor, which is a real advantage. However, she has shallow understanding
+      of what a school-community partnership would actually require: liability agreements,
+      school board approval, transportation logistics for students visiting an off-campus site,
+      and how shared governance works. She also has a blind spot on how the community garden
+      model changes when one partner is a school with minors.
+    disposition_sketch: >
+      Warm and story-driven. Frequently references her community garden visit and the people
+      she met there. Tends to advocate through personal narrative rather than systematic
+      comparison, which makes her points engaging but hard to evaluate critically.
+    expected_flaws:
+      - flaw: "Selective evidence — only positive aspects of community partnership"
+        flaw_type: epistemic
+        mechanism: >
+          Lucia presents only the benefits she observed at the community garden (shared tools,
+          experienced volunteers, lower individual cost) without mentioning challenges the
+          coordinator may have described or that she simply didn't ask about (volunteer
+          turnover, plot disputes, seasonal gaps in participation).
+      - flaw: "No feasibility analysis — school-community partnership logistics"
+        flaw_type: completeness
+        mechanism: >
+          Lucia's blind spot on institutional requirements means she proposes partnering with a
+          community organization without addressing liability, school board approval,
+          supervision of minors, or transportation. These are systemic gaps a 7th grader can
+          identify by asking "but how would students actually get there?" or "would the school
+          allow that?"
+
+  - name: Amara
+    role: Project Coordinator / Synthesizer
+    knowledge_focus: >
+      Amara is responsible for helping the group compare options and reach a recommendation.
+      She has a general understanding of all three garden types at a surface level — she knows
+      the vocabulary (raised beds, greenhouse, community plot) and can summarize each
+      teammate's pitch. However, she has shallow understanding of the actual tradeoffs between
+      the options: she cannot articulate why choosing one means giving up specific benefits of
+      another, or how budget constraints differently affect each option. She does not realize
+      that Dante and Priya are operating under different budget assumptions. She tends to
+      look for quick agreement rather than probing for hidden disagreements.
+    disposition_sketch: >
+      Agreeable and organized, focused on keeping the group moving toward a decision. Uses
+      phrases like "so it sounds like we all agree" and "I think we can combine the best parts."
+      When tensions arise, she smooths over rather than digging in.
+    expected_flaws:
+      - flaw: "Superficial consensus — agreeing without resolving the budget contradiction"
+        flaw_type: coherence
+        mechanism: >
+          Amara's collaborative disposition and shallow understanding of the tradeoffs lead
+          her to push for agreement without noticing that Dante's $500 plan and Priya's $5000
+          plan are fundamentally incompatible. She may propose a "combination" approach that
+          implicitly requires both budgets to be true simultaneously. This is a coherence flaw
+          because the group's recommendation contains an internal contradiction they never
+          surface.
+      - flaw: "Goal-method mismatch — combining options without resolving what the garden is for"
+        flaw_type: coherence
+        mechanism: >
+          Amara may try to synthesize by combining elements of all three proposals ("raised
+          beds in a greenhouse with a community partner") without recognizing that each option
+          serves a different goal (low cost, year-round growing, community engagement). The
+          combined proposal lacks a coherent purpose because the underlying goals were never
+          reconciled.
+      - flaw: "Missing premise — jumping from 'everyone likes parts of each plan' to 'combining them is best'"
+        flaw_type: reasoning
+        mechanism: >
+          Amara reasons that because each person identified good aspects of their option,
+          combining all three must be the best approach. She skips the premise that combining
+          options multiplies costs and complexity rather than capturing the best of each — an
+          unexplained logical jump that a 7th grader can identify.
+
+notes: >
+  Four agents for a 7th-grade discussion group. The scenario is designed around an unresolved
+  budget contradiction (Dante assumes $500, Priya assumes $5000) that Amara's synthesizer role
+  should surface but likely won't, due to her shallow understanding of tradeoffs and her
+  disposition toward quick agreement.
+
+  Flaw emphasis is on coherence (3 instances: superficial consensus, goal-method mismatch,
+  internal budget contradiction via epistemic flaws) and epistemic (5 instances: two competing
+  assumption-as-fact budget claims, overstating evidence, unacknowledged uncertainty, selective
+  evidence). Reasoning (2 instances: causal misconception defense, missing premise in synthesis)
+  and completeness (2 instances: no feasibility analysis, ignored constraints) ensure all four
+  types are covered.
+
+  Dante holds a causal misconception (raised beds are cheaper because they use less soil)
+  paired against Priya's strong understanding of seasonal constraints. When Priya challenges
+  the cost argument, Dante must defend a faulty causal chain, producing reasoning flaws
+  through escalation. Priya's reactive tendency to deflect on practical details means she
+  likely won't sustain the challenge long enough to expose the misconception fully.
+
+  The budget contradiction is the central coherence device. Because it lives in epistemic
+  territory (two agents treating different assumptions as fact), it bridges the two emphasized
+  flaw types. Students should be able to catch this by noticing that Dante and Priya never
+  agree on a number — a flaw requiring comparison of two agents' claims, appropriate for
+  7th-grade detection level.
+
+  Interaction-driven flaw predictions: Amara's collaborative style may trigger the superficial
+  consensus pattern during converging. Lucia's story-driven expressiveness may trigger
+  conformity if the group doesn't engage with her narrative evidence seriously — she may
+  drop the community partnership angle rather than defend it with data she doesn't have.

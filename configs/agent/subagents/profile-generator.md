@@ -144,13 +144,13 @@ Across the set of agents:
 
 ### Cross-Scenario Name Uniqueness
 
-Agent names (and therefore `agent_id` values) must be **globally unique across all scenarios**. The orchestrator provides a `reserved_agent_ids` list in your input — do not use any `agent_id` that appears in that list. Pick different names if the scenario sketch suggests a name that collides.
+Agent names (and therefore `agent_id` values) must be **globally unique across all scenarios**. The orchestrator provides a `reserved_agent_ids` list in your input — do not use any `agent_id` that appears in that list. If a name from the scenario sketch collides, **choose a completely different name** — do not add suffixes or modify the colliding name. Just pick a new name that fits the agent's background and the scenario's context.
 
 ---
 
 ## Constraints
 
-- `agent_id`: kebab-case, **globally unique across all scenarios** (must not appear in `reserved_agent_ids` input)
+- `agent_id`: kebab-case, **globally unique across all scenarios** (must not appear in `reserved_agent_ids` input). If a name collides, choose a completely different name — never add suffixes.
 - Disposition and flaw type enums: per the reference glossaries
 - `knowledge_profile`: 4-8 items total across categories recommended
 - `reactive_tendency`: 1-2 sentences, specific enough for consistent behavior

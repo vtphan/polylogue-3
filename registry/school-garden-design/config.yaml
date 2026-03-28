@@ -1,0 +1,19 @@
+scenario_id: school-garden-design
+grade_band: '7'
+created_at: '2026-03-28T00:00:00Z'
+topic: What type of school garden would work best for our school — raised beds, a
+  greenhouse, or a community plot?
+activity: discussion
+agents:
+- agent_id: dante
+  name: Dante
+- agent_id: priya
+  name: Priya
+- agent_id: lucia
+  name: Lucia
+- agent_id: amara
+  name: Amara
+discussion_state:
+  current_stage: working_through
+  total_turns: 12
+  last_speaker: lucia
