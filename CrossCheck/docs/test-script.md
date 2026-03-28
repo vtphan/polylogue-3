@@ -385,12 +385,11 @@ This tests the current session model where every session runs Recognize → Expl
 - Click the active session
 - **Verify**: Turn-by-turn transcript display (one turn at a time, highlighted)
 - **Verify**: 4 flaw type choice buttons (Reasoning, Epistemic, Completeness, Coherence)
-- **Verify**: No "No flaw" option
+- **Verify**: Every turn has exactly one flaw (no non-flawed turns)
 - **Verify**: "Narrow it down" button is visible but disabled (try-first period ~18s)
 - Wait for try-first period — **verify** button becomes active
 - Click "Narrow it down" — **verify** one wrong choice is removed
-- Select a flaw type — **verify** green (correct) or feedback appears
-- On a non-flawed turn — **verify** all choices are wrong, productive failure message shown
+- Select a flaw type — **verify** green (correct) or wrong-answer feedback appears
 - Complete all turns — **verify** "Waiting for your group" screen appears
 
 ### 14.3 Teacher advances to Explain
@@ -401,7 +400,7 @@ This tests the current session model where every session runs Recognize → Expl
 ### 14.4 Explain stage (group)
 - **Window S**: Stage transitions automatically
 - **Verify**: Turn-by-turn display with Recognize distribution shown (e.g., "2 said reasoning, 1 said epistemic")
-- **Verify**: Step 1 — 4 flaw type choices + "No flaw" option
+- **Verify**: Step 1 — 4 flaw type choices
 - **Verify**: Flaw Field Guide available in sidebar
 - Select a flaw type (Step 1) — **verify** Step 2 writing area appears
 - Write an explanation — **verify** write-then-reveal mechanic (explanation hidden during individual writing period, then revealed)
@@ -473,5 +472,5 @@ This tests the current session model where every session runs Recognize → Expl
 | All students correct on every Recognize turn (v3) | Explain has no turns to surface; skips to Results |
 | Group catches all flaws in Explain (v3) | Locate is skipped; goes to Results |
 | Student requests hint during try-first period (v3) | Button is disabled; countdown visible |
-| Non-flawed turn in Recognize (v3) | All 4 choices wrong; productive failure feedback shown |
+| ~~Non-flawed turn in Recognize~~ | Removed — Recognize only shows flawed turns |
 | Structured disagreement in Explain (v3) | Minority voice prompt appears when Recognize results diverge |

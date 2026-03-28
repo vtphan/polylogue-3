@@ -1,11 +1,10 @@
-# Implementation Plan: Five-Stage Flow, "No Flaw Here," and Motivation System
+# Implementation Plan: Five-Stage Flow and Motivation System
 
-This plan covers four interconnected changes to the CrossCheck session flow:
+This plan covers three interconnected changes to the CrossCheck session flow:
 
 1. **Five-stage flow** — Split the current Explain stage into Explain (teach back) and Collaborate (team building)
-2. **"No flaw here" button** — Add a fifth option to Recognize for non-flawed turns
-3. **Coins** — Reward system for learning behaviors
-4. **Pass thresholds and goal bars** — Teacher-set targets with visible progress
+2. **Coins** — Reward system for learning behaviors
+3. **Pass thresholds and goal bars** — Teacher-set targets with visible progress
 
 See [Pedagogical Model](pedagogical-model.md) for design rationale and specifications.
 
@@ -78,8 +77,6 @@ Add coin constants:
 export const COIN_VALUES = {
   recognize_correct: 2,
   recognize_correct_independent: 3,   // no hints
-  recognize_no_flaw_correct: 2,
-  recognize_no_flaw_independent: 3,
   recognize_wrong: 0,
   explain_submission: 1,
   explain_stage_complete: 2,          // bonus per student
@@ -161,43 +158,41 @@ Update `getLocateTargets()`:
 
 ---
 
-## Phase 3: "No Flaw Here" in Recognize
+## Phase 3: Remove False Positives from Recognize
+
+The current code includes non-flawed turns in Recognize via `selectFalsePositives()`. This must be removed — every Recognize turn should have exactly one flaw. See the pedagogical model for rationale.
 
 ### 3.1 Recognize Stage Component
 
 **File:** `src/components/stages/recognize-stage.tsx`
 
-Add a "No flaw here" button below the 4 flaw type buttons. Distinct styling (e.g., outlined, gray/green) to visually separate it from the flaw type choices.
+- Remove the call to `selectFalsePositives()` in `turnSequence` construction
+- Remove the `isFalsePositive()` import and all references
+- Remove `productiveFailure` from `TurnState` and all related feedback paths
+- The turn sequence becomes: all turns that appear in `flawIndex` locations, in transcript order
+- Remove the `correctType: "no_flaw"` fallback when saving responses for false positive turns
 
-Update `handleSelectType()`:
-- Accept `"no_flaw"` as a valid answer
-- For flawed turns: `"no_flaw"` is always wrong → show correction with correct type
-- For non-flawed turns (false positives): `"no_flaw"` is correct → show positive feedback ("Sharp eye!")
-- For non-flawed turns: any flaw type selection is wrong → show "This turn is actually fine"
-
-### 3.2 Hint Logic Update
-
-**File:** `src/lib/hints.ts`
-
-Update `computeRecognizeHint()`:
-- Current: eliminates one flaw type choice. New: eliminates one wrong option from the full 5-option set.
-- For flawed turns: hints eliminate wrong flaw types. "No flaw here" is a wrong option and CAN be eliminated.
-- For non-flawed turns: hints eliminate flaw types (which are all wrong). "No flaw here" is NEVER eliminated.
-- After 2 hints, minimum 2 options remain (could be 1 flaw type + "No flaw here", or 2 flaw types).
-
-### 3.3 Flaw Response API
-
-**File:** `src/app/api/flaw-responses/route.ts`
-
-The `VALID_FLAW_TYPES` array already includes `"no_flaw"`. Verify the correctness check handles it:
-- `typeCorrect` should be `true` when `typeAnswer === "no_flaw"` and the turn is a false positive
-- `typeCorrect` should be `false` when `typeAnswer === "no_flaw"` and the turn has a flaw
-
-### 3.4 False Positive Update
+### 3.2 False Positives Module
 
 **File:** `src/lib/false-positives.ts`
 
-No changes needed. The function selects which non-flawed turns to include — it doesn't know about the UI buttons.
+Mark as deprecated or remove. The `FALSE_POSITIVE_RATIO` constant in `types.ts` can also be removed.
+
+**File:** `src/lib/types.ts`
+
+Remove `FALSE_POSITIVE_RATIO` constant.
+
+### 3.3 Hints API
+
+**File:** `src/app/api/hints/route.ts`
+
+The Recognize hint branch handles `flaw === null` (non-flawed turns). After this change, `flaw` is always non-null in Recognize. Simplify accordingly.
+
+### 3.4 Server Page Completeness Check
+
+**File:** `src/app/student/session/[id]/page.tsx`
+
+The completeness check `answeredTurns.size >= flawIndex.length` becomes correct once false positives are removed (every Recognize turn maps to exactly one flaw in `flawIndex`).
 
 ---
 
@@ -386,7 +381,7 @@ Add Collaborate tab between Explain and Locate:
 | Tab | Content |
 |---|---|
 | Summary | Updated journey narrative with 4 active stages |
-| Recognize | Per-student accuracy, coins, "No flaw" detection, hints |
+| Recognize | Per-student accuracy, coins, hints |
 | Explain | Per-turn explanations (attributed), coins |
 | Collaborate | Per-turn group selections, explanations, disagreement, coins |
 | Locate | Missed/found counts, hints, coins (if triggered) |
@@ -435,7 +430,6 @@ Add `coins:awarded` event handling:
 
 Update stats display:
 - Show coins earned in Recognize
-- Show "No flaw" detection count
 
 ### 11.2 Edge Cases
 
@@ -454,7 +448,7 @@ The phases above are ordered for incremental, testable progress:
 |---|---|---|---|
 | 1 | Schema + types | — | Migration runs, types compile |
 | 2 | Turn selection split | 1 | Unit tests: explain/collaborate turn sets are correct and mutually exclusive |
-| 3 | "No flaw here" | 1 | Recognize stage shows 5 buttons, false positives handled correctly |
+| 3 | Remove false positives | 1 | Recognize shows only flawed turns, no productive failure paths |
 | 4 | Coins utility + API | 1 | Coins computed and stored on FlawResponse/Explanation records |
 | 5 | Explain stage (teach back) | 1, 2 | Explain shows only correct turns, writing-only UI, 1 hint max |
 | 6 | Collaborate stage | 1, 2, 5 | Collaborate shows error turns, type selection + writing, 2 hints |

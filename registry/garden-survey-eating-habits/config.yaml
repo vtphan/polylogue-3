@@ -1,0 +1,18 @@
+scenario_id: garden-survey-eating-habits
+grade_band: '7'
+created_at: '2026-03-28T00:00:00Z'
+topic: Did our school garden actually make students eat healthier this semester?
+activity: discussion
+agents:
+- agent_id: nadia
+  name: Nadia
+- agent_id: ravi
+  name: Ravi
+- agent_id: imani
+  name: Imani
+- agent_id: mateo
+  name: Mateo
+discussion_state:
+  current_stage: opening_up
+  total_turns: 4
+  last_speaker: mateo

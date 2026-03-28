@@ -1,0 +1,106 @@
+scenario_id: garden-survey-eating-habits
+grade_band: '7'
+topic: Did our school garden actually make students eat healthier this semester?
+activity: discussion
+created_at: '2026-03-28T00:00:00Z'
+agents:
+- agent_id: nadia
+  name: Nadia
+  role: Lead Researcher
+- agent_id: ravi
+  name: Ravi
+  role: Data Analyst
+- agent_id: imani
+  name: Imani
+  role: Survey Designer
+- agent_id: mateo
+  name: Mateo
+  role: Project Coordinator
+config:
+  current_stage: opening_up
+  selection: responsive
+  max_turns: null
+turns:
+- turn_id: turn_001
+  speaker: nadia
+  role: Lead Researcher
+  stage: opening_up
+  content: Okay so I actually have the numbers right here — on the pre-survey at the
+    beginning of the semester, way fewer students said they liked vegetables compared
+    to the post-survey at the end. Like the shift was pretty clear. And honestly I
+    think it makes total sense because the kids who were actually out there planting
+    and watering stuff in the garden were the ones whose answers changed the most
+    — when you grow your own food you're obviously gonna want to eat it.
+  metadata:
+    knowledge_areas_engaged:
+    - area: survey data and results
+      category: strong
+    - area: causal connection between garden participation and attitude change
+      category: misconception
+    reactive_tendency_activated: false
+    rationale: Opening with the data she collected and immediately linking it to the
+      garden as the cause, reflecting her confidence in the numbers and her assumption
+      that hands-on experience is the obvious explanation.
+  added_at: '2026-03-28T16:10:10.160121+00:00'
+- turn_id: turn_002
+  speaker: ravi
+  role: Data Analyst
+  stage: opening_up
+  content: Yeah the numbers are real — we had like a solid increase in students saying
+    they liked vegetables more on the post-survey. But I was thinking about something
+    when I was putting the spreadsheet together. Didn't the cafeteria start that new
+    salad bar like halfway through the semester too? So I'm just wondering, how do
+    we know the change was from the garden and not from that?
+  metadata:
+    knowledge_areas_engaged:
+    - area: survey data and statistics
+      category: strong
+    - area: confounding variables
+      category: strong
+    reactive_tendency_activated: false
+    rationale: Ravi confirms the data Nadia referenced, then raises the salad bar
+      as a confounding factor — framed as a question rather than a challenge, consistent
+      with his conflict-avoidant communication style.
+  added_at: '2026-03-28T16:10:34.435961+00:00'
+- turn_id: turn_003
+  speaker: imani
+  role: Survey Designer
+  stage: opening_up
+  content: I mean yeah the numbers went up, but I was looking at the actual survey
+    questions and they weren't exactly the same both times. The first one said "do
+    you like eating vegetables" and the second one said something about "enjoy trying
+    fresh vegetables from the garden." So I don't know, maybe that matters? Ravi's
+    thing about the salad bar is a good point too though.
+  metadata:
+    knowledge_areas_engaged:
+    - area: survey instrument design
+      category: strong
+    - area: impact of question wording on survey results
+      category: shallow
+    reactive_tendency_activated: false
+    rationale: Imani shares her detailed observation about the wording change between
+      surveys but doesn't push hard on why it matters, consistent with her moderate
+      confidence and tendency to let things go.
+  added_at: '2026-03-28T16:12:20.393893+00:00'
+- turn_id: turn_004
+  speaker: mateo
+  role: Project Coordinator
+  stage: opening_up
+  content: Okay but I just wanna say, I was there every single week keeping track
+    of the schedule and I literally watched kids get excited when the lettuce and
+    radishes they planted actually grew into real food. Like after the take-home harvests
+    in November, multiple people came up to me and said they tried vegetables at home
+    they wouldn't normally eat. So yeah the survey numbers went up, and to me that
+    lines up perfectly with what I saw happening all semester — the garden worked.
+  metadata:
+    knowledge_areas_engaged:
+    - area: garden project timeline and student participation
+      category: strong
+    - area: connecting survey data to project outcomes
+      category: shallow
+    reactive_tendency_activated: true
+    rationale: Mateo draws on his strong firsthand knowledge of the project to build
+      a narrative arc — garden happened, students got excited, surveys went up — while
+      glossing over the methodological concerns Ravi and Imani raised, redirecting
+      toward positive evidence.
+  added_at: '2026-03-28T16:12:53.482203+00:00'

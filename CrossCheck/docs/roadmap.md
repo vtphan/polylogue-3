@@ -24,17 +24,17 @@
 - Update `session-activity-viewer.tsx` to render all five stages
 - Update Results view with Explain and Collaborate tabs
 
-### "No Flaw Here" Button
+### Remove False Positives from Recognize
 
-**Problem:** In Recognize, non-flawed turns had no correct answer. All 4 choices were wrong, and any selection triggered "productive failure" feedback. Students were confused — they thought they got it wrong.
+**Problem:** Recognize included non-flawed turns (via "productive failure" or "No flaw here" button). This violated the independence gradient — detection (is this flawed?) is Bloom's Analyze level, but Recognize is Bloom's Understand. It also increased cognitive load by requiring two decisions per turn (is it flawed? + what type?) instead of one.
 
-**Solution:** Add a fifth option, "No flaw here." Correctly identifying a clean turn earns coins and positive feedback. Hints eliminate flaw type choices but never eliminate "No flaw here" (unless the turn has a flaw).
+**Solution:** Remove non-flawed turns from Recognize entirely. Every Recognize turn has exactly one flaw. Students focus on one task: identify the type. Detection skill is practiced in Locate, where the full transcript naturally includes non-flawed turns.
 
 **Implementation scope:**
-- Add "No flaw here" button to `recognize-stage.tsx`
-- Update hint elimination logic in `hints.ts`
-- Update false positive feedback messaging
-- Update `flaw-responses` API to accept `"no_flaw"` as a type answer
+- Remove `selectFalsePositives()` call from `recognize-stage.tsx`
+- Remove productive failure feedback paths
+- Deprecate or remove `false-positives.ts` and `FALSE_POSITIVE_RATIO`
+- Simplify hint logic (no null-flaw case)
 
 ### Motivation System: Coins
 

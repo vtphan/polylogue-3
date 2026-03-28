@@ -14,7 +14,7 @@ This is CrossCheck's own taxonomy. It mirrors Bloom's Revised Taxonomy (see Sect
 
 | Stage | System gives | Student does | Social context |
 |-------|-------------|-------------|----------------|
-| **Recognize** | Highlighted turn + flaw type choices + "No flaw" | Identify flaw type or clean turn | Individual (iPad, solo) |
+| **Recognize** | Highlighted turn + 4 flaw type choices | Identify flaw type | Individual (iPad, solo) |
 | **Explain** | Turns the group got right + correct type | Articulate *why* it's that flaw type | Group (teach back) |
 | **Collaborate** | Turns with errors + Recognize distribution | Resolve disagreement, identify correct type, write justification | Group (team building) |
 | **Locate** | Full transcript + count of missed flaws | Find flaws missed in previous stages | Group (detective challenge) |
@@ -48,7 +48,7 @@ CLT (Sweller, 1988) says working memory is limited. Three types of cognitive loa
 
 - **Intrinsic load:** Inherent task difficulty. Managed by the stage progression — each stage adds cognitive demand incrementally, building on the previous stage's output.
 - **Extraneous load:** Unnecessary effort from poor design. Minimized by adapting the UI per stage — each stage shows only what's needed.
-- **Germane load:** Productive schema-building effort. Maximized by ZPD-calibrated scaffolding, false positives, and the requirement to articulate reasoning in Explain and Collaborate.
+- **Germane load:** Productive schema-building effort. Maximized by ZPD-calibrated scaffolding and the requirement to articulate reasoning in Explain and Collaborate.
 
 **Role in CrossCheck:** CLT governs two design decisions:
 1. **Turn-by-turn presentation** in Recognize, Explain, and Collaborate keeps intrinsic load manageable.
@@ -72,7 +72,7 @@ The teacher-facing UI does not mention Bloom's. The stage flow is the practition
 
 SDT (Deci & Ryan, 1985) identifies three innate psychological needs that drive intrinsic motivation:
 
-- **Autonomy:** Feeling in control of one's actions. CrossCheck supports this through on-demand hints (student chooses when to ask for help), the "No flaw here" option (genuine agency in Recognize), and optional continuation past the pass threshold.
+- **Autonomy:** Feeling in control of one's actions. CrossCheck supports this through on-demand hints (student chooses when to ask for help) and optional continuation past the pass threshold.
 - **Competence:** Feeling effective and capable. Supported by visible progress (goal bars), immediate positive feedback (coins for correct answers), the Explain stage (where students demonstrate what they *do* know), and achievable pass thresholds.
 - **Relatedness:** Feeling connected to others. Supported by group stages (Explain, Collaborate, Locate), the "teach back" framing (peer contribution), and group coin totals (shared success).
 
@@ -130,7 +130,7 @@ All stages operate on **turns** — individual agent contributions in the transc
 +---------------------------------------------------------------------+
 |  Stage 1: RECOGNIZE (Individual)                                    |
 |  Each student on their own iPad, turn-by-turn                       |
-|  Pick flaw type from 4 choices, or "No flaw here."                  |
+|  Pick flaw type from 4 choices. Every turn has a flaw.              |
 |  Coins for correct answers. Goal bar tracks progress.               |
 |  Teacher transitions when enough students are done.                 |
 +---------------------------------------------------------------------+
@@ -200,25 +200,23 @@ All stages operate on **turns** — individual agent contributions in the transc
 |--------|--------------|
 | **Purpose** | Warm up. Build familiarity with the transcript. Form initial judgments about each turn |
 | **Social context** | Individual — each student on their own iPad |
-| **Student experience** | Transcript displayed turn by turn. Each turn is highlighted. Student picks from 4 flaw type choices or selects "No flaw here." Goal bar shows progress toward the teacher-set pass threshold |
-| **Starting state** | 4 flaw type choices + "No flaw here" button |
+| **Student experience** | Transcript displayed turn by turn. Each turn is highlighted. Student picks from 4 flaw type choices. Every turn has exactly one flaw. Goal bar shows progress toward the teacher-set pass threshold |
+| **Starting state** | 4 flaw type choices |
 | **Hints** | Each hint eliminates one incorrect choice. Minimum 2 choices remaining. Max 2 hints per turn. Try-first delay: ~18 seconds |
-| **Non-flawed turns** | When a turn has no flaw, the correct answer is "No flaw here." Selecting it earns coins and positive feedback: "Sharp eye! Not every statement has a problem." Selecting a flaw type triggers gentle correction: "This turn is actually fine — knowing when something isn't flawed is part of critical thinking" |
+| **Non-flawed turns** | Not included. Recognize only presents flawed turns. Detection skill (distinguishing flawed from non-flawed content) is practiced in Locate, where the full transcript naturally includes non-flawed turns and the task operates at the appropriate Bloom's level (Analyze) |
 | **Transcript** | Shown turn by turn. Current turn highlighted |
 | **Flaw Field Guide** | Not available (prevents lookup-table behavior; preserves pattern recognition) |
 | **Matching** | Per-turn: correct type = green. Multi-attempt with elimination |
-| **Coins** | Correct flaw type: 2 coins (3 if no hints used). Correct "No flaw": 2 coins (3 if no hints used). Wrong answer: 0 coins |
-| **CLT** | Low intrinsic load (comprehension, not identification). Turn-by-turn focus directs attention. Non-flawed turns add productive germane load |
+| **Coins** | Correct flaw type: 2 coins (3 if no hints used). Wrong answer: 0 coins |
+| **CLT** | Low intrinsic load (comprehension, not identification). Turn-by-turn focus directs attention. One decision per turn (flaw type only) keeps extraneous load minimal |
 
 #### Recognize — Hint Progression
 
 | State | Choices shown | Student's task |
 |-------|--------------|----------------|
-| **Start** | 4 flaw types + "No flaw here" | Pick from 5 options |
-| **Hint 1** | 3 flaw types + "No flaw here" (or 4 flaw types if "No flaw" is eliminated) | Pick from 4 options (1 wrong option removed) |
-| **Hint 2** | 2 flaw types + possibly "No flaw here" | Pick from remaining options (minimum 2 total) |
-
-For non-flawed turns, hints eliminate flaw type choices. "No flaw here" is never eliminated by a hint — it can only be removed if the turn *does* have a flaw. After max hints, the student still has a meaningful choice.
+| **Start** | 4 flaw types | Pick from 4 options |
+| **Hint 1** | 3 flaw types | Pick from 3 options (1 wrong type removed) |
+| **Hint 2** | 2 flaw types | Pick from 2 options (minimum) |
 
 #### What Recognize Produces
 
@@ -276,10 +274,10 @@ Written explanations (attributed per student). These are formative — not grade
 | **Framing** | "These ones stumped some of us — let's figure them out together" |
 | **Social context** | Group — students sit together, discuss verbally, each writes on their own iPad |
 | **Turn selection** | Turns where *any* student selected the wrong flaw type in Recognize. This includes turns with disagreement and turns where everyone was wrong. The system does not reveal *which* students triggered inclusion |
-| **Student experience** | Turns presented one at a time. For each turn: system shows the group's Recognize distribution (e.g., "2 said reasoning, 1 said epistemic"). **Step 1:** Group selects the flaw type (4 choices + "No flaw here"). **Step 2:** Students write justifications collaboratively |
-| **Starting state** | Step 1: 4 flaw type choices + "No flaw here," with Recognize distribution shown. Step 2: writing area |
+| **Student experience** | Turns presented one at a time. For each turn: system shows the group's Recognize distribution (e.g., "2 said reasoning, 1 said epistemic"). **Step 1:** Group selects the flaw type (4 choices). **Step 2:** Students write justifications collaboratively |
+| **Starting state** | Step 1: 4 flaw type choices with Recognize distribution shown. Step 2: writing area |
 | **Hints** | Hint 1: reveals the correct flaw type (completes Step 1). Hint 2: provides a guided template. Max 2 hints per turn. Try-first delay: ~45 seconds (longer for group discussion). Any group member can request; visible to all |
-| **Non-flawed turns** | Not included. "No flaw here" is available in Step 1 for cases where the group believes no student's Recognize answer was correct |
+| **Non-flawed turns** | Not included. Collaborate only presents flawed turns where errors occurred |
 | **Transcript** | Shown turn by turn. Current turn highlighted |
 | **Flaw Field Guide** | Available (sidebar/drawer) |
 | **Coins** | Correct group type selection: 2 coins per student (3 if no hints). Submitting an explanation: 1 coin per student |
@@ -387,7 +385,6 @@ Coins are the primary reward unit. They are earned individually but contribute t
 | Stage | Action | Coins | Bonus |
 |-------|--------|-------|-------|
 | **Recognize** | Correct flaw type | 2 | +1 if no hints used |
-| **Recognize** | Correct "No flaw here" | 2 | +1 if no hints used |
 | **Recognize** | Wrong answer | 0 | — |
 | **Explain** | Submit explanation | 1 | — |
 | **Explain** | Group completes all turns | 2 per student | — |
@@ -408,7 +405,7 @@ Teachers set a **pass threshold** for each stage at session creation. The thresh
 
 | Stage | Threshold unit | Example |
 |-------|---------------|---------|
-| **Recognize** | Correct identifications (including "No flaw") | "Get 7 of 15 correct" |
+| **Recognize** | Correct flaw type identifications | "Get 7 of 12 correct" |
 | **Explain** | Explanations submitted | "Write 3 explanations" |
 | **Collaborate** | Correct group type selections | "Get 4 of 8 correct as a team" |
 | **Locate** | Flaws found | "Find 2 of 3 missed flaws" |
@@ -477,21 +474,19 @@ Because scaffolding is demand-driven rather than preset, **hint count becomes th
 | 1–2 hints | Used strategic support |
 | Max hints | Needed heavy scaffolding |
 
-### False Positives and "No Flaw Here"
+### Why No False Positives in Recognize
 
-**Recognize:** Non-flawed turns are included alongside flawed turns. The student has 5 options: 4 flaw types + "No flaw here." Correctly selecting "No flaw here" on a clean turn earns coins and positive feedback. Incorrectly selecting a flaw type on a clean turn triggers correction: "This turn is actually fine — not every statement has a problem."
+Earlier designs included non-flawed turns in Recognize (either via "productive failure" where all choices were wrong, or via a "No flaw here" fifth button). Both approaches were removed for three reasons:
 
-**Why "No flaw here" instead of productive failure:** The original design (no escape hatch, forced productive failure) created confusion — students thought they got the question wrong when they selected any answer on a clean turn. "No flaw here" makes false-positive detection an *active skill* that students practice deliberately and earn coins for. It also aligns with SDT's autonomy need — students have genuine agency in every choice.
+1. **Cognitive load mismatch.** Recognize is the warm-up stage — the lowest point on the independence gradient. But deciding "this has no flaw" requires evaluating the turn against all four flaw types and concluding none apply — that's closer to Bloom's Analyze level, which belongs in Locate, not Recognize. Including it violates the stage's CLT design constraint of one decision per turn.
 
-**Hints on non-flawed turns:** Hints eliminate flaw type choices but never eliminate "No flaw here" (unless the turn actually has a flaw). After max hints, the student has at minimum "No flaw here" and one flaw type — a meaningful 50/50 choice.
+2. **Muddied purpose.** Recognize trains flaw *type* discrimination: given that a turn is flawed, what kind? False positive detection trains a different skill: *whether* something is flawed at all. Mixing the two in one stage splits the student's attention between two different cognitive tasks.
 
-**Explain:** Non-flawed turns are not included (students already practiced discrimination in Recognize).
+3. **Detection belongs in Locate.** Locate already presents the full transcript, which naturally includes non-flawed turns. Students must decide which turns to flag — the "is this flawed?" question is organically embedded in Locate's search task, at the appropriate Bloom's level (Analyze), with group support available.
 
-**Collaborate:** Non-flawed turns are not included.
+**Every turn in Recognize has exactly one flaw.** Students know this. Their task is purely classification: which of the 4 flaw types?
 
-**Locate:** Clean turns are naturally present in the full transcript. No "No flaw here" mechanic — students flag turns they believe are flawed.
-
-**False positive ratio:** Approximately 1 non-flawed turn per 3–4 flawed turns in Recognize. Generated at render time with a deterministic seed (`hash(sessionId + groupId)`), consistent across page refreshes.
+Non-flawed turns appear in Explain and Collaborate turn selection? No — both stages only present flawed turns (unanimously correct or any-error, respectively). Non-flawed content is only encountered in Locate (full transcript) and in the standalone Learn page.
 
 ### Flaw Field Guide
 
@@ -507,7 +502,7 @@ Because scaffolding is demand-driven rather than preset, **hint count becomes th
 
 A single end-of-session view showing the group's journey across all stages:
 
-- **Recognize results (individual):** Per-student accuracy, coins earned, "No flaw" detection accuracy, individual hint usage
+- **Recognize results (individual):** Per-student accuracy, coins earned, individual hint usage
 - **Explain results (group):** Per-turn explanations (attributed), writing contribution counts, coins earned
 - **Collaborate results (group):** Per-turn flaw type selection, written explanations (attributed), disagreement resolution, hint usage, coins earned
 - **Locate results (group, if triggered):** Missed flaw count, found count, hints needed per flaw, coins earned
@@ -542,13 +537,13 @@ A single "group discussion" stage that mixes correct and incorrect items has two
 
 Separating them lets each stage have a clear framing and purpose. Explain is warm ("teach your group"). Collaborate is challenging but social ("figure this out together"). The transition from one to the other feels like progression, not punishment.
 
-### Why "No Flaw Here" (Not Productive Failure)
+### Why Every Recognize Turn Has a Flaw (Not False Positives)
 
-Including "No flaw here" as a fifth choice in Recognize makes three improvements:
+Recognize deliberately excludes non-flawed turns. Three reasons:
 
-1. **Clarity.** Students understand what they're doing — actively identifying clean turns, not accidentally triggering a "gotcha."
-2. **Agency.** Every turn has a correct answer the student can select. No turns where every option is wrong.
-3. **Skill practice.** False-positive detection becomes a learnable, rewardable skill with its own coin value.
+1. **One task per turn.** The student's only question is "which flaw type?" — not "is this flawed?" This keeps cognitive load low and the stage fast.
+2. **Confidence building.** Every turn has a correct answer from the 4 flaw types. Students never encounter a turn where every option is wrong (the earlier "productive failure" design) or where they must make a meta-judgment about the turn's validity.
+3. **Stage purity.** Detection (is this flawed?) is a different skill from classification (what kind of flaw?). Detection is practiced in Locate, where the full transcript naturally includes non-flawed content and the task operates at the right Bloom's level.
 
 ### Why Coins (Not Grades or Points)
 
@@ -577,12 +572,12 @@ After Recognize completes, the system splits turns into two sets:
 
 **Explain set** (unanimously correct):
 1. For each flawed turn: check if *every* student selected the correct flaw type. If yes → include in Explain.
-2. Non-flawed turns: exclude.
 
 **Collaborate set** (any error):
 1. For each flawed turn: check if *any* student selected the wrong flaw type. If yes → include in Collaborate.
-2. Non-flawed turns: exclude.
-3. The system does not reveal *which* errors triggered inclusion.
+2. The system does not reveal *which* errors triggered inclusion.
+
+(Since Recognize only presents flawed turns, there are no non-flawed turns to exclude.)
 
 These two sets are mutually exclusive and together cover all flawed turns.
 
@@ -602,7 +597,6 @@ After Collaborate completes, the system checks:
 | Hint try-first delay (Explain) | ~30 seconds | Students know the answer; just need to start writing |
 | Hint try-first delay (Collaborate) | ~45 seconds | Group discussion needs more time to start |
 | Hint try-first delay (Locate) | ~18 seconds | Per-interaction; group is already searching |
-| False positive ratio | ~1:3-4 (non-flawed : flawed turns) | Balances discrimination practice against confidence |
 | Write-then-reveal period (Explain) | ~45-60 seconds | Shorter — articulating a known answer |
 | Write-then-reveal period (Collaborate) | ~60-90 seconds | Longer — reasoning through uncertainty |
 | Default pass threshold (Recognize) | 50% of turns | Most students can reach this |
@@ -610,7 +604,6 @@ After Collaborate completes, the system checks:
 | Default pass threshold (Collaborate) | 50% of turns | Achievable with group support |
 | Default pass threshold (Locate) | 50% of missed flaws | Partial success is still success |
 | Coin: correct Recognize answer | 2 (3 independent) | Primary individual reward |
-| Coin: correct "No flaw" | 2 (3 independent) | Equal value to flaw detection |
 | Coin: Explain submission | 1 | Rewards participation |
 | Coin: Explain stage completion | 2 per student | Group milestone bonus |
 | Coin: correct Collaborate selection | 2 (3 independent) | Group achievement |

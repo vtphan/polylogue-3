@@ -63,7 +63,7 @@ For pedagogical details on the five-stage flow, see [Pedagogical Model](pedagogi
 2. The home page shows assigned sessions. Click the active session.
 3. The transcript is displayed **turn by turn**. Each turn is highlighted.
 4. A **goal bar** shows progress toward the pass threshold (e.g., "3 / 7 correct").
-5. For each turn, pick from 4 flaw type choices (Reasoning, Epistemic, Completeness, Coherence) or select **"No flaw here"** if the turn seems fine.
+5. For each turn, pick from 4 flaw type choices (Reasoning, Epistemic, Completeness, Coherence). Every turn has exactly one flaw — no trick questions.
 6. **Immediate feedback:** Correct answer shows a green checkmark and coins earned ("+3 coins!"). Wrong answer shows the correct type.
 7. **"Narrow it down" button** (hints): unlocks after ~18 seconds. Each use eliminates one wrong choice. Max 2 hints per turn. Using hints reduces coin reward.
 8. When the goal bar fills, a brief celebration plays. Students can keep going for more coins.
@@ -96,7 +96,7 @@ For pedagogical details on the five-stage flow, see [Pedagogical Model](pedagogi
 1. The system shows turns where **any student was wrong** in Recognize.
 2. Framing: "These ones stumped some of us — let's figure them out together."
 3. For each turn, the group sees the **Recognize distribution** (e.g., "2 said reasoning, 1 said epistemic").
-4. **Step 1:** Group selects the flaw type (4 choices + "No flaw here").
+4. **Step 1:** Group selects the flaw type (4 choices).
 5. **Step 2:** Students write justifications collaboratively — each on their own iPad.
    - **Write-then-reveal:** Students write independently for ~60–90 seconds, then all explanations become visible simultaneously.
    - Students can revise after seeing each other's work.
@@ -141,7 +141,7 @@ At any stage:
 
 A single end-of-session view showing the group's journey:
 
-- **Recognize results:** Per-student accuracy, coins earned, hint usage, "No flaw" detection accuracy.
+- **Recognize results:** Per-student accuracy, coins earned, hint usage.
 - **Explain results:** Written explanations (attributed), contribution counts, coins earned.
 - **Collaborate results:** Group's flaw type selections, written explanations (attributed), disagreement resolution, coins earned.
 - **Locate results** (if triggered): Missed flaw count, found count, hints needed, coins earned.
