@@ -8,6 +8,7 @@ import { RecognizeMode } from "@/components/modes/recognize-mode";
 import { LocateMode } from "@/components/modes/locate-mode";
 import { RecognizeStage } from "@/components/stages/recognize-stage";
 import { ExplainStage } from "@/components/stages/explain-stage";
+import { CollaborateStage } from "@/components/stages/collaborate-stage";
 import { LocateStage } from "@/components/stages/locate-stage";
 import { ResultsView } from "@/components/stages/results-view";
 import { WaitingScreen } from "@/components/stages/waiting-screen";
@@ -379,6 +380,7 @@ export default async function StudentSessionPage({ params }: PageProps) {
               <ResultsView
                 recognizeResults={recognizeResults}
                 explainResults={explainResultsData}
+                collaborateResults={collaborateResultsData}
                 locateResult={locateResult}
                 totalFlaws={flawIndex.length}
               />
@@ -417,9 +419,20 @@ export default async function StudentSessionPage({ params }: PageProps) {
             explainTurns={explainTurns}
             flawIndex={flawIndex}
             groupMembers={groupMembersList}
-            existingGroupSelections={[]}
             existingExplanations={explainExplanations}
             existingHints={explainHints}
+          />
+        ) : groupStage === "collaborate" ? (
+          <CollaborateStage
+            sessionId={id}
+            groupId={group.id}
+            userId={session.user.id}
+            collaborateTurns={collaborateTurns}
+            flawIndex={flawIndex}
+            groupMembers={groupMembersList}
+            existingGroupSelections={collaborateGroupSelections}
+            existingExplanations={collaborateExplanations}
+            existingHints={collaborateHints}
           />
         ) : groupStage === "locate" ? (
           (() => {

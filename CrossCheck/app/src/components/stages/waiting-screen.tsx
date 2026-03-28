@@ -11,6 +11,7 @@ interface WaitingScreenProps {
     totalTurns: number;
     correct: number;
     hintsUsed: number;
+    coins?: number;
   };
 }
 
@@ -54,6 +55,12 @@ export function WaitingScreen({ sessionId, groupId, stats }: WaitingScreenProps)
             <span className="text-gray-500">Strategic support used</span>
             <span className="font-medium text-indigo-700">{stats.hintsUsed}</span>
           </div>
+          {stats.coins !== undefined && stats.coins > 0 && (
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-500">Coins earned</span>
+              <span className="font-medium text-amber-700">{stats.coins}</span>
+            </div>
+          )}
         </div>
 
         {!isConnected && (

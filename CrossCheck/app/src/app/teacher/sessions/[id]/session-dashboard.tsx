@@ -777,13 +777,15 @@ function GroupDetail({
   // Stage labels for new-flow sessions
   const STAGE_LABELS: Record<string, string> = {
     recognize: "Recognize (Individual)",
-    explain: "Explain (Group)",
+    explain: "Explain (Teach Back)",
+    collaborate: "Collaborate (Group)",
     locate: "Locate (Group)",
     results: "Results",
   };
   const STAGE_COLORS: Record<string, string> = {
     recognize: "bg-blue-100 text-blue-700",
     explain: "bg-amber-100 text-amber-700",
+    collaborate: "bg-teal-100 text-teal-700",
     locate: "bg-orange-100 text-orange-700",
     results: "bg-purple-100 text-purple-700",
   };
@@ -885,6 +887,22 @@ function GroupDetail({
               {readySet.size > 0 && (
                 <span className="ml-1 text-amber-200">{readySet.size}/{group.members.length}</span>
               )}
+            </button>
+          )}
+          {isNewFlow && group.stage === "locate" && sessionStatus === "active" && onAdvanceStage && (
+            <button
+              onClick={() => {
+                if (confirm("Skip Locate and move directly to Results?")) {
+                  fetch(`/api/groups/${group.id}/stage`, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ targetStage: "results" }),
+                  }).then(() => window.location.reload()).catch(() => {});
+                }
+              }}
+              className="text-xs bg-purple-600 text-white px-3 py-1 rounded hover:bg-purple-700 transition-colors"
+            >
+              Skip to Results
             </button>
           )}
           {!isNewFlow && nextPhase && sessionStatus === "active" && (

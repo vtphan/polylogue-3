@@ -2,8 +2,9 @@
 
 import { useState, useMemo, useCallback, useEffect } from "react";
 import type { FlawType, TranscriptTurn, FlawIndexEntry } from "@/lib/types";
-import { FLAW_TYPES, HINT_UNLOCK_DELAY } from "@/lib/types";
+import { FLAW_TYPES, HINT_UNLOCK_DELAY, DEFAULT_THRESHOLDS } from "@/lib/types";
 import { HintButton } from "@/components/shared/hint-button";
+import { GoalBar } from "@/components/shared/goal-bar";
 
 // --- Types ---
 
@@ -31,6 +32,8 @@ interface RecognizeStageProps {
     turnId: string;
     hintLevel: number;
   }[];
+  /** Pass threshold from session config (null = use default) */
+  threshold?: number | null;
   /** Called when student completes all turns */
   onComplete?: (stats: { totalTurns: number; correct: number; hintsUsed: number }) => void;
 }
@@ -56,6 +59,7 @@ export function RecognizeStage({
   flawIndex,
   existingResponses = [],
   existingHints = [],
+  threshold,
   onComplete,
 }: RecognizeStageProps) {
   // Build the turn sequence: only flawed turns, in transcript order
@@ -293,6 +297,15 @@ export function RecognizeStage({
             style={{ width: `${(answeredCount / turnSequence.length) * 100}%` }}
           />
         </div>
+      </div>
+
+      {/* Goal bar */}
+      <div className="mb-6">
+        <GoalBar
+          current={correctCount}
+          threshold={threshold ?? DEFAULT_THRESHOLDS.recognize ?? Math.ceil(turnSequence.length / 2)}
+          label="Goal: correct answers"
+        />
       </div>
 
       {/* Current turn content */}

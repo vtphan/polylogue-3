@@ -26,6 +26,12 @@ export async function GET() {
           scaffolds: {
             select: { id: true, level: true, type: true, text: true, createdAt: true, acknowledgedAt: true, contextAtSend: true },
           },
+          flawResponses: {
+            select: { coins: true },
+          },
+          explanations: {
+            select: { coins: true },
+          },
         },
       },
     },
@@ -50,6 +56,7 @@ export async function GET() {
     "precision",
     "total_scaffolds",
     "scaffolds_acknowledged",
+    "coins",
     "created_at",
   ].join(","));
 
@@ -66,6 +73,8 @@ export async function GET() {
       }));
       const matches = computeMatches(anns, flawIndex);
       const ackCount = group.scaffolds.filter((sc) => sc.acknowledgedAt).length;
+      const totalCoins = group.flawResponses.reduce((sum, r) => sum + r.coins, 0)
+        + group.explanations.reduce((sum, e) => sum + e.coins, 0);
 
       rows.push([
         s.id,
@@ -83,6 +92,7 @@ export async function GET() {
         matches.summary.precision.toFixed(3),
         group.scaffolds.length,
         ackCount,
+        totalCoins,
         s.createdAt.toISOString(),
       ].join(","));
     }

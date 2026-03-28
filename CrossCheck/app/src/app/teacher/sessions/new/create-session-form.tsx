@@ -200,16 +200,18 @@ export function CreateSessionForm({
       {/* Session flow description */}
       <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
         <p className="text-sm font-medium text-indigo-800 mb-2">Session Flow</p>
-        <div className="flex items-center gap-2 text-xs text-indigo-700">
+        <div className="flex items-center gap-2 text-xs text-indigo-700 flex-wrap">
           <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-medium">1. Recognize</span>
           <span className="text-indigo-400">&rarr;</span>
           <span className="bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-medium">2. Explain</span>
           <span className="text-indigo-400">&rarr;</span>
-          <span className="bg-orange-100 text-orange-800 px-2 py-0.5 rounded font-medium">3. Locate</span>
+          <span className="bg-teal-100 text-teal-800 px-2 py-0.5 rounded font-medium">3. Collaborate</span>
+          <span className="text-indigo-400">&rarr;</span>
+          <span className="bg-orange-100 text-orange-800 px-2 py-0.5 rounded font-medium">4. Locate</span>
         </div>
         <p className="text-xs text-indigo-600 mt-2">
-          Students work individually in Recognize, then discuss as a group in Explain.
-          Locate only activates if the group misses flaws.
+          Students identify flaws individually, then teach back what they know, work together on tricky ones,
+          and locate any flaws the group still missed.
         </p>
       </div>
 

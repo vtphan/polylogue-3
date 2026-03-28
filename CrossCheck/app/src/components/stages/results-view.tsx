@@ -24,6 +24,17 @@ interface ExplainResult {
   hasDisagreement: boolean;
 }
 
+interface CollaborateResult {
+  turnId: string;
+  speaker: string;
+  content: string;
+  correctType: string;
+  groupTypeAnswer: string;
+  explanations: { authorId: string; authorName: string; text: string }[];
+  hintsUsed: number;
+  hasDisagreement: boolean;
+}
+
 interface LocateResult {
   triggered: boolean;
   totalTargets: number;
@@ -34,17 +45,19 @@ interface LocateResult {
 interface ResultsViewProps {
   recognizeResults: RecognizeResult[];
   explainResults: ExplainResult[];
+  collaborateResults?: CollaborateResult[];
   locateResult: LocateResult;
   totalFlaws: number;
 }
 
-type Tab = "summary" | "recognize" | "explain" | "locate";
+type Tab = "summary" | "recognize" | "explain" | "collaborate" | "locate";
 
 // --- Component ---
 
 export function ResultsView({
   recognizeResults,
   explainResults,
+  collaborateResults = [],
   locateResult,
   totalFlaws,
 }: ResultsViewProps) {
@@ -56,13 +69,15 @@ export function ResultsView({
     ? recognizeResults.reduce((sum, r) => sum + (r.summary.correct / r.summary.total), 0) / recognizeResults.length
     : 0;
 
-  const explainCorrections = explainResults.filter((r) => r.groupTypeAnswer === r.correctType).length;
+  const explainCount = explainResults.length;
+  const collaborateCorrections = collaborateResults.filter((r) => r.groupTypeAnswer === r.correctType).length;
   const locateFound = locateResult.triggered ? locateResult.found : 0;
 
   const tabs: { id: Tab; label: string }[] = [
     { id: "summary", label: "Summary" },
     { id: "recognize", label: "Recognize" },
-    { id: "explain", label: "Explain" },
+    ...(explainCount > 0 ? [{ id: "explain" as Tab, label: "Explain" }] : []),
+    ...(collaborateResults.length > 0 ? [{ id: "collaborate" as Tab, label: "Collaborate" }] : []),
     ...(locateResult.triggered ? [{ id: "locate" as Tab, label: "Locate" }] : []),
   ];
 
@@ -74,19 +89,19 @@ export function ResultsView({
 
         {/* Summary cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-          <div className="bg-gray-50 rounded-lg p-3 text-center">
-            <div className="text-2xl font-bold text-gray-800">{totalFlaws}</div>
-            <div className="text-xs text-gray-500">Total flaws</div>
-          </div>
           <div className="bg-blue-50 rounded-lg p-3 text-center">
             <div className="text-2xl font-bold text-blue-700">
               {Math.round(avgRecognizeAccuracy * 100)}%
             </div>
-            <div className="text-xs text-blue-600">Recognize accuracy</div>
+            <div className="text-xs text-blue-600">Caught in Recognize</div>
           </div>
           <div className="bg-amber-50 rounded-lg p-3 text-center">
-            <div className="text-2xl font-bold text-amber-700">{explainCorrections}</div>
-            <div className="text-xs text-amber-600">Corrected in Explain</div>
+            <div className="text-2xl font-bold text-amber-700">{explainCount}</div>
+            <div className="text-xs text-amber-600">Explained in Explain</div>
+          </div>
+          <div className="bg-teal-50 rounded-lg p-3 text-center">
+            <div className="text-2xl font-bold text-teal-700">{collaborateCorrections}</div>
+            <div className="text-xs text-teal-600">Corrected in Collaborate</div>
           </div>
           <div className={`rounded-lg p-3 text-center ${locateResult.triggered ? "bg-orange-50" : "bg-green-50"}`}>
             {locateResult.triggered ? (
@@ -98,8 +113,8 @@ export function ResultsView({
               </>
             ) : (
               <>
-                <div className="text-2xl font-bold text-green-700">✓</div>
-                <div className="text-xs text-green-600">All caught — no Locate needed</div>
+                <div className="text-2xl font-bold text-green-700">&#10003;</div>
+                <div className="text-xs text-green-600">All caught &mdash; no Locate needed</div>
               </>
             )}
           </div>
@@ -129,7 +144,7 @@ export function ResultsView({
           <h3 className="font-semibold text-gray-900 mb-4">Journey Overview</h3>
 
           <div className="space-y-4">
-            {/* Recognize phase */}
+            {/* Recognize */}
             <div className="border-l-4 border-blue-400 pl-4">
               <h4 className="text-sm font-medium text-blue-800">Stage 1: Recognize (Individual)</h4>
               <div className="mt-2 space-y-1">
@@ -147,29 +162,41 @@ export function ResultsView({
               </div>
             </div>
 
-            {/* Explain phase */}
-            <div className="border-l-4 border-amber-400 pl-4">
-              <h4 className="text-sm font-medium text-amber-800">Stage 2: Explain (Group)</h4>
-              <p className="text-sm text-gray-600 mt-1">
-                {explainResults.length} turns discussed ·
-                {explainCorrections} flaw types correctly identified ·
-                {explainResults.filter((r) => r.hasDisagreement).length} disagreements resolved
-              </p>
-            </div>
+            {/* Explain */}
+            {explainCount > 0 && (
+              <div className="border-l-4 border-amber-400 pl-4">
+                <h4 className="text-sm font-medium text-amber-800">Stage 2: Explain (Teach Back)</h4>
+                <p className="text-sm text-gray-600 mt-1">
+                  {explainCount} turns explained &mdash; students articulated why each flaw matters
+                </p>
+              </div>
+            )}
 
-            {/* Locate phase */}
+            {/* Collaborate */}
+            {collaborateResults.length > 0 && (
+              <div className="border-l-4 border-teal-400 pl-4">
+                <h4 className="text-sm font-medium text-teal-800">Stage 3: Collaborate (Team Building)</h4>
+                <p className="text-sm text-gray-600 mt-1">
+                  {collaborateResults.length} turns discussed &middot;{" "}
+                  {collaborateCorrections} flaw types correctly identified &middot;{" "}
+                  {collaborateResults.filter((r) => r.hasDisagreement).length} disagreements resolved
+                </p>
+              </div>
+            )}
+
+            {/* Locate */}
             <div className="border-l-4 border-orange-400 pl-4">
-              <h4 className="text-sm font-medium text-orange-800">Stage 3: Locate (Group)</h4>
+              <h4 className="text-sm font-medium text-orange-800">Stage 4: Locate (Group)</h4>
               {locateResult.triggered ? (
                 <p className="text-sm text-gray-600 mt-1">
-                  {locateResult.totalTargets} missed flaws → {locateFound} found
+                  {locateResult.totalTargets} missed flaws &rarr; {locateFound} found
                   {locateResult.totalTargets - locateFound > 0 && (
-                    <span className="text-red-500"> · {locateResult.totalTargets - locateFound} still unfound</span>
+                    <span className="text-red-500"> &middot; {locateResult.totalTargets - locateFound} still unfound</span>
                   )}
                 </p>
               ) : (
                 <p className="text-sm text-green-600 mt-1">
-                  All flaws caught — Locate was not needed!
+                  All flaws caught &mdash; Locate was not needed!
                 </p>
               )}
             </div>
@@ -185,7 +212,7 @@ export function ResultsView({
               <div className="flex items-center justify-between mb-3">
                 <h4 className="font-semibold text-gray-900">{r.studentName}</h4>
                 <span className="text-sm text-gray-500">
-                  {r.summary.correct}/{r.summary.total} ·
+                  {r.summary.correct}/{r.summary.total} &middot;{" "}
                   {r.summary.independent} independent
                 </span>
               </div>
@@ -194,17 +221,15 @@ export function ResultsView({
                   <span
                     key={t.turnId}
                     className={`text-xs px-2 py-1 rounded ${
-                      t.productiveFailure
-                        ? "bg-amber-50 text-amber-700 border border-amber-200"
-                        : t.correct
-                          ? t.hintsUsed === 0
-                            ? "bg-green-50 text-green-700 border border-green-200"
-                            : "bg-green-50 text-green-600 border border-green-200"
-                          : "bg-red-50 text-red-700 border border-red-200"
+                      t.correct
+                        ? t.hintsUsed === 0
+                          ? "bg-green-50 text-green-700 border border-green-200"
+                          : "bg-green-50 text-green-600 border border-green-200"
+                        : "bg-red-50 text-red-700 border border-red-200"
                     }`}
                   >
-                    {t.correct ? "✓" : t.productiveFailure ? "💡" : "✗"}
-                    {t.hintsUsed > 0 && <span className="ml-0.5 opacity-50">·{t.hintsUsed}h</span>}
+                    {t.correct ? "\u2713" : "\u2717"}
+                    {t.hintsUsed > 0 && <span className="ml-0.5 opacity-50">&middot;{t.hintsUsed}h</span>}
                   </span>
                 ))}
               </div>
@@ -218,6 +243,43 @@ export function ResultsView({
         <div className="space-y-4">
           {explainResults.map((r) => {
             const typeInfo = FLAW_TYPES[r.correctType as FlawType];
+
+            return (
+              <div key={r.turnId} className="bg-white rounded-xl border border-gray-200 p-5">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-sm font-semibold text-gray-800">{r.speaker}</span>
+                  {typeInfo && (
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${typeInfo.bgColor} ${typeInfo.color}`}>
+                      {typeInfo.label}
+                    </span>
+                  )}
+                  {r.hintsUsed > 0 && (
+                    <span className="text-xs text-indigo-500">&#128161; &times;{r.hintsUsed}</span>
+                  )}
+                </div>
+                <p className="text-sm text-gray-600 mb-3 line-clamp-2">{r.content}</p>
+
+                {r.explanations.length > 0 && (
+                  <div className="space-y-1.5">
+                    {r.explanations.map((e, i) => (
+                      <div key={i} className="text-xs bg-gray-50 rounded p-2">
+                        <span className="font-medium text-gray-600">{e.authorName}:</span>
+                        <span className="text-gray-700 ml-1">{e.text}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Collaborate tab */}
+      {activeTab === "collaborate" && (
+        <div className="space-y-4">
+          {collaborateResults.map((r) => {
+            const typeInfo = FLAW_TYPES[r.correctType as FlawType];
             const isCorrect = r.groupTypeAnswer === r.correctType;
 
             return (
@@ -230,13 +292,13 @@ export function ResultsView({
                     </span>
                   )}
                   <span className={`text-xs font-medium ${isCorrect ? "text-green-600" : "text-red-600"}`}>
-                    {isCorrect ? "✓ Correct" : "✗ Incorrect"}
+                    {isCorrect ? "\u2713 Correct" : "\u2717 Incorrect"}
                   </span>
                   {r.hasDisagreement && (
-                    <span className="text-xs text-amber-600">⚡ Disagreement</span>
+                    <span className="text-xs text-amber-600">&#9889; Disagreement</span>
                   )}
                   {r.hintsUsed > 0 && (
-                    <span className="text-xs text-indigo-500">💡 ×{r.hintsUsed}</span>
+                    <span className="text-xs text-indigo-500">&#128161; &times;{r.hintsUsed}</span>
                   )}
                 </div>
                 <p className="text-sm text-gray-600 mb-3 line-clamp-2">{r.content}</p>
@@ -266,14 +328,11 @@ export function ResultsView({
           <div className="space-y-2">
             {locateResult.perFlaw.map((f) => {
               const typeInfo = FLAW_TYPES[f.flawType as FlawType];
-              const wasFound = f.hintsUsed >= 0; // all locate targets appear here
 
               return (
                 <div
                   key={f.flawId}
-                  className={`flex items-center justify-between p-3 rounded-lg border ${
-                    wasFound ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"
-                  }`}
+                  className="flex items-center justify-between p-3 rounded-lg border bg-green-50 border-green-200"
                 >
                   <div className="flex items-center gap-2">
                     {typeInfo && (

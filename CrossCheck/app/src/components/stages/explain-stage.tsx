@@ -3,9 +3,10 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { FlawType, FlawIndexEntry } from "@/lib/types";
-import { FLAW_TYPES, HINT_UNLOCK_DELAY } from "@/lib/types";
+import { FLAW_TYPES, HINT_UNLOCK_DELAY, DEFAULT_THRESHOLDS } from "@/lib/types";
 import type { ExplainTurn } from "@/lib/turn-selection";
 import { HintButton } from "@/components/shared/hint-button";
+import { GoalBar } from "@/components/shared/goal-bar";
 import { CollaborativeEditor } from "@/components/explain/collaborative-editor";
 import { useSessionSocket } from "@/hooks/useSessionSocket";
 import { FlawFieldGuide, FlawFieldGuideDrawer } from "@/components/annotation/flaw-field-guide";
@@ -24,7 +25,6 @@ interface ExplainStageProps {
   explainTurns: ExplainTurn[];
   flawIndex: FlawIndexEntry[];
   groupMembers: GroupMember[];
-  existingGroupSelections?: { turnId: string; flawId: string; typeAnswer: string }[];
   existingExplanations?: {
     id: string;
     turnId: string;
@@ -35,6 +35,7 @@ interface ExplainStageProps {
     createdAt: string;
   }[];
   existingHints?: { turnId: string; hintLevel: number }[];
+  threshold?: number | null;
 }
 
 // --- Component ---
@@ -47,6 +48,7 @@ export function ExplainStage({
   groupMembers,
   existingExplanations = [],
   existingHints = [],
+  threshold,
 }: ExplainStageProps) {
   const router = useRouter();
 
@@ -269,6 +271,15 @@ export function ExplainStage({
             style={{ width: `${(discussedCount / explainTurns.length) * 100}%` }}
           />
         </div>
+      </div>
+
+      {/* Goal bar */}
+      <div className="mb-6">
+        <GoalBar
+          current={discussedCount}
+          threshold={threshold ?? DEFAULT_THRESHOLDS.explain ?? 2}
+          label="Goal: explanations"
+        />
       </div>
 
       {currentTurn && currentState && (
