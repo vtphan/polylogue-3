@@ -29,6 +29,15 @@ enum SessionStage {
 }
 ```
 
+Add `stage` to the `Explanation` model (both Explain and Collaborate produce explanations via the same table — we need to distinguish them):
+```
+model Explanation {
+  ...
+  stage      String?  // "explain" or "collaborate" — null for legacy
+  ...
+}
+```
+
 Add coin tracking. Two options — choose one:
 
 **Option A: Denormalized fields (simpler)**
@@ -147,7 +156,23 @@ New `selectCollaborateTurns()`:
 - Same logic as current `selectExplainTurns()` (turns where any student was wrong)
 - Returns `CollaborateTurn` type (same shape as current `ExplainTurn` — has distribution and disagreement)
 
-### 2.2 Locate Trigger Update
+### 2.2 FlawResponse Stage Semantics
+
+After the split, `FlawResponse` and `Explanation` records are produced differently per stage:
+
+| Stage | FlawResponse records | Explanation records |
+|-------|---------------------|-------------------|
+| **Recognize** | One per student per turn (`stage: "recognize"`) | None |
+| **Explain** (teach back) | None — no type selection step | One per student per turn (`stage: "explain"`) |
+| **Collaborate** (team building) | One per group per turn (`stage: "collaborate"`) — the group's type selection | One per student per turn (`stage: "collaborate"`) |
+| **Locate** | None | None (Locate uses Annotations, not FlawResponses) |
+
+This means:
+- Anywhere the code queries `stage: "explain"` for group type selections must change to `stage: "collaborate"`.
+- The Locate trigger uses group type selections — it must query `stage: "collaborate"`, not `stage: "explain"`.
+- The Results view must filter explanations by stage to show them in the correct tab.
+
+### 2.3 Locate Trigger Update
 
 **File:** `src/lib/locate-trigger.ts`
 
@@ -217,6 +242,7 @@ export function computeLocateCoins(hintCount: number): number
 - Emit a `coins:awarded` socket event to the student's group room
 
 **File:** `src/app/api/explanations/route.ts`
+- Accept a `stage` parameter (`"explain"` or `"collaborate"`) and store it on the Explanation record
 - After saving an Explanation, compute coins and update the record's `coins` field
 - Emit `coins:awarded` event
 
@@ -292,11 +318,85 @@ Add `computeCollaborateHint()` — same as current `computeExplainHint()`:
 - Max 2 hints per turn
 - Try-first delay: 45 seconds
 
+**File:** `src/app/api/hints/route.ts`
+
+- Add `"collaborate"` to the stage validation array (line 29: `["recognize", "explain", "locate"]` → `["recognize", "explain", "collaborate", "locate"]`)
+- Add `else if (stage === "collaborate")` branch mirroring the current `explain` branch, calling `computeCollaborateHint()`
+
 ### 6.3 Collaborate Turn Data
 
 Update the server page to:
 - Call the new `selectCollaborateTurns()` (any-error turns)
 - Pass `collaborateTurns` to the component
+
+### 6.4 Server Page Changes (`page.tsx`)
+
+**File:** `src/app/student/session/[id]/page.tsx`
+
+This is the central routing file — it prepares data and renders stage components. Changes span Phases 5, 6, and 9 but are consolidated here for clarity.
+
+**New imports:**
+- `CollaborateStage` from `@/components/stages/collaborate-stage`
+- `selectCollaborateTurns` from `@/lib/turn-selection`
+
+**Stage badge** (lines 242–252): Add `collaborate` with its own color and label:
+```
+groupStage === "collaborate" ? "bg-teal-100 text-teal-700"
+```
+```
+groupStage === "collaborate" ? "Collaborate (group)"
+```
+
+**New data preparation** (add alongside existing `explainGroupSelections` block):
+```typescript
+// Collaborate stage data
+const collaborateGroupSelections = group.flawResponses
+  .filter((r) => r.stage === "collaborate")
+  .map((r) => ({ turnId: r.flawId, flawId: r.flawId, typeAnswer: r.typeAnswer }));
+
+const collaborateHints = group.hintUsages
+  .filter((h) => h.stage === "collaborate")
+  .map((h) => ({ turnId: h.turnId, hintLevel: h.hintLevel }));
+
+const collaborateExplanations = existingExplanations
+  .filter((e) => e.stage === "collaborate");
+
+const explainOnlyExplanations = existingExplanations
+  .filter((e) => e.stage === "explain" || !e.stage);
+```
+
+**Turn selection split:**
+```typescript
+const explainTurns = selectExplainTurns(allTurns, flawIndex, allRecognizeResponses);
+const collaborateTurns = selectCollaborateTurns(allTurns, flawIndex, allRecognizeResponses);
+```
+
+**New routing branch** (between `explain` and `locate`):
+```tsx
+: groupStage === "collaborate" ? (
+  <CollaborateStage
+    sessionId={id}
+    groupId={group.id}
+    userId={session.user.id}
+    collaborateTurns={collaborateTurns}
+    flawIndex={flawIndex}
+    groupMembers={groupMembersList}
+    existingGroupSelections={collaborateGroupSelections}
+    existingExplanations={collaborateExplanations}
+    existingHints={collaborateHints}
+  />
+)
+```
+
+**Updated results computation:**
+- Split `explainResultsData` into two: Explain results (from `explainTurns` + `explainOnlyExplanations`) and Collaborate results (from `collaborateTurns` + `collaborateGroupSelections` + `collaborateExplanations`)
+- Update `locateTargetsData` to use `collaborateGroupSelections` instead of `explainGroupSelections`
+- Add coin totals per stage
+
+**Updated Explain component props** (simplified):
+- Pass `explainTurns` (unanimously correct only)
+- No `existingGroupSelections` (Explain has no type selection)
+- Pass `explainOnlyExplanations`
 
 ---
 
@@ -320,9 +420,11 @@ Key changes:
 - When transitioning from `collaborate`: check Locate trigger. Use `getLocateTargets()` with Collaborate responses.
 - Compute and store `collaborateTurns` (for the component) and `locateTargets` (for Locate).
 
-Handle edge cases:
-- If `selectExplainTurns()` returns empty (no unanimously correct turns): auto-skip Explain → Collaborate.
-- If `selectCollaborateTurns()` returns empty (all turns unanimously correct): auto-skip Collaborate → check Locate trigger.
+Handle empty-stage skipping server-side (chain transitions in one API call):
+
+- If `selectExplainTurns()` returns empty (no unanimously correct turns): the stage API sets stage to `explain`, detects zero turns, then chains immediately to `collaborate` in the same request. The API response returns `{ toStage: "collaborate" }`. The client never renders an empty Explain — it sees only the final stage.
+- If `selectCollaborateTurns()` returns empty (all turns unanimously correct): the stage API sets stage to `collaborate`, detects zero turns, then chains to the Locate trigger check (likely → `results`). Same pattern — one request, one response with the final stage.
+- The `STAGE_TRANSITIONS` map stays strict (recognize→explain, explain→collaborate). Skipping happens inside the API, not by loosening transition rules.
 
 ### 7.2 Update Phase Logic
 
@@ -396,9 +498,10 @@ Summary stats update:
 ### 9.2 Results Data Aggregation
 
 The server page needs to fetch and compute:
-- Explain results: explanations for unanimously-correct turns
-- Collaborate results: group type selections + explanations for error turns
-- Coin totals per stage
+- Explain results: explanations filtered by `stage === "explain" || !stage` (backward compat), matched to unanimously-correct turns
+- Collaborate results: group type selections (`stage: "collaborate"`) + explanations filtered by `stage === "collaborate"`, matched to error turns
+- Locate results: uses `collaborateGroupSelections` (not `explainGroupSelections`) for `getLocateTargets()`
+- Coin totals per stage (sum of `coins` field on FlawResponse + Explanation records)
 
 ---
 
@@ -408,11 +511,16 @@ The server page needs to fetch and compute:
 
 **File:** `src/app/teacher/sessions/[id]/session-dashboard.tsx`
 
-- Show current stage name (now 5 possible values instead of 4)
+- Show current stage name (now 5 possible values instead of 4) with appropriate color badge
 - Show group coin total
 - Show goal bar progress for current stage
-- "Move to Explain" button (same as current)
-- Collaborate and Locate transitions are automatic (no teacher button needed)
+
+Action button logic by stage:
+- **Recognize**: "Move to Explain" button (teacher-triggered — same as current)
+- **Explain**: No action button (auto-transitions to Collaborate on completion)
+- **Collaborate**: No action button (auto-transitions to Locate or Results on completion)
+- **Locate**: "Skip to Results" button (same as current)
+- **Results**: No action button
 
 ### 10.2 Socket Events
 
@@ -431,12 +539,20 @@ Add `coins:awarded` event handling:
 Update stats display:
 - Show coins earned in Recognize
 
-### 11.2 Edge Cases
+### 11.2 Export/CSV Updates
 
-- **Empty Explain:** If no turns are unanimously correct, skip straight to Collaborate. The stage API should handle `explain → collaborate` with zero Explain turns.
-- **Empty Collaborate:** If all turns are unanimously correct, skip Collaborate. Check Locate trigger (likely no targets → skip to Results).
+**Files:** `src/app/api/export/sessions/route.ts`, `src/app/api/export/hints/route.ts`
+
+- Hint exports already pass through `stage` as a string — `"collaborate"` values will appear automatically with no code change.
+- Session exports: add coin totals per group to the CSV output (query `SUM(coins)` from `FlawResponse` + `Explanation` grouped by `groupId`).
+
+### 11.3 Edge Cases
+
+- **Empty Explain:** If no turns are unanimously correct, skip straight to Collaborate. Handled server-side in the stage API (Phase 7.1) — the API chains transitions internally and returns the final stage.
+- **Empty Collaborate:** If all turns are unanimously correct, skip Collaborate. Handled the same way — the API chains to the Locate trigger check.
 - **Student joins mid-session:** Student enters at current stage. If mid-Collaborate, they see the current turn and can participate.
 - **Stage value migration:** Existing sessions have `explain` stage values. These should continue to work (legacy Explain = old behavior). New sessions created after deployment use the new flow. No data migration needed — legacy routing handles old sessions.
+- **Explanation backward compatibility:** Existing explanations have no `stage` field (null). The Results view treats `stage === null` as legacy Explain: `explanations.filter(e => e.stage === "explain" || !e.stage)`.
 
 ---
 
@@ -446,16 +562,16 @@ The phases above are ordered for incremental, testable progress:
 
 | Phase | What | Depends on | Testable milestone |
 |---|---|---|---|
-| 1 | Schema + types | — | Migration runs, types compile |
-| 2 | Turn selection split | 1 | Unit tests: explain/collaborate turn sets are correct and mutually exclusive |
-| 3 | Remove false positives | 1 | Recognize shows only flawed turns, no productive failure paths |
-| 4 | Coins utility + API | 1 | Coins computed and stored on FlawResponse/Explanation records |
+| 1 | Schema + types (incl. Explanation.stage, coin fields) | — | Migration runs, types compile |
+| 2 | Turn selection split + stage semantics | 1 | Unit tests: explain/collaborate turn sets are mutually exclusive; locate trigger uses collaborate responses |
+| 3 | Remove false positives from Recognize | 1 | Recognize shows only flawed turns, no productive failure paths |
+| 4 | Coins utility + API (incl. explanations stage param) | 1 | Coins computed and stored; explanations have stage field |
 | 5 | Explain stage (teach back) | 1, 2 | Explain shows only correct turns, writing-only UI, 1 hint max |
-| 6 | Collaborate stage | 1, 2, 5 | Collaborate shows error turns, type selection + writing, 2 hints |
-| 7 | Stage transitions | 1, 5, 6 | Full flow: Recognize → Explain → Collaborate → Locate/Results |
+| 6 | Collaborate stage + hints API + page.tsx wiring | 1, 2, 5 | Collaborate shows error turns, type selection + writing, 2 hints; hints API accepts "collaborate" |
+| 7 | Stage transitions (incl. empty-stage skipping) | 1, 5, 6 | Full flow: Recognize → Explain → Collaborate → Locate/Results; empty stages chain correctly |
 | 8 | Pass thresholds + goal bars | 1, 4 | Goal bar visible, celebration on threshold |
-| 9 | Results view | 5, 6 | All 5 tabs render with correct data |
-| 10 | Teacher dashboard | 4, 7 | Dashboard shows coins, new stage names |
-| 11 | Edge cases + polish | All | Empty stages skip, legacy sessions unaffected |
+| 9 | Results view (filter explanations by stage) | 5, 6 | All 5 tabs render with correct data; explain/collaborate explanations separated |
+| 10 | Teacher dashboard (stage labels, action buttons, coins) | 4, 7 | Dashboard shows coins, correct stage names, no action buttons on auto-transition stages |
+| 11 | Edge cases, exports, polish | All | Empty stages skip, legacy sessions unaffected, exports include coins |
 
 Phases 3 and 4 can run in parallel with phases 5 and 6.

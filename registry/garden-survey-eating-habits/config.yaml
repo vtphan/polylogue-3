@@ -13,6 +13,6 @@ agents:
 - agent_id: mateo
   name: Mateo
 discussion_state:
-  current_stage: opening_up
-  total_turns: 4
-  last_speaker: mateo
+  current_stage: working_through
+  total_turns: 6
+  last_speaker: nadia
