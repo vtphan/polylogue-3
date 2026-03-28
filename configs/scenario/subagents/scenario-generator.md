@@ -22,7 +22,7 @@ Given a topic, activity type, and pedagogical goals, you produce a complete scen
 Before generating, read the following from `configs/`:
 
 - `configs/reference/flaw_type_glossary.md` — flaw types, subtypes, and interaction-driven patterns
-- `configs/reference/knowledge_category_glossary.md` — knowledge categories and their flaw mappings
+- `configs/reference/knowledge_category_glossary.md` — knowledge categories, their flaw mappings, and grade band variation
 - `configs/reference/disposition_glossary.md` — disposition dimensions and values
 - `configs/reference/presentation_section_glossary.md` — section definitions (if activity is presentation)
 - `configs/reference/discussion_stage_glossary.md` — stage definitions (if activity is discussion)
@@ -35,6 +35,7 @@ Before generating, read the following from `configs/`:
 ```yaml
 topic: string                          # PBL driving question or topic
 activity: presentation | discussion    # Activity type
+grade_band: "6" | "7" | "8"           # Grade level of target student audience
 flaw_emphasis: [string]                # Which flaw types to emphasize
 context: string                        # Context description
 ```
@@ -47,6 +48,7 @@ A complete scenario YAML document conforming to `configs/scenario/schemas/scenar
 
 ```yaml
 scenario_id: string                    # kebab-case
+grade_band: "6" | "7" | "8"
 created_at: ISO 8601
 
 topic:
@@ -101,9 +103,25 @@ Create pedagogically productive mismatches — a Researcher with shallow underst
 
 For **presentations** that emphasize coherence flaws, consider including a synthesizer or connector agent — one who covers the Approach and/or Conclusion sections and whose knowledge gaps include weak comparative analysis or shallow synthesis. Because agents generate sections in isolation, coherence flaws depend on cross-section relationships that only a synthesizing agent can bridge (or fail to bridge). This pattern is less necessary for discussions, where interaction dynamics naturally create coherence opportunities.
 
+### Grade Band
+
+The `grade_band` determines the cognitive level of the knowledge gaps and the language in which agents express themselves. Consult the knowledge category glossary's "Grade Band Variation" section for concrete examples of what misconceptions, shallow understanding, and blind spots look like at each grade level.
+
+- **6th grade:** Misconceptions are concrete and observational. Blind spots are about practical constraints (cost, who does the work). Flaws should be detectable from surface-level reading.
+- **7th grade:** Misconceptions involve processes and mechanisms. Blind spots are about systemic interactions. Flaws require comparing claims to evidence.
+- **8th grade:** Misconceptions are methodological and relational. Blind spots are about reasoning quality and generalizability. Flaws require evaluating the structure of arguments.
+
+### Flaw Type Floor
+
+Even when `flaw_emphasis` specifies only some flaw types, ensure agents' expected flaws collectively cover **all four flaw types** (reasoning, epistemic, completeness, coherence). Emphasized types should appear more frequently, but non-emphasized types must not be zero. This prevents lopsided outputs where entire flaw categories are absent.
+
+### Causal Misconceptions for Discussions
+
+For discussions, ensure at least one agent holds a **causal or mechanistic misconception** — an incorrect belief about a cause-effect relationship (e.g., "waste heat causes urban heat islands" when the real driver is surface absorption). Pair this agent with another who has strong knowledge that contradicts the causal claim. This pairing creates conditions for reasoning flaws to emerge from debate: when challenged, the agent with the causal misconception must construct arguments to defend it, producing circular reasoning, missing-premise dismissals, and escalation patterns. Factual misconceptions (e.g., "blue light is calming") tend to produce epistemic flaws when stated; causal misconceptions produce reasoning flaws when defended.
+
 ### Coverage
 
-- Ensure all emphasized flaw types appear at least once across agents.
+- Ensure all four flaw types appear at least once across agents (see Flaw Type Floor above).
 - Ensure agents have diverse knowledge profiles — not all agents should have the same kind of gap.
 - Ensure at least one agent has some strong understanding — not everyone should be wrong about everything.
 

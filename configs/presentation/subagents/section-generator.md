@@ -78,10 +78,15 @@ team_context:
       role: "{role}"
   your_role: "{this agent's role}"
 
+grade_band: "{grade_band}"
+
 instructions: |
   Generate your section of the team presentation. Write 3-6 paragraphs
-  appropriate for a middle school group presentation. Speak naturally as
-  yourself — use your knowledge, your style, your voice.
+  as a {grade_band}th grader would present them. Speak naturally as
+  yourself — use your knowledge, your style, your voice. Sound like a
+  real {grade_band}th grader, not a textbook. Use everyday vocabulary.
+  When you use a technical term, it should sound like something you
+  recently learned.
 
   You are presenting the {section} section. {section_purpose}
 

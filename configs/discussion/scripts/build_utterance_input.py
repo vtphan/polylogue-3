@@ -62,6 +62,8 @@ def build_input(scenario_id: str, agent_id: str) -> dict:
             "role": agent.get("role"),
         })
 
+    grade_band = scenario.get("grade_band", "7")
+
     return {
         "topic": {
             "driving_question": scenario["topic"]["driving_question"],
@@ -72,13 +74,16 @@ def build_input(scenario_id: str, agent_id: str) -> dict:
             "project": scenario["context"]["description"],
             "team_members": team_members,
         },
+        "grade_band": grade_band,
         "conversation_so_far": history,
         "persona": persona_content,
         "instructions": (
-            "Generate your next discussion turn. Respond to what was actually "
-            "said in the conversation. Your turn should be 2-4 sentences, "
-            "natural and conversational. React authentically to what others "
-            "have said."
+            f"Generate your next discussion turn. Respond to what was "
+            f"actually said in the conversation. Your turn should be 2-4 "
+            f"sentences, natural and conversational. Sound like a real "
+            f"{grade_band}th grader talking to classmates — use everyday "
+            f"words, not textbook language. React authentically to what "
+            f"others have said."
         ),
     }
 

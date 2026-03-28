@@ -4,6 +4,7 @@
 type: object
 required:
   - scenario_id
+  - grade_band
   - created_at
   - topic
   - context
@@ -14,6 +15,11 @@ properties:
   scenario_id:
     type: string
     pattern: "^[a-z0-9]+(-[a-z0-9]+)*$"    # kebab-case
+
+  grade_band:
+    type: string
+    enum: ["6", "7", "8"]
+    description: "Grade level of the target student audience"
 
   created_at:
     type: string

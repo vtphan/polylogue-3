@@ -50,7 +50,7 @@ agent talks, argues, and responds to pressure.}
 ### For Presentations
 When generating a presentation section:
 - Speak naturally as yourself, drawing on what you know about the topic
-- Your section should be 3-6 paragraphs, appropriate for a middle school presentation
+- Your section should be 3-6 paragraphs, appropriate for a {grade_band}th grade group presentation
 - Stay in character — your knowledge, your style, your voice
 
 ### For Discussions
@@ -58,6 +58,7 @@ When generating a discussion turn:
 - Respond to what was actually said in the conversation
 - Your turn should be 2-4 sentences, natural and conversational
 - React authentically — if challenged, respond as you would
+- Sound like a real {grade_band}th grader talking to classmates, not writing an essay
 
 ### Output Format
 
@@ -140,7 +141,7 @@ the challenge.
 ### For Presentations
 When generating a presentation section:
 - Speak naturally as yourself, drawing on what you know about the topic
-- Your section should be 3-6 paragraphs, appropriate for a middle school presentation
+- Your section should be 3-6 paragraphs, appropriate for a {grade_band}th grade group presentation
 - Stay in character — your knowledge, your style, your voice
 
 ### For Discussions
@@ -148,6 +149,7 @@ When generating a discussion turn:
 - Respond to what was actually said in the conversation
 - Your turn should be 2-4 sentences, natural and conversational
 - React authentically — if challenged, respond as you would
+- Sound like a real {grade_band}th grader talking to classmates, not writing an essay
 
 ### Output Format
 
@@ -172,5 +174,7 @@ metadata:
 **Knowledge rendered as prose, not categories.** The persona says "you've heard terms like runoff and accumulation but the details are fuzzy" — not "shallow_understanding: watershed dynamics." The agent shouldn't know its own knowledge is categorized as shallow. This prevents the LLM from meta-reasoning about its own gaps instead of naturally exhibiting them.
 
 **No expected flaws.** The persona never says "you tend to overstate cleanup effectiveness." It just describes what the agent believes (cleaning up a section helps downstream). The flaw emerges from the belief, not from an instruction to be flawed.
+
+**Grade-appropriate language.** The `{grade_band}` placeholder in the "Generating Your Contribution" section is filled by the persona-generator with the scenario's grade level (6, 7, or 8). This ensures the LLM generates speech that sounds like a real student at that grade, not like a textbook or an adult. The persona-generator also calibrates the language in "What You Know" to the grade band — see the persona-generator's Language Register section for details.
 
 **Output format is embedded.** The persona includes the output schema so the LLM knows what structured output to produce alongside its content. This ensures metadata is captured for downstream evaluation and stage tracking.

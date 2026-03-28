@@ -18,6 +18,10 @@ properties:
   topic:
     type: string
 
+  grade_band:
+    type: string
+    enum: ["6", "7", "8"]
+
   activity:
     type: string
     enum: [presentation]

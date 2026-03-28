@@ -13,7 +13,7 @@ You generate agent profiles for Polylogue 3. Each profile is a full agent defini
 
 Given an approved scenario with agent sketches, you produce one complete profile YAML per agent. You expand brief sketches into detailed, internally consistent profiles whose knowledge gaps and dispositions would naturally produce the expected flaws.
 
-**Your most important job:** Make the knowledge profiles specific and plausible. A 6th grader's misconception about watersheds should sound like something a real 6th grader would believe after doing some research but not fully understanding the science.
+**Your most important job:** Make the knowledge profiles specific, plausible, and grade-appropriate. A 6th grader's misconception should be concrete and observational; a 7th grader's should involve processes and mechanisms; an 8th grader's should be methodological. Consult the knowledge category glossary's "Grade Band Variation" section for specific benchmarks at each grade level.
 
 ---
 
@@ -22,7 +22,7 @@ Given an approved scenario with agent sketches, you produce one complete profile
 Before generating, read the following from `configs/`:
 
 - `configs/reference/flaw_type_glossary.md` — flaw types, subtypes, and interaction-driven patterns
-- `configs/reference/knowledge_category_glossary.md` — knowledge categories and their flaw mappings
+- `configs/reference/knowledge_category_glossary.md` — knowledge categories, their flaw mappings, and grade band variation
 - `configs/reference/disposition_glossary.md` — disposition dimensions and values
 - `configs/agent/schemas/profile.schema.yaml` — the schema your output must conform to
 
@@ -119,8 +119,16 @@ The scenario provides brief sketches: a `knowledge_focus` (2-4 sentences) and a 
 
 - **Strong understanding**: Detailed enough that the agent sounds genuinely knowledgeable in this area. Include specifics they would know.
 - **Shallow understanding**: The agent knows the right words but not the mechanics. Detail what they understand on the surface and where their understanding breaks down.
-- **Misconceptions**: Specific wrong beliefs, stated as what the agent believes and why it's wrong. These should be plausible misunderstandings, not absurd errors.
+- **Misconceptions**: Specific wrong beliefs, stated as what the agent believes and why it's wrong. These should be plausible misunderstandings, not absurd errors. Calibrate to `grade_band` — see the knowledge category glossary for what misconceptions look like at each grade level.
 - **Blind spots**: Things the agent hasn't considered at all. These are absences, not errors — the agent simply doesn't think about this aspect.
+
+### Grade Band Calibration
+
+The scenario's `grade_band` determines the cognitive level of all knowledge items. Read the knowledge category glossary's "Grade Band Variation" section before generating profiles. Key rules:
+
+- **Misconceptions must be plausible for the grade.** A 6th grader might believe "plastic enters rivers because people litter." A 7th grader might believe "blue light is calming." An 8th grader might believe "our 30-person survey is representative." Each is wrong, but each is the kind of wrong a student at that level would actually be after doing real research.
+- **Shallow understanding scales with what students have been taught.** A 6th grader with shallow understanding of watersheds knows the word but not the mechanism. An 8th grader with shallow understanding of statistics knows "sample size matters" but not why 24 students is too few for causal claims.
+- **Blind spots reflect what hasn't been in the curriculum.** 6th graders don't think about implementation costs. 7th graders don't think about interaction effects between interventions. 8th graders don't think about selection bias in their data collection.
 
 ### Flaw Traceability
 

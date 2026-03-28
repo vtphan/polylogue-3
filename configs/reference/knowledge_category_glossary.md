@@ -41,3 +41,35 @@ Definitions for the four knowledge profile categories. Referenced by profile-gen
 **Behavioral manifestation:** Simply doesn't mention the area. Doesn't account for it in proposals or analyses. If the area is raised by someone else (in discussion), the agent may dismiss it, deflect, or try to accommodate superficially.
 
 **Flaw relationship:** Produces **completeness flaws** — missing stakeholders, no feasibility analysis, unaddressed tradeoffs, missing counterexamples, ignored constraints. Blind spots are the primary mechanism for completeness flaws. May also contribute to **coherence flaws** (goal-method mismatch, conclusion overreach) when the missing area is essential to connecting goals to methods or evidence to conclusions.
+
+---
+
+## Grade Band Variation
+
+Knowledge categories scale with cognitive development. What counts as a plausible misconception, shallow understanding, or blind spot depends on the student's grade level and what they've been exposed to.
+
+### Misconceptions by Grade
+
+| Grade | Character | Example |
+|-------|-----------|---------|
+| **6th** | Concrete and observational. Based on what students can see or have heard casually. | "Plastic gets in the river because people litter" (visible behavior mistaken for the whole cause). "Bigger animals are more endangered than smaller ones." |
+| **7th** | Process-based and mechanistic. Students have learned some science but misunderstand how systems work. | "Blue light calms you down" (color psychology confused with circadian biology). "The Mozart Effect proves music makes you smarter." "Cleaning up river trash removes microplastics." |
+| **8th** | Methodological and relational. Students can reason about evidence but misjudge its quality or scope. | "30 survey responses is a representative sample." "Our controlled experiment proves causation" (without random assignment). "Correlation in our data means this intervention works." |
+
+### Shallow Understanding by Grade
+
+| Grade | Character |
+|-------|-----------|
+| **6th** | Knows vocabulary but not mechanisms. Can name "runoff" but can't explain how pollutants move through a watershed. |
+| **7th** | Knows the general pattern but not the exceptions or limits. Understands bioaccumulation as "builds up in bigger fish" but can't explain the mechanism or when it applies. |
+| **8th** | Knows the concept but not its boundary conditions. Understands statistical significance as "the result is real" but can't explain what p-values measure or when a sample is too small. |
+
+### Blind Spots by Grade
+
+| Grade | Character |
+|-------|-----------|
+| **6th** | Hasn't thought about practical constraints. Cost, who does the work, who's affected. |
+| **7th** | Hasn't thought about systemic interactions. How one intervention affects another. Whether solutions create new problems. |
+| **8th** | Hasn't thought about methodology limits. Whether their data collection method introduces bias. Whether their findings generalize. |
+
+**For profile design:** Use these benchmarks when creating knowledge items. A profile for a 6th-grade scenario should use 6th-grade-plausible misconceptions, not 8th-grade methodological errors.

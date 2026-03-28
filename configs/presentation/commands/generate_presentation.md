@@ -54,6 +54,7 @@ Create `registry/{scenario_id}/` if it doesn't exist.
 Initialize `registry/{scenario_id}/config.yaml`:
 ```yaml
 scenario_id: {scenario_id}
+grade_band: {grade_band}
 created_at: {ISO 8601}
 topic: {driving_question}
 activity: presentation
@@ -68,6 +69,7 @@ presentation_state:
 Initialize `registry/{scenario_id}/presentation.yaml` with the header:
 ```yaml
 scenario_id: {scenario_id}
+grade_band: {grade_band}
 topic: {driving_question}
 activity: presentation
 created_at: {ISO 8601}

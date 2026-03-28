@@ -21,7 +21,7 @@ Given a transcript (presentation or discussion), you identify specific critical 
 
 Before evaluating, read the following from `configs/`:
 
-- `configs/reference/flaw_type_glossary.md` — flaw types, subtypes, interaction-driven patterns, and their definitions. This is the source of truth for what constitutes each flaw type.
+- `configs/reference/flaw_type_glossary.md` — flaw types, subtypes, interaction-driven patterns, grade band considerations, and their definitions. This is the source of truth for what constitutes each flaw type.
 - `configs/reference/presentation_section_glossary.md` — section definitions (if evaluating a presentation)
 - `configs/reference/discussion_stage_glossary.md` — stage definitions (if evaluating a discussion)
 - `configs/evaluation/schemas/evaluation.schema.yaml` — schema your output must conform to
@@ -33,6 +33,7 @@ Before evaluating, read the following from `configs/`:
 ```yaml
 transcript:                            # Full presentation or discussion transcript
   scenario_id: string
+  grade_band: "6" | "7" | "8"
   topic: string
   activity: presentation | discussion
   agents: [...]
@@ -40,6 +41,7 @@ transcript:                            # Full presentation or discussion transcr
   turns: [...]                         # If discussion
 
 activity: presentation | discussion
+grade_band: "6" | "7" | "8"           # Grade level of target student audience
 ```
 
 ---
@@ -126,6 +128,23 @@ Set `location.type: cross_turn` with multiple turn_id references. Source is `int
 | **Minor** | Imprecise language or slight overstatement. Doesn't undermine the core argument. A careful reader might notice but it doesn't mislead. |
 | **Moderate** | Weakens the argument meaningfully. An important gap, a claim that doesn't hold up, or an omission that matters. A student should identify this. |
 | **Major** | Fundamentally undermines the argument or project. Based on a misconception, ignores a critical stakeholder, or reaches a conclusion contradicted by the evidence. Students must catch this. |
+
+### Grade Band Calibration
+
+Severity should be calibrated to what students at the target `grade_band` can reasonably be expected to catch. Consult the flaw type glossary's "Grade Band Considerations" section for details.
+
+- **6th grade:** Focus on concrete, surface-level flaws. A missing feasibility analysis is moderate; a subtle methodological issue may not even be flagged. Flaws that require holding multiple sections in working memory to detect should be noted but may be minor severity for this audience.
+- **7th grade:** Students can compare claims across sections and evaluate whether evidence supports conclusions. Cross-section contradictions and evidence-claim disconnects are moderate to major.
+- **8th grade:** Students can evaluate reasoning quality, detect circular arguments, and identify methodological weaknesses. Abstract flaws (correlation-as-causation, circular reasoning, unfalsifiable framing) are fair game at moderate to major severity.
+
+### Causal Misconception Detection (Discussions)
+
+In discussions, watch for agents defending causal misconceptions under pressure. The pattern:
+1. An agent states a causal claim (X causes Y) based on a misconception
+2. Another agent presents contradicting evidence
+3. The first agent responds by reframing, escalating, or using circular reasoning rather than engaging with the counter-evidence
+
+When this pattern appears, classify the resulting flaws as **reasoning** (not epistemic). The epistemic flaw is the initial wrong belief; the reasoning flaws emerge from defending it. Track escalation across turns — the claim often becomes more absolute, not less, under pressure. Use `reactive_tendency_activated` metadata as a signal but verify by reading the actual turn content.
 
 ---
 

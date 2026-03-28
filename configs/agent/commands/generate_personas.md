@@ -27,11 +27,17 @@ If the directory doesn't exist or is empty, report an error and exit.
 
 For each `{agent_id}.yaml`, load the full profile.
 
-### Step 2: Read Persona Template
+### Step 2: Load Scenario Metadata
+
+Read `configs/scenarios/{scenario_id}.yaml` to extract:
+- `grade_band`: the target grade level
+- `activity`: presentation or discussion
+
+### Step 3: Read Persona Template
 
 Read `configs/agent/persona-template.md` — the template and examples for persona generation.
 
-### Step 3: Generate Personas
+### Step 4: Generate Personas
 
 For each profile, delegate to the **persona-generator** subagent.
 
@@ -39,12 +45,13 @@ Provide the subagent with:
 - The full profile YAML
 - The persona template specification
 - The activity type (from the scenario, for the "Generating Your Contribution" section)
+- The `grade_band` (from the scenario, for language register calibration)
 
 The subagent produces a persona markdown file for each agent.
 
 **Critical rule:** Expected flaws are **excluded** from personas. The subagent receives the full profile (including expected flaws for context) but must NOT include any reference to expected flaws in the output persona.
 
-### Step 4: Validate Personas
+### Step 5: Validate Personas
 
 For each generated persona, verify:
 - Contains frontmatter with `name` and `agent_id`
@@ -55,7 +62,7 @@ For each generated persona, verify:
 
 If validation fails, regenerate.
 
-### Step 5: Write Output
+### Step 6: Write Output
 
 Create directory `.claude/agents/personas/{scenario_id}/` if it doesn't exist.
 
@@ -63,7 +70,7 @@ Write each persona to `.claude/agents/personas/{scenario_id}/{agent_id}.md`.
 
 If files exist, ask confirmation before overwriting.
 
-### Step 6: Report
+### Step 7: Report
 
 ```
 Personas generated for scenario: {scenario_id}

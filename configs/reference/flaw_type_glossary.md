@@ -18,6 +18,8 @@ Definitions and examples for the four critical thinking flaw types. Referenced b
 | False equivalence | Treating unequal things as equal | "Both sides of the recycling debate have good points" (when evidence strongly favors one side) |
 | Circular reasoning | Conclusion restates the premise | "Our solution works because it's effective" |
 
+**Causal misconceptions in discussions.** A particularly productive subtype is the causal misconception — an incorrect belief about a cause-effect relationship (e.g., "waste heat from cars causes urban heat islands" when the real driver is surface absorption). Causal misconceptions generate reasoning flaws when defended in discussion, because the agent must construct arguments with faulty premises. When challenged, agents with causal misconceptions tend to escalate — producing circular reasoning, missing-premise dismissals, and unfalsifiable reframings. By contrast, factual misconceptions (e.g., "blue light is calming") tend to produce epistemic flaws (assumption-as-fact) because the agent simply states the wrong thing confidently. For discussions, at least one agent should hold a causal misconception to ensure reasoning flaws emerge from debate.
+
 **Primary source:** Both knowledge-driven (misconceptions lead to flawed reasoning) and interaction-driven (pressure leads to fallacious arguments).
 
 ---
@@ -104,3 +106,19 @@ These patterns occur only in discussions, when the dynamics of the exchange prod
 | **Abandonment** | Agent gives up a line of reasoning prematurely — not because it was refuted, but because the discussion moved on or pressure mounted | Completeness (missing analysis), Coherence (conclusion overreach) | Agent starts to question the data quality but drops the point after being talked over, leading the group to conclusions the data doesn't support |
 
 These patterns are identified by the evaluator through cross-turn analysis — they span multiple turns and are visible only when tracking how positions shift (or fail to shift) across the arc of the discussion.
+
+---
+
+## Grade Band Considerations
+
+Flaw types don't map to difficulty levels — every type has easy and hard instances. What changes by grade is the **concreteness** of flaws and the **working memory** required to detect them.
+
+| Grade | What flaws look like | What students can reasonably catch |
+|-------|---------------------|-----------------------------------|
+| **6th** | Concrete and observable. Misconceptions are about visible things ("plastic gets in the river because people litter"). Overgeneralizations are from small, obvious samples. Missing elements are things students can name from everyday experience (cost, who does the work). | Single-section/single-turn flaws. "They only tested 8 people." "They never said how much it costs." "They said it was proven but didn't show proof." |
+| **7th** | More systemic. Misconceptions involve processes or mechanisms ("blue light calms you down," "waste heat causes urban heat islands"). Flaws require understanding how evidence connects to claims. Coherence flaws between sections become accessible. | Flaws that require comparing two pieces of information. "The introduction said it was debated but the conclusion said it was settled." "They used an anecdote as proof." |
+| **8th** | Abstract and methodological. Misconceptions are about reasoning itself ("our survey is representative because we got 30 responses"). Flaws involve evaluating the quality of evidence, not just its presence. Cross-section and cross-turn patterns are primary targets. | Flaws that require evaluating reasoning quality. "Their argument is circular." "They're treating correlation as causation." "The group agreed but never actually resolved the disagreement." |
+
+**For scenario design:** `grade_band` should shape the knowledge gaps in agent profiles. The flaw types can be any of the four — what changes is how concrete or abstract the underlying misconception or gap is. A 6th grader's completeness flaw is "they forgot to mention the cost"; an 8th grader's is "they didn't consider whether their sample was representative."
+
+**For evaluation:** The evaluator should calibrate severity to grade band. A flaw that would be minor for 8th graders (subtle methodological issue) might not even be flagged for 6th graders because it's beyond what students at that level should be expected to catch.

@@ -74,6 +74,8 @@ def build_input(scenario_id: str, section_name: str, agent_id: str) -> dict:
             "role": agent.get("role", "team member"),
         })
 
+    grade_band = scenario.get("grade_band", "7")
+
     return {
         "topic": {
             "driving_question": scenario["topic"]["driving_question"],
@@ -90,7 +92,16 @@ def build_input(scenario_id: str, section_name: str, agent_id: str) -> dict:
             "team_members": team_members,
             "your_role": agent_role,
         },
+        "grade_band": grade_band,
         "persona": persona_content,
+        "instructions": (
+            f"Generate your section of the team presentation. Write 3-6 "
+            f"paragraphs as a {grade_band}th grader would present them. "
+            f"Speak naturally as yourself — use your knowledge, your style, "
+            f"your voice. Sound like a real {grade_band}th grader, not a "
+            f"textbook. Use everyday vocabulary. When you use a technical "
+            f"term, it should sound like something you recently learned."
+        ),
     }
 
 

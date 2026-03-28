@@ -144,6 +144,30 @@ registry/           Generated transcripts and evaluation results
 
 ---
 
+## Starting From Scratch
+
+To wipe all generated artifacts and start fresh (e.g., after updating commands, subagents, or schemas):
+
+```bash
+# Remove generated scenarios, profiles, personas, and registry outputs
+rm -rf configs/scenarios/*.yaml configs/profiles/* .claude/agents/personas/* registry/*
+```
+
+Note: this preserves `configs/scenarios/examples.md` (not a YAML file) and all source artifacts in `configs/`.
+
+Then re-sync and re-run the pipeline:
+
+```
+/initialize_polylogue
+/create_scenario "Your topic" activity --grade 7 --flaws reasoning,epistemic --context "..."
+/generate_profiles {scenario_id}
+/generate_personas {scenario_id}
+/generate_presentation {scenario_id}   # or /begin_discussion
+/evaluate_presentation {scenario_id}   # or /evaluate_discussion
+```
+
+---
+
 ## Further Reading
 
 - `docs/agent-architecture.md` — How agents are defined and why
