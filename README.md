@@ -27,7 +27,9 @@ A separate evaluation step produces a reference list of flaws that you can compa
 /create_scenario "What are the major threats affecting our global environment?" presentation --flaws epistemic,completeness
 ```
 
-This generates a scenario with a team of agents designed backward from the flaws you specified. The system determines the appropriate number of agents and their roles based on the project context.
+This generates a scenario with a team of agents designed backward from the flaws you specified. The `--grade` parameter controls the cognitive level of knowledge gaps and how agents speak. The system determines the appropriate number of agents and their roles based on the project context.
+
+See `configs/scenarios/examples.md` for ready-to-use prompts organized by grade level, plus a **Scaffolded Progression** section with four prompts designed to build students' flaw-detection skills from easy to hard.
 
 **Review the scenario.** Open `configs/scenarios/{scenario_id}.yaml` and revise as needed:
 - Adjust agent roles and knowledge focuses

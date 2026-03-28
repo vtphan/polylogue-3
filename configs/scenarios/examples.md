@@ -82,6 +82,73 @@ Ready-to-use prompts for generating scenarios. Each is grounded in a real UMS PB
 
 ---
 
+## Scaffolded Progression
+
+Use these prompts in sequence to build students' flaw-detection skills from easy to hard. Each level increases in what students need to do cognitively. The topic (school gardens) stays consistent so the content is familiar — the challenge comes from the flaws, not the subject matter.
+
+### Level 1: Warm-Up — "What's Missing?"
+
+**Format:** Presentation. **Target flaws:** Completeness (primary), reasoning (secondary).
+
+Students practice noticing what's absent — the easiest type of flaw to detect because you're asking "did they forget something?" rather than evaluating argument quality. The context is designed to produce obvious omissions: a group that proposes a solution without considering cost, space, or who does the work.
+
+```
+/create_scenario "Should our school start a garden to teach students about healthy eating?" presentation --grade 6 --context "6th grade STEM PBL. A group of 3 students researched whether a school garden would help students learn about nutrition. They visited one community garden, interviewed the school cafeteria manager, and read two articles about school gardens in other states. They are enthusiastic about the idea and want to recommend the school build a garden. They have not looked into costs, maintenance requirements, or whether the school has suitable space. Their presentation proposes the garden and explains why it would help students eat healthier." --flaws completeness,reasoning
+```
+
+**What students should catch:** No cost estimate. No plan for who maintains it over summer. No consideration of available space. Conclusion ("the school should definitely do this") based on one garden visit and two articles.
+
+### Level 2: Building Up — "Is That Actually True?"
+
+**Format:** Presentation. **Target flaws:** Epistemic (primary), reasoning (secondary).
+
+Students now evaluate whether claims are supported by evidence. Harder than Level 1 because students must assess *quality* of evidence, not just its presence. The context produces agents who overstate what their small study shows and present assumptions as facts.
+
+```
+/create_scenario "Do school gardens actually improve students' eating habits and test scores?" presentation --grade 7 --context "7th grade STEM PBL. A group of 4 students designed a study to test whether working in a school garden changes students' eating habits. They had 12 students work in the garden for 3 weeks and gave them a survey before and after about what foods they eat. They also found a news article claiming that schools with gardens have higher test scores. They are presenting their findings as strong evidence that gardens improve both nutrition and academic performance." --flaws epistemic,reasoning
+```
+
+**What students should catch:** 12 students for 3 weeks is too small and too short to prove anything. Self-reported eating habits are unreliable. The test score claim comes from a news article, not their study — and correlation doesn't prove the garden caused higher scores. "Our study proves" language overstates what the data supports.
+
+### Level 3: Intermediate — "Do the Pieces Fit Together?"
+
+**Format:** Discussion. **Target flaws:** Coherence (primary), epistemic (secondary).
+
+Students track a live conversation and notice when the group's pieces don't fit together. This requires holding multiple speakers' claims in working memory and comparing them. The context creates agents with conflicting understandings of the same topic who reach agreement without resolving the contradictions.
+
+```
+/create_scenario "What type of school garden would work best for our school — raised beds, a greenhouse, or a community plot?" discussion --grade 7 --context "7th grade STEM PBL. A group of 4 students is debating which garden design to recommend. One student researched raised beds and thinks they're best because they're cheap. Another researched greenhouses and believes year-round growing is essential. A third visited a community garden and wants to partner with a local organization. A fourth is trying to synthesize but doesn't fully understand the tradeoffs between the options. They have different assumptions about the budget (one thinks $500, another thinks $5000) but haven't noticed this disagreement. They are likely to agree on a plan without resolving the budget conflict." --flaws coherence,epistemic
+```
+
+**What students should catch:** The group agrees on a plan but two members have completely different budget assumptions. The synthesizer combines incompatible recommendations without noticing they conflict. One student's "cheap" raised beds and another's greenhouse can't both fit the budget, but no one raises this. Evidence from one garden visit is treated as representative.
+
+### Level 4: Challenge — "What's Happening in the Conversation?"
+
+**Format:** Discussion. **Target flaws:** Reasoning (primary), completeness (secondary).
+
+Students must detect flaws in reasoning *and* notice how group dynamics amplify them. This is the hardest level because students need to track how a wrong idea gets defended and how valid objections get dropped under social pressure. The context creates a causal misconception that one agent defends with escalating certainty while another agent with valid concerns backs down.
+
+```
+/create_scenario "Why did our school garden fail last year, and how can we make the next one succeed?" discussion --grade 8 --context "8th grade STEM PBL. A group of 4 students is analyzing why their school's garden failed the previous year. One student is convinced the failure was because students didn't care enough — low motivation was the cause. Another student has data showing the garden had poor soil drainage and was planted too late in the season, but is less confident about speaking up. A third student just wants to move forward with a new plan and keeps pushing the group to stop debating and start designing. The group is likely to settle on a 'student motivation campaign' as the solution because the most vocal member drives the conversation, even though the evidence points to practical growing conditions as the real problem." --flaws reasoning,completeness
+```
+
+**What students should catch:** The vocal student treats "students didn't care" as the cause when the evidence (poor drainage, late planting) points elsewhere — a causal misconception defended with increasing confidence. The student with the real data backs down ("I guess you're right, motivation probably matters more"). The group agrees on a motivation campaign that doesn't address the actual causes of failure. No one considers practical fixes (drainage, planting schedule) because the conversation moved past them.
+
+---
+
+### Progression Summary
+
+| Level | Format | What students practice | Cognitive demand |
+|-------|--------|----------------------|------------------|
+| 1. Warm-Up | Presentation | Noticing what's missing | Low — "did they forget X?" |
+| 2. Building Up | Presentation | Evaluating evidence quality | Medium — "is this actually proven?" |
+| 3. Intermediate | Discussion | Comparing claims across speakers | Medium-high — "do these pieces fit?" |
+| 4. Challenge | Discussion | Tracking reasoning + group dynamics | High — "why did the group accept a bad argument?" |
+
+Teachers can use all four in sequence over a unit, or pick the level that matches their class. Level 1 works as a standalone warm-up activity. Levels 3-4 work best after students have practiced with presentations first.
+
+---
+
 ## Notes
 
 **Connector agents:** Presentations that emphasize coherence flaws benefit from a synthesizer or connector agent covering the Approach and/or Conclusion sections — see the plastic pollution scenario (Tomas) for an example. This pattern is less necessary for discussions, where interaction dynamics produce coherence opportunities naturally.
