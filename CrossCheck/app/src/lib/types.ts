@@ -76,17 +76,18 @@ export interface Annotation {
   comments?: { id: string; text: string; isBonus: boolean }[];
 }
 
-// --- Session stages (three-stage flow) ---
+// --- Session stages (five-stage flow) ---
 
-// The three-stage session flow: Recognize → Explain → Locate → Results
-export type SessionStage = "recognize" | "explain" | "locate" | "results";
+// The five-stage session flow: Recognize → Explain → Collaborate → Locate → Results
+export type SessionStage = "recognize" | "explain" | "collaborate" | "locate" | "results";
 
-export const SESSION_STAGES: SessionStage[] = ["recognize", "explain", "locate", "results"];
+export const SESSION_STAGES: SessionStage[] = ["recognize", "explain", "collaborate", "locate", "results"];
 
 // Valid stage transitions
 export const STAGE_TRANSITIONS: Record<SessionStage, SessionStage[]> = {
   recognize: ["explain"],
-  explain: ["locate", "results"], // locate is conditional
+  explain: ["collaborate"],           // always → collaborate
+  collaborate: ["locate", "results"], // locate is conditional
   locate: ["results"],
   results: [],
 };
@@ -183,16 +184,51 @@ export interface LocateHintState {
   maxHints: 3;
 }
 
-export type HintState = RecognizeHintState | ExplainHintState | LocateHintState;
+export interface ExplainTeachBackHintState {
+  templateRevealed: boolean;
+  maxHints: 1;
+}
+
+export interface CollaborateHintState {
+  flawTypeRevealed: boolean;
+  templateRevealed: boolean;
+  maxHints: 2;
+}
+
+export type HintState = RecognizeHintState | ExplainHintState | ExplainTeachBackHintState | CollaborateHintState | LocateHintState;
 
 // Design parameters
 export const HINT_UNLOCK_DELAY = {
-  recognize: 18_000,  // 18 seconds (individual)
-  explain: 45_000,    // 45 seconds (group discussion)
-  locate: 18_000,     // 18 seconds (per interaction)
+  recognize: 18_000,   // 18 seconds (individual)
+  explain: 30_000,     // 30 seconds — students already know the answer
+  collaborate: 45_000, // 45 seconds (group discussion)
+  locate: 18_000,      // 18 seconds (per interaction)
 } as const;
 
-export const FALSE_POSITIVE_RATIO = 0.25; // ~1 non-flawed turn per 3-4 flawed turns
+// --- Coins ---
+
+export const COIN_VALUES = {
+  recognize_correct: 2,
+  recognize_correct_independent: 3,   // no hints
+  recognize_wrong: 0,
+  explain_submission: 1,
+  explain_stage_complete: 2,          // bonus per student
+  collaborate_correct: 2,
+  collaborate_correct_independent: 3,
+  collaborate_submission: 1,
+  locate_independent: 3,
+  locate_one_hint: 2,
+  locate_multiple_hints: 1,
+} as const;
+
+// --- Pass thresholds ---
+
+export const DEFAULT_THRESHOLDS: Record<string, number | null> = {
+  recognize: null,    // null = computed as 50% of turns at runtime
+  explain: 2,
+  collaborate: null,  // null = computed as 50% of collaborate turns
+  locate: null,       // null = computed as 50% of locate targets
+};
 
 export const WRITE_THEN_REVEAL_MS = 75_000; // ~75 seconds individual writing period
 

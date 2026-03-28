@@ -33,6 +33,7 @@ enum GroupPhase {
 enum SessionStage {
   recognize
   explain
+  collaborate
   locate
   results
 }
@@ -209,6 +210,7 @@ model Annotation {
   explanation   String?
   hinted        Boolean   @default(false)
   hintLevel     Int       @default(0) @map("hint_level") // Locate: how many hints used before flagging (0 = independent)
+  coins         Int       @default(0)
   targetSection String?   @map("target_section") // Locate: which section student tapped for hints
   isGroupAnswer Boolean   @default(false) @map("is_group_answer")
   confirmedBy   Json?     @map("confirmed_by") // [user_ids]
@@ -251,7 +253,8 @@ model FlawResponse {
   reasonAnswer  String?  @map("reason_answer")
   reasonCorrect Boolean? @map("reason_correct")
   hintLevel     Int      @default(0) @map("hint_level") // Recognize: how many hints used before answering
-  stage         String?  // "recognize" or "explain" — null for legacy/learn responses
+  stage         String?  // "recognize", "explain", or "collaborate" — null for legacy/learn responses
+  coins         Int      @default(0)
   createdAt     DateTime @default(now()) @map("created_at")
 
   group         Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
@@ -335,6 +338,8 @@ model Explanation {
   groupId    String   @map("group_id") @db.Uuid
   sessionId  String   @map("session_id") @db.Uuid
   text       String
+  stage      String?  // "explain" or "collaborate" — null for legacy
+  coins      Int      @default(0)
   revisionOf String?  @map("revision_of") @db.Uuid // id of the Explanation this revises (null = original)
   createdAt  DateTime @default(now()) @map("created_at")
 

@@ -14,5 +14,5 @@ agents:
   name: Mateo
 discussion_state:
   current_stage: working_through
-  total_turns: 6
-  last_speaker: nadia
+  total_turns: 9
+  last_speaker: imani
