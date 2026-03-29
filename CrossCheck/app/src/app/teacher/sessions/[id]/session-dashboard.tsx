@@ -469,14 +469,16 @@ export function SessionDashboard({ session: initialSession }: { session: Session
             const totalAnnotations = group.annotations.length;
             const isSelected = selectedGroup === group.id;
             const mode = group.config?.difficulty_mode;
-            const isResponseMode = mode === "learn" || mode === "recognize";
+            const isNewFlowChip = !mode;
+            const isResponseMode = mode === "learn" || mode === "recognize" || isNewFlowChip;
 
             // Summary stat
             let statText: string;
             if (isResponseMode) {
-              const correct = group.flawResponses.filter((r) => r.typeCorrect).length;
-              statText = group.flawResponses.length > 0
-                ? `${correct}/${group.flawResponses.length} correct`
+              const resps = group.flawResponses.filter((r) => !r.flawId.startsWith("learn:") && !r.flawId.startsWith("self-learn:"));
+              const correct = resps.filter((r) => r.typeCorrect).length;
+              statText = resps.length > 0
+                ? `${correct}/${resps.length} correct`
                 : "No responses";
             } else {
               statText = `${totalAnnotations} annotations`;
@@ -771,7 +773,7 @@ function GroupDetail({
 
   const mode = group.config?.difficulty_mode;
   const isNewFlow = !mode; // New-flow sessions have no difficulty_mode
-  const isResponseMode = mode === "learn" || mode === "recognize";
+  const isResponseMode = mode === "learn" || mode === "recognize" || isNewFlow;
 
   // Stage labels for new-flow sessions
   const STAGE_LABELS: Record<string, string> = {
@@ -954,11 +956,14 @@ function GroupDetail({
         {isResponseMode ? (
           <>
             <span>{activityByUser.size}/{group.members.length} responded</span>
-            {group.flawResponses.length > 0 && (
-              <span className="text-green-600 font-medium">
-                {Math.round((group.flawResponses.filter((r) => r.typeCorrect).length / group.flawResponses.length) * 100)}% accuracy
-              </span>
-            )}
+            {(() => {
+              const resps = group.flawResponses.filter((r) => !r.flawId.startsWith("learn:") && !r.flawId.startsWith("self-learn:"));
+              return resps.length > 0 && (
+                <span className="text-green-600 font-medium">
+                  {Math.round((resps.filter((r) => r.typeCorrect).length / resps.length) * 100)}% accuracy
+                </span>
+              );
+            })()}
           </>
         ) : (
           <>
