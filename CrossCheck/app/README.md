@@ -6,52 +6,71 @@ CrossCheck is a web app that serves AI-generated presentations and discussions (
 
 ---
 
-## Quick Start
+## Prerequisites
+
+- **Node.js 20+**
+- **PostgreSQL 15+** running locally
+
+---
+
+## Installation
 
 ```bash
+# 1. Clone the repo and navigate to the app
 cd CrossCheck/app
+
+# 2. Install dependencies
 npm install
+
+# 3. Create the database
+createdb crosscheck
+
+# 4. Configure environment variables
+cp .env.example .env
+# Edit .env — set DATABASE_URL to your PostgreSQL connection string
+#   DATABASE_URL="postgresql://YOUR_USER@localhost:5432/crosscheck"
+
+# 5. Run migrations and generate the Prisma client
+npx prisma migrate dev
+
+# 6. Generate the Prisma client (if not done by migrate)
+npx prisma generate
+
+# 7. Seed test users and ingest sample activities
+npm run db:reset
+```
+
+> `npm run db:reset` runs `prisma migrate reset`, seeds users/classes from `seed.yaml`, and ingests activities from the registry. It is destructive — it drops and recreates all tables.
+
+---
+
+## Running
+
+```bash
 npm run dev          # Custom server with Socket.IO (real-time)
 # Visit http://localhost:3000
 ```
 
-### Prerequisites
-
-- Node.js 20+
-- PostgreSQL 15+ running locally
-- Database `crosscheck` created: `createdb crosscheck`
-
-### First-time Setup
+For development without Socket.IO (faster restarts, no real-time):
 
 ```bash
-# 1. Install dependencies
-npm install
-
-# 2. Create .env with DATABASE_URL and NEXTAUTH_SECRET
-#    See .env for the expected format
-
-# 3. Run migrations
-npx prisma migrate dev
-
-# 4. Seed test users
-npx tsx scripts/seed-users.ts
-
-# 5. Ingest sample activities from registry
-npx tsx scripts/ingest-registry.ts --all
-
-# 6. Start the app
-npm run dev
+npm run dev:next
 ```
 
-### Test Accounts
+---
 
-| Role | Name | Login |
-|------|------|-------|
-| Teacher | Ms. Johnson | `teacher1` + password `teacher123` |
-| Student | Alex, Jordan, Sam, Taylor | Enter name only (no password) |
-| Researcher | Dr. Chen | `researcher1` + password `researcher123` |
+## Test Accounts
 
-Students log in by entering their name — no password needed. Teachers and researchers require a password.
+Defined in `seed.yaml`. After `npm run db:reset`:
+
+| Role | Name | Password |
+|------|------|----------|
+| Teacher | Ms. Johnson | `teacher123` |
+| Teacher | Mr. Davis | `teacher123` |
+| Researcher | Dr. Chen | `researcher123` |
+| Students | (see seed.yaml) | none — name only |
+
+Students log in by entering their display name. Teachers and researchers require a password.
 
 ---
 
@@ -80,44 +99,6 @@ Teacher releases evaluation (Reviewing phase)
 
 ---
 
-## Features
-
-### Student
-- Read AI presentations (section-by-section) or discussions (chat-style turns)
-- Highlight text and classify by flaw type (reasoning, epistemic, completeness, coherence)
-- Three difficulty modes: Spot (highlight only), Classify (highlight + type), Full (+ severity + explanation)
-- Receive scaffolds from teacher in real time
-- Group consensus: confirm/reject annotations, 2+ votes = group answer
-- Feedback view: side-by-side comparison with reference evaluation
-- Progress dashboard: cross-session detection rates and per-type trends
-
-### Teacher
-- Create sessions, assign groups, manage students
-- Live dashboard with real-time annotation feed and connection status
-- Send scaffolds (6 levels, 12 pre-loaded templates, or free text)
-- View evaluation answer key at any phase
-- Annotations overlaid on transcript in group detail
-- Session notes (auto-save on blur)
-- Class projector view for whole-class debrief
-- Bulk student creation (one name per line)
-- Session delete (setup/closed phases only)
-- Teacher comments on individual annotations (bonus find flags)
-- Phase controls: Individual → Group → Reviewing → Closed (reopen supported)
-
-### Researcher
-- Full pipeline view: scenario, agent profiles, transcript with metadata, evaluation
-- Session browser: all sessions across teachers with anonymized student data
-- CSV exports: annotations, scaffolds, sessions (filtered by research consent)
-
-### Real-time (Socket.IO)
-- Live annotation feed on teacher dashboard
-- Scaffold delivery to student devices
-- Phase transition notifications
-- Group connection status (green/orange/gray dots)
-- Authorized room joins (DB membership verified)
-
----
-
 ## Tech Stack
 
 | Layer | Technology |
@@ -137,42 +118,35 @@ Single deployable unit. Self-hosted on a University of Memphis server. No extern
 
 ```
 CrossCheck/
-├── docs/
-│   ├── app-concept.md         # Full concept document (design reference)
-│   ├── implementation-plan.md  # Phase-by-phase implementation log
-│   └── improvement-plan.md     # Post-v1 improvement tiers
-└── app/                        # Next.js application
-    ├── server.ts               # Custom server (Socket.IO + Next.js)
+├── docs/                           # Design reference documents
+└── app/                            # Next.js application
+    ├── server.ts                   # Custom server (Socket.IO + Next.js)
+    ├── seed.yaml                   # Test users, classes, student rosters
     ├── prisma/
-    │   └── schema.prisma       # Database schema (8 models)
+    │   └── schema.prisma           # Database schema
     ├── scripts/
-    │   ├── seed-users.ts       # Create test accounts
-    │   └── ingest-registry.ts  # Parse YAML → database
+    │   ├── seed-users.ts           # Create test accounts from seed.yaml
+    │   ├── ingest-registry.ts      # Parse YAML activities → database
+    │   └── db-reset.ts             # Full reset (migrate + seed + ingest)
     └── src/
         ├── app/
-        │   ├── api/            # REST endpoints
-        │   ├── auth/login/     # Login page
-        │   ├── student/        # Student views
-        │   ├── teacher/        # Teacher views
-        │   └── researcher/     # Researcher views
+        │   ├── api/                # REST endpoints
+        │   ├── auth/login/         # Login page
+        │   ├── student/            # Student views
+        │   ├── teacher/            # Teacher views
+        │   └── researcher/         # Researcher views
         ├── components/
-        │   ├── annotation/     # FlawBottomBar, FlawPalette
-        │   ├── evaluation/     # EvaluationPanel
-        │   ├── feedback/       # FeedbackView (tabbed)
-        │   └── transcript/     # PresentationView, DiscussionView, AnnotatableText
-        ├── hooks/
-        │   ├── useSocket.ts        # Socket.IO connection + room join
-        │   ├── useSessionSocket.ts # Session-specific event handlers
-        │   └── useSelectionClear.ts
+        │   ├── stages/             # RecognizeStage, ExplainStage, etc.
+        │   ├── feedback/           # FeedbackView
+        │   └── transcript/         # PresentationView, DiscussionView
+        ├── hooks/                  # useSocket, useSessionSocket, etc.
         └── lib/
-            ├── auth.ts             # NextAuth config (name-only for students)
+            ├── auth.ts             # NextAuth config
             ├── db.ts               # Prisma singleton
             ├── matching.ts         # 3-pass annotation matching engine
             ├── socket-server.ts    # Server-side IO singleton
             ├── socket-client.ts    # Client-side socket singleton
-            ├── scaffold-templates.ts
-            ├── agent-colors.ts
-            └── types.ts
+            └── types.ts            # Shared types and constants
 ```
 
 ---
@@ -186,6 +160,7 @@ CrossCheck/
 | `npm run build` | Build for production |
 | `npm start` | Start production server |
 | `npm run lint` | Run ESLint |
+| `npm run db:reset` | Drop all tables, re-migrate, seed users, ingest activities |
 
 ---
 
@@ -193,16 +168,20 @@ CrossCheck/
 
 PostgreSQL on `localhost:5432`, database `crosscheck`.
 
-To reset and re-seed:
+### Common Commands
+
 ```bash
-npx prisma migrate reset    # WARNING: drops all data
-npx tsx scripts/seed-users.ts
-npx tsx scripts/ingest-registry.ts --all
+npx prisma migrate dev      # Apply pending migrations + regenerate client
+npx prisma generate         # Regenerate Prisma client (after schema changes)
+npm run db:reset             # Full destructive reset (drop → migrate → seed → ingest)
 ```
 
-### Schema (8 models)
+### Manual Seeding (without full reset)
 
-`User` → `Session` → `Group` → `GroupMember`, `Annotation` (→ `AnnotationComment`), `Scaffold`, `SessionEvent`
+```bash
+npx tsx scripts/seed-users.ts          # Seed users/classes from seed.yaml
+npx tsx scripts/ingest-registry.ts --all  # Ingest YAML activities from registry/
+```
 
 All child relations use `onDelete: Cascade` — deleting a session cascades to all its data.
 

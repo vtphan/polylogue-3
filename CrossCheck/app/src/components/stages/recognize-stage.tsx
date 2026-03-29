@@ -1,19 +1,29 @@
 "use client";
 
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback } from "react";
 import type { FlawType, TranscriptTurn, FlawIndexEntry } from "@/lib/types";
 import { FLAW_TYPES, HINT_UNLOCK_DELAY, DEFAULT_THRESHOLDS } from "@/lib/types";
 import { HintButton } from "@/components/shared/hint-button";
 import { GoalBar } from "@/components/shared/goal-bar";
+import { HighlightedTurnContent } from "./highlighted-turn-content";
+import { findEvidenceOffsets } from "@/lib/evidence-offsets";
 
 // --- Types ---
 
-interface TurnState {
+interface FlawState {
+  flawId: string;
+  turnId: string;
   answered: boolean;
   correct: boolean;
   hintsUsed: number;
   selectedType: FlawType | null;
   eliminatedChoices: FlawType[];
+}
+
+interface EvaluationFlaw {
+  flaw_id: string;
+  evidence: string;
+  flaw_type: string;
 }
 
 interface RecognizeStageProps {
@@ -22,6 +32,7 @@ interface RecognizeStageProps {
   userId: string;
   turns: TranscriptTurn[];
   flawIndex: FlawIndexEntry[];
+  evaluationFlaws?: EvaluationFlaw[];
   existingResponses?: {
     flawId: string;
     typeAnswer: string;
@@ -32,10 +43,7 @@ interface RecognizeStageProps {
     turnId: string;
     hintLevel: number;
   }[];
-  /** Pass threshold from session config (null = use default) */
   threshold?: number | null;
-  /** Called when student completes all turns */
-  onComplete?: (stats: { totalTurns: number; correct: number; hintsUsed: number }) => void;
 }
 
 // --- Button colors ---
@@ -57,27 +65,42 @@ export function RecognizeStage({
   userId,
   turns,
   flawIndex,
+  evaluationFlaws = [],
   existingResponses = [],
   existingHints = [],
   threshold,
-  onComplete,
 }: RecognizeStageProps) {
-  // Build the turn sequence: only flawed turns, in transcript order
-  const turnSequence = useMemo(() => {
-    const flawedTurnIds = new Set<string>();
+  // Build turn → flawIds mapping (a turn can have multiple flaws)
+  const turnFlawMap = useMemo(() => {
+    const map = new Map<string, string[]>();
     for (const flaw of flawIndex) {
-      for (const loc of flaw.locations) flawedTurnIds.add(loc);
+      for (const loc of flaw.locations) {
+        const existing = map.get(loc) || [];
+        existing.push(flaw.flaw_id);
+        map.set(loc, existing);
+      }
     }
-    return turns.filter((t) => flawedTurnIds.has(t.id));
-  }, [turns, flawIndex]);
+    return map;
+  }, [flawIndex]);
 
-  // Build initial state from existing responses + hints
-  const initialTurnStates = useMemo(() => {
-    const states = new Map<string, TurnState>();
+  // Turn sequence: only turns that have at least one flaw, in transcript order
+  const turnSequence = useMemo(() => {
+    return turns.filter((t) => turnFlawMap.has(t.id));
+  }, [turns, turnFlawMap]);
 
-    // Initialize all turns as unanswered
-    for (const turn of turnSequence) {
-      states.set(turn.id, {
+  // Total flaws across all turns
+  const totalFlaws = flawIndex.length;
+
+  // Build initial flaw states from existing responses + hints
+  const initialFlawStates = useMemo(() => {
+    const states = new Map<string, FlawState>();
+
+    // Initialize all flaws as unanswered
+    for (const flaw of flawIndex) {
+      const turnId = flaw.locations[0] || "";
+      states.set(flaw.flaw_id, {
+        flawId: flaw.flaw_id,
+        turnId,
         answered: false,
         correct: false,
         hintsUsed: 0,
@@ -86,74 +109,119 @@ export function RecognizeStage({
       });
     }
 
-    // Apply existing hints
-    const hintsByTurn = new Map<string, number>();
+    // Apply existing hints (aggregate max hint level per flaw)
+    // Map turnId → flawIds for hint assignment
     for (const hint of existingHints) {
-      const current = hintsByTurn.get(hint.turnId) || 0;
-      hintsByTurn.set(hint.turnId, Math.max(current, hint.hintLevel));
-    }
-
-    // Apply existing responses (find the flaw for each turn to map flawId → turnId)
-    const flawToTurn = new Map<string, string>();
-    for (const flaw of flawIndex) {
-      for (const loc of flaw.locations) {
-        flawToTurn.set(flaw.flaw_id, loc);
+      const flawIds = turnFlawMap.get(hint.turnId) || [];
+      for (const fid of flawIds) {
+        const state = states.get(fid);
+        if (state && hint.hintLevel > state.hintsUsed) {
+          state.hintsUsed = hint.hintLevel;
+        }
       }
     }
 
+    // Apply existing responses
     for (const resp of existingResponses) {
-      const turnId = flawToTurn.get(resp.flawId) || resp.flawId;
-      const state = states.get(turnId);
+      const state = states.get(resp.flawId);
       if (state) {
         state.answered = true;
         state.correct = resp.typeCorrect;
         state.selectedType = resp.typeAnswer as FlawType;
-        state.hintsUsed = resp.hintLevel || hintsByTurn.get(turnId) || 0;
+        state.hintsUsed = resp.hintLevel || state.hintsUsed;
       }
     }
 
     return states;
-  }, [turnSequence, existingResponses, existingHints, flawIndex]);
+  }, [flawIndex, existingResponses, existingHints, turnFlawMap]);
 
-  const [turnStates, setTurnStates] = useState<Map<string, TurnState>>(initialTurnStates);
+  const [flawStates, setFlawStates] = useState<Map<string, FlawState>>(initialFlawStates);
 
-  // Find the first unanswered turn, or the last turn if all answered
-  const firstUnanswered = turnSequence.findIndex((t) => !turnStates.get(t.id)?.answered);
-  const [currentIndex, setCurrentIndex] = useState(firstUnanswered >= 0 ? firstUnanswered : turnSequence.length - 1);
+  // Find initial turn: first turn with an unanswered flaw, or first turn
+  const initialIndex = useMemo(() => {
+    const idx = turnSequence.findIndex((t) => {
+      const flawIds = turnFlawMap.get(t.id) || [];
+      return flawIds.some((fid) => !initialFlawStates.get(fid)?.answered);
+    });
+    return idx >= 0 ? idx : 0;
+  }, [turnSequence, turnFlawMap, initialFlawStates]);
 
-  const [showingFeedback, setShowingFeedback] = useState(false);
-  const [feedbackMessage, setFeedbackMessage] = useState<{ type: "correct" | "wrong"; text: string } | null>(null);
+  const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  const [activeFlawId, setActiveFlawId] = useState<string | null>(null);
+
+  const [feedbackMessage, setFeedbackMessage] = useState<{ type: "correct" | "wrong"; text: string; flawId: string } | null>(null);
   const [hintLoading, setHintLoading] = useState(false);
 
   const currentTurn = turnSequence[currentIndex];
-  const currentState = currentTurn ? turnStates.get(currentTurn.id) : undefined;
-
-  // Find the correct flaw type for the current turn
-  const currentFlaw = useMemo(() => {
-    if (!currentTurn) return null;
-    return flawIndex.find((f) => f.locations.includes(currentTurn.id)) || null;
-  }, [currentTurn, flawIndex]);
+  const currentFlawIds = currentTurn ? (turnFlawMap.get(currentTurn.id) || []) : [];
+  const activeFlaw = activeFlawId ? flawIndex.find((f) => f.flaw_id === activeFlawId) : null;
+  const activeState = activeFlawId ? flawStates.get(activeFlawId) : undefined;
 
   // Progress stats
-  const answeredCount = Array.from(turnStates.values()).filter((s) => s.answered).length;
-  const correctCount = Array.from(turnStates.values()).filter((s) => s.correct).length;
-  const totalHints = Array.from(turnStates.values()).reduce((sum, s) => sum + s.hintsUsed, 0);
-  const allComplete = answeredCount === turnSequence.length;
+  const answeredCount = Array.from(flawStates.values()).filter((s) => s.answered).length;
+  const correctCount = Array.from(flawStates.values()).filter((s) => s.correct).length;
+  const totalHints = Array.from(flawStates.values()).reduce((sum, s) => sum + s.hintsUsed, 0);
+  const allComplete = answeredCount === totalFlaws;
+
+  // Compute flaw highlights for current turn
+  const currentTurnHighlights = useMemo(() => {
+    if (!currentTurn) return [];
+    const flawIds = turnFlawMap.get(currentTurn.id) || [];
+
+    return flawIds.map((fid) => {
+      const flaw = flawIndex.find((f) => f.flaw_id === fid);
+      if (!flaw) return null;
+      const evalFlaw = evaluationFlaws.find((ef) => ef.flaw_id === fid);
+      if (!evalFlaw) return null;
+      const offsets = findEvidenceOffsets(evalFlaw.evidence, currentTurn.content);
+      if (!offsets) return null;
+      const state = flawStates.get(fid);
+      return {
+        flawId: fid,
+        flawType: flaw.flaw_type as FlawType,
+        start: offsets.start,
+        end: offsets.end,
+        isActive: fid === activeFlawId,
+        answered: state?.answered ?? false,
+        correct: state?.correct ?? false,
+      };
+    }).filter((h): h is NonNullable<typeof h> => h !== null);
+  }, [currentTurn, turnFlawMap, flawIndex, evaluationFlaws, activeFlawId, flawStates]);
+
+  // Per-turn status for dot indicators
+  const turnStatuses = useMemo(() => {
+    return turnSequence.map((turn) => {
+      const flawIds = turnFlawMap.get(turn.id) || [];
+      const states = flawIds.map((fid) => flawStates.get(fid));
+      const answered = states.filter((s) => s?.answered).length;
+      const correct = states.filter((s) => s?.correct).length;
+      if (answered === 0) return "unanswered" as const;
+      if (answered === flawIds.length && correct === flawIds.length) return "all_correct" as const;
+      if (answered === flawIds.length) return "all_answered" as const;
+      return "partial" as const;
+    });
+  }, [turnSequence, turnFlawMap, flawStates]);
+
+  // Helper: clear active flaw when navigating to a new turn
+  const clearActiveFlaw = useCallback(() => {
+    setActiveFlawId(null);
+    setFeedbackMessage(null);
+  }, []);
 
   // --- Handlers ---
 
   const handleSelectType = useCallback(async (type: FlawType) => {
-    if (!currentTurn || !currentFlaw || currentState?.answered || showingFeedback) return;
+    if (!currentTurn || !activeFlaw || !activeFlawId || activeState?.answered) return;
 
-    const isCorrect = currentFlaw.flaw_type === type;
+    const isCorrect = activeFlaw.flaw_type === type;
 
-    setShowingFeedback(true);
-
-    if (isCorrect) {
-      setFeedbackMessage({ type: "correct", text: "Correct!" });
-    } else {
-      setFeedbackMessage({ type: "wrong", text: `Not quite. The correct answer is ${FLAW_TYPES[currentFlaw.flaw_type as FlawType].label}.` });
-    }
+    setFeedbackMessage({
+      type: isCorrect ? "correct" : "wrong",
+      text: isCorrect
+        ? "Correct!"
+        : `Not quite. The correct answer is ${FLAW_TYPES[activeFlaw.flaw_type as FlawType].label}.`,
+      flawId: activeFlawId,
+    });
 
     // Save response to API
     try {
@@ -162,10 +230,10 @@ export function RecognizeStage({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           groupId,
-          flawId: currentFlaw.flaw_id,
+          flawId: activeFlaw.flaw_id,
           typeAnswer: type,
-          correctType: currentFlaw.flaw_type,
-          hintLevel: currentState?.hintsUsed || 0,
+          correctType: activeFlaw.flaw_type,
+          hintLevel: activeState?.hintsUsed || 0,
           stage: "recognize",
         }),
       });
@@ -173,48 +241,28 @@ export function RecognizeStage({
       // Silently fail
     }
 
-    // Update turn state
-    setTurnStates((prev) => {
+    // Update flaw state
+    setFlawStates((prev) => {
       const next = new Map(prev);
-      next.set(currentTurn.id, {
-        ...prev.get(currentTurn.id)!,
+      next.set(activeFlawId, {
+        ...prev.get(activeFlawId)!,
         answered: true,
         correct: isCorrect,
         selectedType: type,
       });
       return next;
     });
-  }, [currentTurn, currentState, currentFlaw, showingFeedback, groupId]);
 
-  const handleNext = useCallback(() => {
-    setShowingFeedback(false);
-    setFeedbackMessage(null);
+  }, [currentTurn, activeFlaw, activeFlawId, activeState, groupId]);
 
-    const nextIndex = currentIndex + 1;
-    if (nextIndex < turnSequence.length) {
-      setCurrentIndex(nextIndex);
-    } else {
-      // All turns complete — check if onComplete should fire
-      const totalCorrect = Array.from(turnStates.values()).filter((s) => s.correct).length;
-      const totalHintsUsed = Array.from(turnStates.values()).reduce((sum, s) => sum + s.hintsUsed, 0);
-      onComplete?.({
-        totalTurns: turnSequence.length,
-        correct: totalCorrect + (currentState?.correct ? 0 : 0), // already counted
-        hintsUsed: totalHintsUsed,
-      });
-    }
-  }, [currentIndex, turnSequence, turnStates, currentState, onComplete]);
-
-  const handlePrevious = useCallback(() => {
-    if (currentIndex > 0) {
-      setShowingFeedback(false);
-      setFeedbackMessage(null);
-      setCurrentIndex(currentIndex - 1);
-    }
-  }, [currentIndex]);
+  const handleNavigate = useCallback((index: number) => {
+    if (index < 0 || index >= turnSequence.length) return;
+    setCurrentIndex(index);
+    clearActiveFlaw();
+  }, [turnSequence, clearActiveFlaw]);
 
   const handleRequestHint = useCallback(async () => {
-    if (!currentTurn || hintLoading) return;
+    if (!currentTurn || !activeFlawId || hintLoading) return;
 
     setHintLoading(true);
     try {
@@ -231,11 +279,11 @@ export function RecognizeStage({
 
       if (res.ok) {
         const data = await res.json();
-        // Update turn state with eliminated choice
-        setTurnStates((prev) => {
+        // Update flaw state with eliminated choice
+        setFlawStates((prev) => {
           const next = new Map(prev);
-          const state = prev.get(currentTurn.id)!;
-          next.set(currentTurn.id, {
+          const state = prev.get(activeFlawId)!;
+          next.set(activeFlawId, {
             ...state,
             hintsUsed: data.hintLevel,
             eliminatedChoices: [...state.eliminatedChoices, data.eliminatedChoice],
@@ -247,7 +295,7 @@ export function RecognizeStage({
       // Silently fail
     }
     setHintLoading(false);
-  }, [currentTurn, sessionId, groupId, hintLoading]);
+  }, [currentTurn, activeFlawId, sessionId, groupId, hintLoading]);
 
   // --- Render ---
 
@@ -255,25 +303,13 @@ export function RecognizeStage({
     return <div className="text-sm text-gray-500">No turns to evaluate.</div>;
   }
 
-  // Signal parent when all turns are complete
-  useEffect(() => {
-    if (allComplete && !showingFeedback) {
-      onComplete?.({
-        totalTurns: turnSequence.length,
-        correct: correctCount,
-        hintsUsed: totalHints,
-      });
-    }
-  }, [allComplete, showingFeedback, turnSequence.length, correctCount, totalHints, onComplete]);
-
-  if (allComplete && !showingFeedback) {
+  if (allComplete) {
     return null; // Parent will show waiting screen
   }
 
-  const hintsRemaining = currentState ? 2 - (currentState.hintsUsed || 0) : 2;
-  const availableTypes = ALL_FLAW_TYPES.filter(
-    (t) => !currentState?.eliminatedChoices.includes(t)
-  );
+  const hintsRemaining = activeState ? 2 - (activeState.hintsUsed || 0) : 2;
+  const showingFeedbackForActive = feedbackMessage && feedbackMessage.flawId === activeFlawId;
+  const flawsInCurrentTurn = currentFlawIds.length;
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -282,19 +318,43 @@ export function RecognizeStage({
         <h2 className="text-lg font-bold text-gray-900">Recognize</h2>
         <p className="text-sm text-gray-500 mt-1">
           Read each turn and identify the type of critical thinking flaw.
+          {flawsInCurrentTurn > 1 && " This turn has multiple flaws — click a highlighted section to switch."}
         </p>
       </div>
 
+      {/* Turn navigation dots */}
+      <div className="mb-4 flex items-center gap-1.5 flex-wrap">
+        {turnSequence.map((turn, i) => {
+          const status = turnStatuses[i];
+          const isCurrent = i === currentIndex;
+          const dotColor =
+            status === "all_correct" ? "bg-green-400" :
+            status === "all_answered" ? "bg-amber-400" :
+            status === "partial" ? "bg-amber-300" :
+            "bg-gray-200";
+          return (
+            <button
+              key={turn.id}
+              onClick={() => handleNavigate(i)}
+              className={`w-3 h-3 rounded-full transition-all ${dotColor} ${
+                isCurrent ? "ring-2 ring-indigo-400 ring-offset-1 scale-125" : "hover:scale-110"
+              }`}
+              title={`Turn ${i + 1}: ${turn.speaker}`}
+            />
+          );
+        })}
+      </div>
+
       {/* Progress bar */}
-      <div className="mb-6">
+      <div className="mb-4">
         <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
           <span>Turn {currentIndex + 1} of {turnSequence.length}</span>
-          <span>{answeredCount} completed</span>
+          <span>{answeredCount} of {totalFlaws} flaws answered</span>
         </div>
         <div className="w-full bg-gray-100 rounded-full h-1.5">
           <div
             className="bg-indigo-500 h-1.5 rounded-full transition-all duration-300"
-            style={{ width: `${(answeredCount / turnSequence.length) * 100}%` }}
+            style={{ width: `${(answeredCount / totalFlaws) * 100}%` }}
           />
         </div>
       </div>
@@ -303,14 +363,14 @@ export function RecognizeStage({
       <div className="mb-6">
         <GoalBar
           current={correctCount}
-          threshold={threshold ?? DEFAULT_THRESHOLDS.recognize ?? Math.ceil(turnSequence.length / 2)}
+          threshold={threshold ?? DEFAULT_THRESHOLDS.recognize ?? Math.ceil(totalFlaws / 2)}
           label="Goal: correct answers"
         />
       </div>
 
       {/* Current turn content */}
       {currentTurn && (
-        <div key={currentTurn.id} className="bg-white border border-gray-200 rounded-xl p-6 mb-4 animate-turn-enter">
+        <div key={currentTurn.id} className="bg-white border border-gray-200 rounded-xl p-6 mb-4">
           {/* Speaker info */}
           <div className="flex items-center gap-2 mb-3">
             <span className="text-sm font-semibold text-gray-900">{currentTurn.speaker}</span>
@@ -322,20 +382,51 @@ export function RecognizeStage({
                 {currentTurn.section}
               </span>
             )}
+            {flawsInCurrentTurn > 1 && (
+              <span className="text-xs text-gray-400 ml-auto">
+                {currentFlawIds.filter((fid) => flawStates.get(fid)?.answered).length}/{flawsInCurrentTurn} flaws answered
+              </span>
+            )}
           </div>
 
-          {/* Turn content */}
-          <p className="text-sm text-gray-800 leading-relaxed">{currentTurn.content}</p>
+          {/* Turn content with flaw highlighting */}
+          {currentTurnHighlights.length > 0 ? (
+            <HighlightedTurnContent
+              content={currentTurn.content}
+              flawHighlights={currentTurnHighlights}
+              onFlawClick={(flawId) => {
+                setActiveFlawId(flawId);
+                const state = flawStates.get(flawId);
+                if (state?.answered) {
+                  // Show stored result for answered flaws
+                  const flaw = flawIndex.find((f) => f.flaw_id === flawId);
+                  const correctLabel = flaw ? FLAW_TYPES[flaw.flaw_type as FlawType]?.label : "";
+                  setFeedbackMessage({
+                    type: state.correct ? "correct" : "wrong",
+                    text: state.correct
+                      ? `You correctly identified this as ${correctLabel}.`
+                      : `You answered ${FLAW_TYPES[state.selectedType!]?.label || state.selectedType}. The correct answer is ${correctLabel}.`,
+                    flawId,
+                  });
+                } else {
+                  setFeedbackMessage(null);
+                }
+              }}
+            />
+          ) : (
+            // Fallback: subtle full-turn background if evidence offsets couldn't be computed
+            <p className="text-sm text-gray-800 leading-relaxed bg-yellow-50 rounded px-1">{currentTurn.content}</p>
+          )}
         </div>
       )}
 
-      {/* Flaw type buttons */}
-      {!currentState?.answered && !showingFeedback && (
+      {/* Flaw type buttons — only when a flaw is selected and unanswered */}
+      {activeFlawId && activeState && !activeState.answered && !showingFeedbackForActive && (
         <div className="space-y-2 mb-4">
           <p className="text-xs font-medium text-gray-500 mb-2">What type of problem is this?</p>
           {ALL_FLAW_TYPES.map((type) => {
             const info = FLAW_TYPES[type];
-            const isEliminated = currentState?.eliminatedChoices.includes(type);
+            const isEliminated = activeState.eliminatedChoices.includes(type);
             const colors = BUTTON_COLORS[type];
 
             return (
@@ -358,7 +449,7 @@ export function RecognizeStage({
       )}
 
       {/* Feedback */}
-      {showingFeedback && feedbackMessage && (
+      {showingFeedbackForActive && feedbackMessage && (
         <div
           className={`rounded-xl p-4 mb-4 ${
             feedbackMessage.type === "correct"
@@ -373,41 +464,36 @@ export function RecognizeStage({
         </div>
       )}
 
-      {/* Bottom bar: hint button + navigation */}
+      {/* Bottom bar: navigation + hint */}
       <div className="flex items-center justify-between mt-4">
-        <div className="flex items-center gap-3">
-          {/* Previous button */}
-          <button
-            onClick={handlePrevious}
-            disabled={currentIndex === 0}
-            className="text-sm text-gray-500 hover:text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed"
-          >
-            ← Previous
-          </button>
-        </div>
+        <button
+          onClick={() => handleNavigate(currentIndex - 1)}
+          disabled={currentIndex === 0}
+          className="text-sm text-gray-500 hover:text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed"
+        >
+          ← Previous
+        </button>
 
         <div className="flex items-center gap-3">
-          {/* Hint button — only show when turn is not answered */}
-          {!currentState?.answered && !showingFeedback && (
+          {/* Hint button — only when a flaw is selected and unanswered */}
+          {activeFlawId && activeState && !activeState.answered && !showingFeedbackForActive && (
             <HintButton
               hintsRemaining={hintsRemaining}
               unlockDelay={HINT_UNLOCK_DELAY.recognize}
               onRequestHint={handleRequestHint}
               loading={hintLoading}
               exhausted={hintsRemaining <= 0}
-              resetKey={currentTurn?.id}
+              resetKey={activeFlawId || "none"}
             />
           )}
 
-          {/* Next / Complete button */}
-          {showingFeedback && (
-            <button
-              onClick={handleNext}
-              className="px-4 py-2 rounded-lg text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
-            >
-              {currentIndex < turnSequence.length - 1 ? "Next →" : "Done"}
-            </button>
-          )}
+          <button
+            onClick={() => handleNavigate(currentIndex + 1)}
+            disabled={currentIndex >= turnSequence.length - 1}
+            className="px-4 py-2 rounded-lg text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          >
+            Next →
+          </button>
         </div>
       </div>
 

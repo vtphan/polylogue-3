@@ -3,7 +3,8 @@
 import { useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import type { FlawType, TranscriptTurn, FlawIndexEntry } from "@/lib/types";
-import { FLAW_TYPES, HINT_UNLOCK_DELAY } from "@/lib/types";
+import { FLAW_TYPES, HINT_UNLOCK_DELAY, DEFAULT_THRESHOLDS } from "@/lib/types";
+import { GoalBar } from "@/components/shared/goal-bar";
 import type { LocateTarget } from "@/lib/locate-trigger";
 import { HintButton } from "@/components/shared/hint-button";
 import { useSessionSocket } from "@/hooks/useSessionSocket";
@@ -26,6 +27,7 @@ interface LocateStageProps {
     userId: string;
   }[];
   existingHints?: { turnId: string; hintLevel: number; targetSection?: string }[];
+  threshold?: number | null;
 }
 
 interface FlaggedTurn {
@@ -50,6 +52,7 @@ export function LocateStage({
   flawIndex,
   existingAnnotations = [],
   existingHints = [],
+  threshold,
 }: LocateStageProps) {
   const router = useRouter();
 
@@ -320,6 +323,15 @@ export function LocateStage({
             See Results
           </button>
         )}
+      </div>
+
+      {/* Goal bar */}
+      <div className="mb-6">
+        <GoalBar
+          current={foundCount}
+          threshold={threshold ?? DEFAULT_THRESHOLDS.locate ?? Math.ceil(locateTargets.length / 2)}
+          label="Goal: flaws located"
+        />
       </div>
 
       {/* Hint message */}

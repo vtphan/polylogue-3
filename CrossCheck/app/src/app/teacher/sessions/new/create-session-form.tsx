@@ -54,6 +54,7 @@ export function CreateSessionForm({
     { name: "Group A", studentIds: [] },
   ]);
   const [activeGroupIndex, setActiveGroupIndex] = useState(0);
+  const [thresholds, setThresholds] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -127,6 +128,16 @@ export function CreateSessionForm({
     setSaving(true);
     setError("");
 
+    // Build config with thresholds (only include non-empty values)
+    const parsedThresholds: Record<string, number> = {};
+    for (const [key, val] of Object.entries(thresholds)) {
+      const num = parseInt(val, 10);
+      if (num > 0) parsedThresholds[key] = num;
+    }
+    const config = Object.keys(parsedThresholds).length > 0
+      ? { thresholds: parsedThresholds }
+      : undefined;
+
     // New-flow session: no difficultyMode, no knobs
     const res = await fetch("/api/sessions", {
       method: "POST",
@@ -134,6 +145,7 @@ export function CreateSessionForm({
       body: JSON.stringify({
         classId,
         activityId,
+        config,
         groups: groups.map((g) => ({
           name: g.name,
           studentIds: g.studentIds,
@@ -214,6 +226,36 @@ export function CreateSessionForm({
           and locate any flaws the group still missed.
         </p>
       </div>
+
+      {/* Pass thresholds (optional) */}
+      <details className="group">
+        <summary className="text-sm font-medium text-gray-700 cursor-pointer hover:text-gray-900 select-none">
+          Pass Thresholds <span className="text-xs text-gray-400 font-normal">(optional)</span>
+        </summary>
+        <div className="mt-3 bg-white border border-gray-200 rounded-lg p-4 space-y-3">
+          <p className="text-xs text-gray-500">
+            Set how many correct answers count as success for each stage. Leave blank to use defaults.
+          </p>
+          {[
+            { key: "recognize", label: "Recognize", placeholder: "default: 50% of flaws" },
+            { key: "explain", label: "Explain", placeholder: "default: 2" },
+            { key: "collaborate", label: "Collaborate", placeholder: "default: 50% of turns" },
+            { key: "locate", label: "Locate", placeholder: "default: 50% of missed" },
+          ].map(({ key, label, placeholder }) => (
+            <div key={key} className="flex items-center gap-3">
+              <label className="text-sm text-gray-600 w-24">{label}</label>
+              <input
+                type="number"
+                min="1"
+                value={thresholds[key] || ""}
+                onChange={(e) => setThresholds({ ...thresholds, [key]: e.target.value })}
+                placeholder={placeholder}
+                className="flex-1 border border-gray-300 rounded-md px-3 py-1.5 text-sm placeholder:text-gray-300"
+              />
+            </div>
+          ))}
+        </div>
+      </details>
 
       {/* Group bar */}
       <div>

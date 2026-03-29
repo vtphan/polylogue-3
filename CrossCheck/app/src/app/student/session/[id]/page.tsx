@@ -143,6 +143,9 @@ export default async function StudentSessionPage({ params }: PageProps) {
   const hasDifficultyMode = groupConfig?.difficulty_mode !== undefined;
 
   if (!hasDifficultyMode) {
+    const sessionConfig = classSession.config as Record<string, unknown> | null;
+    const thresholds = ((sessionConfig?.thresholds ?? {}) as Record<string, number>);
+
     const transcript = activity.transcript as unknown as Transcript;
     const allTurns = extractTurns(transcript);
 
@@ -404,11 +407,14 @@ export default async function StudentSessionPage({ params }: PageProps) {
               userId={session.user.id}
               turns={allTurns}
               flawIndex={flawIndex}
+              evaluationFlaws={(evaluationData?.flaws ?? []).map((f) => ({
+                flaw_id: f.flaw_id,
+                evidence: f.evidence,
+                flaw_type: f.flaw_type,
+              }))}
               existingResponses={ownRecognizeResponses}
               existingHints={ownRecognizeHints}
-              onComplete={() => {
-                // Component will re-render showing WaitingScreen
-              }}
+              threshold={thresholds.recognize ?? null}
             />
           )
         ) : groupStage === "explain" ? (
@@ -421,6 +427,7 @@ export default async function StudentSessionPage({ params }: PageProps) {
             groupMembers={groupMembersList}
             existingExplanations={explainExplanations}
             existingHints={explainHints}
+            threshold={thresholds.explain ?? null}
           />
         ) : groupStage === "collaborate" ? (
           <CollaborateStage
@@ -433,6 +440,7 @@ export default async function StudentSessionPage({ params }: PageProps) {
             existingGroupSelections={collaborateGroupSelections}
             existingExplanations={collaborateExplanations}
             existingHints={collaborateHints}
+            threshold={thresholds.collaborate ?? null}
           />
         ) : groupStage === "locate" ? (
           (() => {
@@ -464,6 +472,7 @@ export default async function StudentSessionPage({ params }: PageProps) {
                 flawIndex={flawIndex}
                 existingAnnotations={locateAnnotations}
                 existingHints={locateHints}
+                threshold={thresholds.locate ?? null}
               />
             );
           })()
