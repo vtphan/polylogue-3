@@ -83,20 +83,42 @@ export function RecognizeStage({
     return map;
   }, [flawIndex]);
 
-  // Turn sequence: only turns that have at least one flaw, in transcript order
-  const turnSequence = useMemo(() => {
-    return turns.filter((t) => turnFlawMap.has(t.id));
-  }, [turns, turnFlawMap]);
+  // Determine which flaws are answerable (have evidence locatable in a turn)
+  const answerableFlawIds = useMemo(() => {
+    const ids = new Set<string>();
+    const turnMap = new Map(turns.map((t) => [t.id, t]));
+    for (const flaw of flawIndex) {
+      const evalFlaw = evaluationFlaws.find((ef) => ef.flaw_id === flaw.flaw_id);
+      if (!evalFlaw) continue;
+      for (const loc of flaw.locations) {
+        const turn = turnMap.get(loc);
+        if (turn && findEvidenceOffsets(evalFlaw.evidence, turn.content)) {
+          ids.add(flaw.flaw_id);
+          break;
+        }
+      }
+    }
+    return ids;
+  }, [flawIndex, evaluationFlaws, turns]);
 
-  // Total flaws across all turns
-  const totalFlaws = flawIndex.length;
+  // Turn sequence: only turns that have at least one answerable flaw
+  const turnSequence = useMemo(() => {
+    return turns.filter((t) => {
+      const flawIds = turnFlawMap.get(t.id) || [];
+      return flawIds.some((fid) => answerableFlawIds.has(fid));
+    });
+  }, [turns, turnFlawMap, answerableFlawIds]);
+
+  // Total answerable flaws
+  const totalFlaws = answerableFlawIds.size;
 
   // Build initial flaw states from existing responses + hints
   const initialFlawStates = useMemo(() => {
     const states = new Map<string, FlawState>();
 
-    // Initialize all flaws as unanswered
+    // Initialize only answerable flaws as unanswered
     for (const flaw of flawIndex) {
+      if (!answerableFlawIds.has(flaw.flaw_id)) continue;
       const turnId = flaw.locations[0] || "";
       states.set(flaw.flaw_id, {
         flawId: flaw.flaw_id,
@@ -133,7 +155,7 @@ export function RecognizeStage({
     }
 
     return states;
-  }, [flawIndex, existingResponses, existingHints, turnFlawMap]);
+  }, [flawIndex, existingResponses, existingHints, turnFlawMap, answerableFlawIds]);
 
   const [flawStates, setFlawStates] = useState<Map<string, FlawState>>(initialFlawStates);
 
@@ -304,7 +326,24 @@ export function RecognizeStage({
   }
 
   if (allComplete) {
-    return null; // Parent will show waiting screen
+    return (
+      <div className="max-w-2xl mx-auto">
+        <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
+          <p className="text-lg font-bold text-green-800 mb-2">Recognize Complete</p>
+          <p className="text-sm text-green-700 mb-4">
+            You identified all the flaws in this transcript.
+          </p>
+          <div className="flex justify-center gap-6 text-sm text-green-700">
+            <span><span className="font-semibold">{correctCount}</span> correct</span>
+            <span><span className="font-semibold">{totalFlaws - correctCount}</span> incorrect</span>
+            <span><span className="font-semibold">{totalHints}</span> hints used</span>
+          </div>
+        </div>
+        <p className="text-xs text-gray-400 text-center mt-4">
+          Waiting for your teacher to advance to the next stage.
+        </p>
+      </div>
+    );
   }
 
   const hintsRemaining = activeState ? 2 - (activeState.hintsUsed || 0) : 2;
