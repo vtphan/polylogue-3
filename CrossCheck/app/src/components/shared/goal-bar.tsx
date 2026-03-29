@@ -1,7 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
-
 interface GoalBarProps {
   current: number;
   threshold: number;
@@ -9,42 +7,22 @@ interface GoalBarProps {
 }
 
 export function GoalBar({ current, threshold, label }: GoalBarProps) {
-  const [prevCurrent, setPrevCurrent] = useState(current);
-  const [celebrating, setCelebrating] = useState(false);
-
   const reached = current >= threshold;
   const pct = threshold > 0 ? Math.min(100, (current / threshold) * 100) : 0;
 
-  // Celebrate when threshold is first reached
-  useEffect(() => {
-    if (current >= threshold && prevCurrent < threshold) {
-      setCelebrating(true);
-      const timer = setTimeout(() => setCelebrating(false), 1500);
-      return () => clearTimeout(timer);
-    }
-    setPrevCurrent(current);
-  }, [current, threshold, prevCurrent]);
-
   return (
-    <div className={`rounded-lg px-3 py-2 transition-all ${celebrating ? "ring-2 ring-green-400 ring-opacity-75" : ""}`}>
-      {label && (
-        <div className="flex items-center justify-between mb-1">
-          <span className="text-xs text-gray-500">{label}</span>
-          <span className={`text-xs font-medium ${reached ? "text-green-700" : "text-gray-600"}`}>
-            {current} / {threshold}
-          </span>
-        </div>
-      )}
-      {!label && (
-        <div className="flex justify-end mb-1">
-          <span className={`text-xs font-medium ${reached ? "text-green-700" : "text-gray-600"}`}>
-            {current} / {threshold}
-          </span>
-        </div>
-      )}
-      <div className="w-full bg-gray-100 rounded-full h-2">
+    <div className={`rounded-xl px-4 py-3 transition-all ${reached ? "ring-2 ring-green-400 ring-opacity-75 bg-green-50" : "bg-white border border-gray-200"}`}>
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-sm text-gray-600">
+          {reached ? "🎯 " : ""}{label || "Goal"}
+        </span>
+        <span className={`text-sm font-bold tabular-nums ${reached ? "text-green-700" : "text-gray-700"}`}>
+          {current} / {threshold}
+        </span>
+      </div>
+      <div className="w-full bg-gray-100 rounded-full h-3">
         <div
-          className={`h-2 rounded-full transition-all duration-500 ${
+          className={`h-3 rounded-full transition-all duration-500 ${
             reached ? "bg-green-500" : "bg-indigo-400"
           }`}
           style={{ width: `${pct}%` }}

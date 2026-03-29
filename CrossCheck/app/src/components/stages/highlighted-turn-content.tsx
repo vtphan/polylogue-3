@@ -92,7 +92,7 @@ export function HighlightedTurnContent({
   );
 
   return (
-    <p className="text-sm text-gray-800 leading-relaxed">
+    <p className="text-base md:text-lg text-gray-800 leading-relaxed md:leading-loose">
       {segments.map((seg, i) => {
         if (!seg.highlight) {
           return <span key={i}>{seg.text}</span>;
@@ -108,35 +108,37 @@ export function HighlightedTurnContent({
             <span
               key={i}
               onClick={() => onFlawClick(hl.flawId)}
-              className={`rounded px-0.5 cursor-pointer transition-all bg-gray-100 ${
-                hl.isActive ? "bg-gray-200" : ""
+              className={`rounded-md px-1 py-0.5 cursor-pointer transition-all ${
+                hl.isActive ? "bg-gray-200" : "bg-gray-100"
               }`}
             >
               {seg.text}
-              <span className={`text-xs font-bold ml-0.5 ${markColor}`}>{mark}</span>
+              <span className={`text-sm font-bold ml-1 ${markColor}`}>{mark}</span>
             </span>
           );
         }
 
-        // Active (unanswered) — selected highlight (neutral)
+        // Active (unanswered) — selected, bright marker
         if (hl.isActive) {
           return (
             <span
               key={i}
               onClick={() => onFlawClick(hl.flawId)}
-              className="rounded px-0.5 cursor-pointer transition-all bg-indigo-100"
+              className="rounded-md px-1 py-0.5 cursor-pointer transition-all ring-2 ring-orange-400"
+              style={{ backgroundColor: "#fef08a" }}
             >
               {seg.text}
             </span>
           );
         }
 
-        // Inactive (unanswered, not selected)
+        // Inactive (unanswered, not selected) — light yellow marker
         return (
           <span
             key={i}
             onClick={() => onFlawClick(hl.flawId)}
-            className="rounded px-0.5 cursor-pointer transition-all bg-amber-100 hover:bg-amber-200"
+            className="rounded-md px-1 py-0.5 cursor-pointer transition-all hover:ring-1 hover:ring-orange-300"
+            style={{ backgroundColor: "#fef9c3" }}
           >
             {seg.text}
           </span>

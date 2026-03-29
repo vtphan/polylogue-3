@@ -68,7 +68,7 @@ export default async function StudentSessionPage({ params }: PageProps) {
             orderBy: { createdAt: "desc" },
           },
           flawResponses: {
-            select: { flawId: true, typeAnswer: true, typeCorrect: true, hintLevel: true, stage: true, userId: true },
+            select: { flawId: true, typeAnswer: true, typeCorrect: true, hintLevel: true, stage: true, userId: true, coins: true },
             orderBy: { createdAt: "asc" },
           },
           hintUsages: {
@@ -157,6 +157,7 @@ export default async function StudentSessionPage({ params }: PageProps) {
         typeAnswer: r.typeAnswer,
         typeCorrect: r.typeCorrect,
         hintLevel: r.hintLevel,
+        coins: r.coins,
       }));
 
     const allRecognizeResponses = group.flawResponses
@@ -279,7 +280,7 @@ export default async function StudentSessionPage({ params }: PageProps) {
             const recognizeByStudent = new Map<string, typeof ownRecognizeResponses>();
             for (const resp of allRecognizeResponses) {
               const existing = recognizeByStudent.get(resp.userId) || [];
-              existing.push({ ...resp, hintLevel: 0 });
+              existing.push({ ...resp, hintLevel: 0, coins: 0 });
               recognizeByStudent.set(resp.userId, existing);
             }
 
